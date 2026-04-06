@@ -1,0 +1,73 @@
+.uso-suelo-stats {
+  margin: 16px 0;
+  padding: 12px;
+  background: var(--color-background);
+  border-radius: 8px;
+  box-shadow: var(--shadow-light);
+}
+
+.stats-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-primary);
+  margin: 0 0 12px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--color-border);
+}
+
+.stats-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.color-box {
+  width: 14px;
+  height: 14px;
+  min-width: 14px;
+  margin-right: 8px;
+  border-radius: 3px;
+}
+
+.stat-text {
+  color: var(--color-text);
+}
+
+.stat-text strong {
+  color: var(--color-primary);
+}
+
+/* Sección por UBA */
+.uso-suelo-por-uba {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+}
+
+.uba-section {
+  margin-bottom: 12px;
+}
+
+.uba-section:last-child {
+  margin-bottom: 0;
+}
+
+.uba-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-secondary);
+  margin: 0 0 8px 0;
+  text-transform: uppercase;
+}
+
+/* Conteo total */
+.uso-suelo-total {
+  margin-bottom: 8px;
+}

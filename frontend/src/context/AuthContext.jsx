@@ -1,0 +1,96 @@
+import { createContext, useState, useEffect, useCallback } from 'react';
+import api from '../services/api';
+
+const AuthContext = createContext(null);
+
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(null);
+  const [token, setToken] = useState(localStorage.getItem('token'));
+  const [loading, setLoading] = useState(true);
+
+  // Verificar token al cargar
+  useEffect(() => {
+    const verifyToken = async () => {
+      if (token) {
+        try {
+          const response = await api.get('/auth/me');
+          setUser(response.data.user);
+        } catch (error) {
+          console.error('Token inválido:', error);
+          localStorage.removeItem('token');
+          setToken(null);
+        }
+      }
+      setLoading(false);
+    };
+    verifyToken();
+  }, [token]);
+
+  // Login
+  const login = useCallback(async (username, password) => {
+    try {
+      const response = await api.post('/auth/login', { username, password });
+      const { user, token } = response.data;
+      localStorage.setItem('token', token);
+      setToken(token);
+      setUser(user);
+      return { success: true, user };
+    } catch (error) {
+      console.error('Error en login:', error);
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Error al iniciar sesión'
+      };
+    }
+  }, []);
+
+  // Logout
+  const logout = useCallback(() => {
+    localStorage.removeItem('token');
+    setToken(null);
+    setUser(null);
+  }, []);
+
+  // Verificar si está autenticado
+  const isAuthenticated = !!user;
+
+  // Verificar rol
+  const hasRole = useCallback((role) => {
+    if (!user) return false;
+    if (user.role === 'admin') return true;
+    return user.role === role;
+  }, [user]);
+
+  // Verificar permiso
+  const hasPermission = useCallback((permission) => {
+    const rolePermissions = {
+      admin: ['read', 'write', 'delete', 'manage_users', 'view_all'],
+      secretaria: ['read', 'write', 'view_own'],
+      lector: ['read', 'view_own'],
+      editor_geo: ['read', 'write', 'delete', 'manage_layers', 'view_all']
+    };
+
+    if (!user) return false;
+    const permissions = rolePermissions[user.role] || [];
+    return permissions.includes(permission);
+  }, [user]);
+
+  const value = {
+    user,
+    token,
+    loading,
+    isAuthenticated,
+    login,
+    logout,
+    hasRole,
+    hasPermission
+  };
+
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+export default AuthContext;

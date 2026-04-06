@@ -1,0 +1,45 @@
+.uba-stats {
+  margin: 16px 0;
+  padding: 12px;
+  background: var(--color-background);
+  border-radius: 8px;
+  box-shadow: var(--shadow-light);
+}
+
+.uba-stats-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-primary);
+  margin: 0 0 12px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--color-border);
+}
+
+.uba-stats-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.uba-stats-table th {
+  text-align: center;
+  padding: 8px 4px;
+  background: var(--color-surface);
+  border-bottom: 2px solid var(--color-border);
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.uba-stats-table td {
+  padding: 8px 4px;
+  border-bottom: 1px solid #f0f0f0;
+  text-align: left;
+}
+
+.uba-stats-table .text-center {
+  text-align: center;
+}
+
+.uba-stats-table tbody tr:hover {
+  background: var(--color-surface);
+}

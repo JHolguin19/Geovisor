@@ -1,0 +1,151 @@
+/* =============================================
+   RESET & BASE
+   ============================================= */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background-color: var(--surface);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* =============================================
+   DESIGN TOKENS
+   ============================================= */
+:root {
+  /* Brand */
+  --navy:        #0B2545;
+  --navy-light:  #163A66;
+  --blue:        #1A5F9B;
+  --sky:         #3B9EDB;
+  --sky-light:   #E8F4FD;
+  --amber:       #D97706;
+  --amber-light: #FEF3C7;
+
+  /* UI surfaces */
+  --surface:     #EEF2F7;
+  --white:       #FFFFFF;
+  --sidebar-bg:  #FFFFFF;
+  --border:      #D1DBE8;
+  --border-soft: #E8EDF4;
+
+  /* Text */
+  --text:        #1E293B;
+  --text-muted:  #64748B;
+  --text-light:  #94A3B8;
+
+  /* Feedback */
+  --success:     #10B981;
+  --error:       #EF4444;
+
+  /* Layout */
+  --header-h:    68px;
+  --sidebar-w:   268px;
+
+  /* Shadows */
+  --shadow-sm:   0 1px 3px rgba(11,37,69,.08), 0 1px 2px rgba(11,37,69,.06);
+  --shadow-md:   0 4px 16px rgba(11,37,69,.12), 0 2px 6px rgba(11,37,69,.08);
+  --shadow-lg:   0 12px 40px rgba(11,37,69,.18), 0 4px 12px rgba(11,37,69,.1);
+
+  /* Transitions */
+  --ease:        cubic-bezier(.4,0,.2,1);
+}
+
+/* =============================================
+   SCROLLBAR
+   ============================================= */
+::-webkit-scrollbar        { width: 5px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: var(--border); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--sky); }
+
+/* =============================================
+   OL POPUP (shared)
+   ============================================= */
+.ol-popup {
+  position: absolute;
+  background: var(--white);
+  border-radius: 10px;
+  box-shadow: var(--shadow-lg);
+  padding: 14px 16px 12px;
+  min-width: 220px;
+  max-width: 320px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 14.5px;
+  border: 1px solid var(--border);
+  transform: translateX(-50%) translateY(calc(-100% - 14px));
+  pointer-events: auto;
+}
+
+.ol-popup::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 14px;
+  height: 14px;
+  background: var(--white);
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  clip-path: polygon(0 0, 100% 100%, 100% 0);
+  rotate: 45deg;
+}
+
+.ol-popup-closer {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-light);
+  font-size: 15px;
+  line-height: 1;
+  padding: 2px;
+  transition: color .15s var(--ease);
+}
+.ol-popup-closer:hover { color: var(--text); }
+
+.ol-popup-content {
+  line-height: 1.7;
+  color: var(--text);
+  margin-top: 4px;
+}
+.ol-popup-content strong { color: var(--navy); }
+
+/* =============================================
+   RESPONSIVE
+   ============================================= */
+@media (max-width: 768px) {
+  :root {
+    --header-h: 52px;
+    --sidebar-w: 280px;
+  }
+
+  .ol-popup {
+    min-width: 180px;
+    max-width: 260px;
+    font-size: 12px;
+    padding: 10px 12px 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .ol-popup {
+    min-width: 160px;
+    max-width: 220px;
+    font-size: 11.5px;
+  }
+}

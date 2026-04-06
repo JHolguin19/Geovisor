@@ -1,0 +1,51 @@
+/* ── Layout principal ── */
+.map-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+/* ── Contenido debajo del header ── */
+.map-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ── Mapa ── */
+.map-main {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.map-main .map-viewer-container,
+.map-main .map-container {
+  width: 100%;
+  height: 100%;
+}
+
+/* ── Backdrop para móvil ── */
+.sidebar-backdrop {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(11, 37, 69, .45);
+    z-index: 150;
+    animation: fadeIn .2s var(--ease);
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+}
