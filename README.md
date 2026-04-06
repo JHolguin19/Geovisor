@@ -2,14 +2,14 @@
 
 ## Documentación Técnica del Proyecto
 
-**Fecha de última actualización:** 2026-03-25
+**Fecha de última actualización:** 2026-04-06
 **Estado:** En desarrollo
 
 ---
 
 ## 1. Visión General
 
-GeoVisor Municipal es un sistema de información geográfica (SIG) web diseñado para la Alcaldía de Santander de Quilichao. Permite visualizar, consultar y gestionar información geoespacial organizada por secretarías municipales.
+GeoVisor Municipal es un sistema de información geográfica (SIG) web diseñado para la Alcaldía de Santander de Quilichao. Permite visualizar, consultar y gestionar información geoespacial organizada por secretarías municipales. Los datos geoespaciales se sirven directamente desde **PostGIS** a través de una API REST propia.
 
 ### 1.1 Propósito
 
@@ -31,7 +31,9 @@ GeoVisor Municipal es un sistema de información geográfica (SIG) web diseñado
 | **Enrutamiento** | React Router DOM 6 |
 | **HTTP Cliente** | Axios |
 | **Lenguaje** | JavaScript (ES6+) |
-| **GeoServer** | localhost:8080 (WMS/WFS) |
+| **Backend** | Node.js + Express |
+| **Base de datos** | PostgreSQL + PostGIS |
+| **Autenticación** | JWT |
 
 ### 2.2 Arquitectura de Componentes
 
@@ -53,16 +55,16 @@ src/
 ### 2.3 Diagrama de Flujo
 
 ```
-┌─────────────┐     ┌──────────────┐     ┌─────────────┐
-│   Usuario   │────▶│  Frontend    │────▶│  GeoServer  │
-│             │     │  React+OL    │     │  (WMS/WFS)  │
-└─────────────┘     └──────────────┘     └─────────────┘
-                           │
-                           ▼
-                    ┌──────────────┐
-                    │   Backend    │
-                    │  Node+JWT    │
-                    └──────────────┘
+┌─────────────┐     ┌──────────────┐     ┌──────────────┐
+│   Usuario   │────▶│  Frontend    │────▶│   Backend    │
+│             │     │  React+OL    │     │  Node+JWT    │
+└─────────────┘     └──────────────┘     └──────────────┘
+                                                 │
+                                                 ▼
+                                         ┌──────────────┐
+                                         │   PostGIS    │
+                                         │  PostgreSQL  │
+                                         └──────────────┘
 ```
 
 ---
@@ -80,24 +82,25 @@ alcaldia-geovisor/
         ├── App.jsx             # Componente raíz con routing
         ├── App.css             # Estilos globales y variables CSS
         ├── config/
-        │   ├── geoserver.js    # Configuración de GeoServer
-        │   ├── layers.js       # Configuración de capas WMS/WFS
+        │   ├── mapConfig.js    # Centro, zoom y proyecciones del mapa
+        │   ├── layers.js       # Configuración de capas (PostGIS)
         │   ├── roles.js        # Definición de roles y permisos
         │   └── secretarias.js  # Listado de secretarías
         ├── context/
         │   ├── AuthContext.jsx # Autenticación y autorización
         │   └── MapContext.jsx  # Estado del mapa OpenLayers
         ├── services/
-        │   └── api.js          # Cliente axios + servicios
+        │   ├── api.js          # Cliente axios + servicios
+        │   └── statsService.js # Estadísticas desde PostGIS
         ├── organisms/
         │   └── MapViewer/
         │       ├── MapViewer.jsx
         │       ├── MapViewer.css
         │       └── index.js
-        ├── templates/          # (Pendiente)
-        ├── pages/              # (Pendiente)
-        ├── molecules/          # (Pendiente)
-        └── atoms/              # (Pendiente)
+        ├── templates/
+        ├── pages/
+        ├── molecules/
+        └── atoms/
 ```
 
 ---
@@ -133,10 +136,6 @@ alcaldia-geovisor/
   server: {
     port: 5173,
     proxy: {
-      '/geoserver': {
-        target: 'http://localhost:8080',
-        changeOrigin: true
-      },
       '/api': {
         target: 'http://localhost:3001',
         changeOrigin: true
@@ -157,7 +156,7 @@ alcaldia-geovisor/
 | **admin** | Alcalde / TI | read, write, delete, manage_users, view_all, manage_layers |
 | **secretaria** | Jefe de secretaría | read, write, view_own |
 | **lector** | Personal de apoyo | read, view_own |
-| **editor_geo** | Gestión GeoServer | read, write, delete, manage_layers, view_all |
+| **editor_geo** | Gestión de capas geoespaciales | read, write, delete, manage_layers, view_all |
 
 ### 5.2 Flujo de Autenticación
 
@@ -181,15 +180,12 @@ Proporciona:
 
 ---
 
-## 6. Capas de GeoServer
+## 6. Capas PostGIS
 
-### 6.1 Configuración
+### 6.1 Configuración del Mapa
 
 ```javascript
-GEOSERVER_CONFIG = {
-  baseUrl: '/geoserver',
-  directUrl: 'http://localhost:8080/geoserver',
-  workspace: 'AlcaldiaGeovisor',
+MAP_CONFIG = {
   defaultCenter: [-76.483765, 3.012569], // Santander de Quilichao
   defaultZoom: 14,
   projections: {
@@ -202,43 +198,43 @@ GEOSERVER_CONFIG = {
 ### 6.2 Capas por Secretaría
 
 #### Secretaría de Planeación
-| ID | Nombre | Capa GeoServer | Tipo |
-|----|--------|----------------|------|
-| predios_urbanos | Predios Urbanos | pg_predios_urbanos_m | WMS |
-| nomenclatura_vial | Nomenclatura Vial | SANTANDER IGAC 2025 — U_NOMENCLATURA_VIAL_2025 | WMS |
-| barrios_urbanos | Barrios Urbanos | pg_barriosurbanos | WMS |
-| uba1-uba5, ubac | UBAs 1-5, C | pg_uba1, pg_uba2, etc. | WMS |
-| uso_estanco | Estanco | pg_uds_bar_estanco | WMS |
-| uso_discotecas | Discotecas | pg_uds_discos | WMS |
-| uso_droguerias | Droguerías | pg_uds_droguerias | WMS |
-| uso_ferreterias | Ferreterías | pg_uds_ferreterias | WMS |
-| uso_ips | IPS | pg_uds_ips | WMS |
-| uso_restaurantes | Restaurantes | pg_uds_restaurantes | WMS |
-| uso_servicios | Servicios | pg_uds_otros | WMS |
+| ID | Nombre | Tabla PostGIS |
+|----|--------|---------------|
+| predios_urbanos | Predios Urbanos | predios_2025_m |
+| nomenclatura_vial | Nomenclatura Vial | SANTANDER IGAC 2025 — U_NOMENCLATURA_VIAL_2025 |
+| barrios_urbanos | Barrios Urbanos | barriosurbanos |
+| uba1-uba5, ubac | UBAs 1-5, C | BARR_UBA_1, BARR_UBA2, etc. |
+| uso_estanco | Estanco | uds_barestanco |
+| uso_discotecas | Discotecas | uso_de_suelos_discotecas |
+| uso_droguerias | Droguerías | uds2_droguerias |
+| uso_ferreterias | Ferreterías | uds_ferreterias |
+| uso_ips | IPS | uds_ips |
+| uso_restaurantes | Restaurantes | uds_restaurantes |
+| uso_servicios | Servicios | uds_otros |
 
 #### Zonas Verdes
-| ID | Nombre | Capa GeoServer | Tipo |
-|----|--------|----------------|------|
-| zonas_verdes | Zonas Verdes | pg_zonasverdes | WMS |
-| gimnasios_biosaludables | Gimnasios Bio | pg_Gimnasiosbiosaludables | WFS |
+| ID | Nombre | Tabla PostGIS |
+|----|--------|---------------|
+| zonas_verdes | Zonas Verdes | zonasverdes |
+| gimnasios_biosaludables | Gimnasios Bio | Gimnasiosbiosaludables |
 
 #### Sisben
-| ID | Nombre | Capa GeoServer |
-|----|--------|----------------|
-| sisben_barrios | Sisben Barrios | pg_sisben_barrios |
-| sisben_uba2 | Sisben UBA 2 | pg_uba2_datospoblaciones |
+| ID | Nombre | Tabla PostGIS |
+|----|--------|---------------|
+| sisben_barrios | Sisben Barrios | sisben_barrios |
+| sisben_uba2 | Sisben UBA 2 | uba2_datospoblaciones |
 | sisben_uba4 | Sisben UBA 4 | sisben_uba4 |
 
 #### Educación
-| ID | Nombre | Capa GeoServer |
-|----|--------|----------------|
-| predios_educativos | Predios Educativos | pg_predios_educativos |
+| ID | Nombre | Tabla PostGIS |
+|----|--------|---------------|
+| predios_educativos | Predios Educativos | predios_educativos |
 
 #### Equipo Institucional
-| ID | Nombre | Capa GeoServer |
-|----|--------|----------------|
-| equipo_institucional | Equipo Institucional | pg_predios_equipo_institucional |
-| iglesias | Iglesias | pg_predios_iglesias |
+| ID | Nombre | Tabla PostGIS |
+|----|--------|---------------|
+| equipo_institucional | Equipo Institucional | predios_equipo_institucional |
+| iglesias | Iglesias | predios_iglesias |
 
 ### 6.3 Grupos de Capas
 
@@ -248,12 +244,11 @@ GEOSERVER_CONFIG = {
 ### 6.4 Funciones de Utilidad (layers.js)
 
 ```javascript
-getAllLayers()           // Lista plana de todas las capas
-getLayerById(id)         // Obtener capa por ID
-getLayersBySecretaria(id) // Capas por secretaría
-getLayersByGroup(name)   // Capas por grupo
-getWmsUrl(layer)         // URL WMS endpoint
-getWfsUrl(layer, format) // URL WFS endpoint
+getAllLayers()              // Lista plana de todas las capas
+getLayerById(id)            // Obtener capa por ID
+getLayersBySecretaria(id)   // Capas por secretaría
+getLayersByGroup(name)      // Capas por grupo
+getGeoJsonApiUrl(layer)     // URL del endpoint /api/geodata para la capa
 ```
 
 ---
@@ -273,14 +268,13 @@ Proporciona:
 - `getLayerByName(name)`: Busca capa por nombre
 - `toggleLayerVisibility(name)`: Alterna visibilidad
 - `zoomToExtent(extent)`: Zoom a extensión
-- `getFeatureInfoAt(coord, layers)`: GetFeatureInfo
 
 ### 7.2 MapViewer.jsx
 
 Componente principal que:
 - Crea el mapa OpenLayers
-- Maneja capas WMS y WFS dinámicamente
-- Implementa GetFeatureInfo en click
+- Carga capas vectoriales (GeoJSON) desde `/api/geodata`
+- Implementa consulta de atributos al hacer clic
 - Sincroniza con MapContext
 
 ### 7.3 Coordenadas
@@ -291,7 +285,7 @@ Componente principal que:
 
 ---
 
-## 8. Servicios API (api.js)
+## 8. API del Backend
 
 ### 8.1 Configuración Axios
 
@@ -300,34 +294,52 @@ Componente principal que:
 - Interceptor request: Agrega token JWT
 - Interceptor response: Maneja 401 (logout)
 
-### 8.2 Servicios Disponibles
+### 8.2 Endpoints Disponibles
 
-#### authService
-```javascript
-login(username, password)
-logout()
-getProfile()
-refreshToken()
+#### Autenticación
+```
+POST /api/auth/login          Iniciar sesión
+POST /api/auth/logout         Cerrar sesión
+GET  /api/auth/me             Obtener perfil
+POST /api/auth/refresh        Refresh token
 ```
 
-#### layersService
-```javascript
-getAll()
-getBySecretaria(secretariaId)
-getLayerInfo(layerId)
+#### Datos Geoespaciales
+```
+GET /api/geodata/:tableName               Obtener GeoJSON de una tabla
+GET /api/geodata/:tableName?bbox=...      Filtrar por bbox
+GET /api/geodata/:tableName?q=...&searchFields=...  Búsqueda por texto
+GET /api/geodata/:tableName?cols=...      Seleccionar columnas
 ```
 
-#### statsService
-```javascript
-getStatsByUba(ubaId)
-getUsoSueloCount()
-getGeneralStats()
+#### Capas
+```
+GET /api/layers                           Listar capas
+GET /api/layers/:id                       Detalle de capa
+GET /api/layers/secretaria/:id            Capas por secretaría
 ```
 
-#### formsService
-```javascript
-submit(formData)
-getHistory(secretariaId)
+#### Estadísticas
+```
+GET /api/stats/uba/:id                    Stats por UBA
+GET /api/stats/uso-suelo                  Conteo uso de suelo
+GET /api/stats/general                    Stats generales
+```
+
+#### PDM
+```
+GET /api/pdm                              Metas PDM (con filtros)
+GET /api/pdm/overview                     Resumen ejecutivo
+GET /api/pdm/resumen                      Resumen por parámetros
+GET /api/pdm/secretarias                  Secretarías con metas
+GET /api/pdm/pilares                      Pilares del PDM
+GET /api/pdm/:id                          Meta individual
+```
+
+#### Formularios
+```
+POST /api/forms/submit                    Enviar formulario
+GET  /api/forms/history/:secretariaId     Historial
 ```
 
 ---
@@ -390,12 +402,6 @@ Protege rutas verificando:
 }
 ```
 
-### Utilidades
-
-- `.hidden`, `.flex`, `.flex-column`, `.flex-center`
-- `.gap-sm`, `.gap-md`
-- Scrollbar personalizado
-
 ---
 
 ## 12. Datos Estáticos (UBA)
@@ -413,123 +419,64 @@ UBA_DATA = {
 
 ---
 
-## 13. Componentes Pendientes
-
-### Por Implementar
-
-| Componente | Ruta | Estado |
-|------------|------|--------|
-| LoginPage | pages/LoginPage.jsx | Pendiente |
-| MapPage | pages/MapPage.jsx | Pendiente |
-| DashboardPage | pages/DashboardPage.jsx | Pendiente |
-| MainLayout | templates/MainLayout.jsx | Pendiente |
-| Sidebar | organisms/Sidebar/Sidebar.jsx | Pendiente |
-| LayerPanel | organisms/LayerPanel/LayerPanel.jsx | Pendiente |
-| FeaturePopup | molecules/FeaturePopup/FeaturePopup.jsx | Pendiente |
-| Header | organisms/Header/Header.jsx | Pendiente |
-
----
-
-## 14. Comandos de Desarrollo
+## 13. Comandos de Desarrollo
 
 ```bash
-# Navegar al frontend
+# Frontend
 cd alcaldia-geovisor/frontend
-
-# Instalar dependencias
 npm install
-
-# Iniciar servidor de desarrollo (puerto 5173)
-npm run dev
-
-# Build de producción
+npm run dev        # Puerto 5173
 npm run build
 
-# Vista previa del build
-npm run preview
+# Backend
+cd alcaldia-geovisor/backend
+npm install
+npm run dev        # Puerto 3001
+
+# Docker (producción)
+docker-compose up -d
 ```
 
 ---
 
-## 15. Endpoints del Backend (Pendientes)
+## 14. Variables de Entorno (backend/.env)
 
-El backend debe implementar:
+```env
+PORT=3001
+NODE_ENV=development
+JWT_SECRET=your-secret-key
+JWT_EXPIRES_IN=24h
 
-### Autenticación
-- `POST /api/auth/login` - Iniciar sesión
-- `POST /api/auth/logout` - Cerrar sesión
-- `GET /api/auth/me` - Obtener perfil
-- `POST /api/auth/refresh` - Refresh token
-
-### Capas
-- `GET /api/layers` - Listar capas
-- `GET /api/layers/:id` - Detalle de capa
-- `GET /api/layers/secretaria/:id` - Capas por secretaría
-
-### Estadísticas
-- `GET /api/stats/uba/:id` - Stats por UBA
-- `GET /api/stats/uso-suelo` - Conteo uso de suelo
-- `GET /api/stats/general` - Stats generales
-
-### Formularios
-- `POST /api/forms/submit` - Enviar formulario
-- `GET /api/forms/history/:secretariaId` - Historial
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=qgis
+DB_USER=postgres
+DB_PASSWORD=your-password
+```
 
 ---
 
-## 16. Consideraciones de Seguridad
+## 15. Consideraciones de Seguridad
 
 1. **JWT**: Token almacenado en localStorage
 2. **Interceptor 401**: Logout automático si token expira
 3. **PrivateRoute**: Protección de rutas por rol
 4. **hasPermission**: Verificación granular de permisos
-5. **Proxy**: GeoServer y API detrás de proxy para evitar CORS
+5. **Lista blanca de tablas**: El endpoint `/api/geodata` solo permite tablas registradas en `geo_tablas`
+6. **Proxy Nginx**: La API queda detrás de Nginx en producción
 
 ---
 
-## 17. Migración desde Aplicativo Anterior
-
-El proyecto anterior (`aplicativo/appWeb/`) usaba:
-- HTML/CSS/JS puro
-- Leaflet para mapas
-- ~25 capas WMS
-
-La migración a React + OpenLayers permite:
-- Mejor gestión de estado
-- Componentes reutilizables
-- Tipado estático opcional
-- Mejor rendimiento con Virtual DOM
-- OpenLayers: Más control sobre capas y proyecciones
-
----
-
-## 18. Recursos Adicionales
-
-### Documentación Oficial
-- [React](https://react.dev/)
-- [OpenLayers](https://openlayers.org/docs/)
-- [Vite](https://vitejs.dev/)
-- [GeoServer WMS](https://docs.geoserver.org/stable/en/user/services/wms/index.html)
-- [GeoServer WFS](https://docs.geoserver.org/stable/en/user/services/wfs/index.html)
-
-### Capas de GeoServer (Workspace: AlcaldiaGeovisor)
-- pg_predios_urbanos_m
-- pg_barriosurbanos
-- pg_uba1 a pg_uba5, pg_ubac
-- pg_uds_* (uso de suelo)
-- pg_sisben_* (Sisben)
-- pg_zonasverdes
-- pg_Gimnasiosbiosaludables
-
----
-
-## 19. Historial de Cambios
+## 16. Historial de Cambios
 
 | Fecha | Versión | Cambios |
 |-------|---------|---------|
 | 2026-03-20 | 0.1.0 | Inicio del proyecto, arquitectura definida |
-| 2026-03-25 | 0.2.0 | Contextos Auth y Map implementados, capas configuradas |
+| 2026-03-25 | 0.2.0 | Contextos Auth y Map, capas configuradas |
+| 2026-04-05 | 0.3.0 | Migración a PostGIS directo, módulo PDM |
+| 2026-04-06 | 0.4.0 | Eliminación de GeoServer, búsqueda de texto en geodata |
 
 ---
 
-*Documentación generada para contexto de IA - GeoVisor Municipal*
+**Desarrollado para:** Alcaldía de Santander de Quilichao, Cauca, Colombia
+**Responsable técnico:** Juan Pablo Holguín

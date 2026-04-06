@@ -6,14 +6,14 @@ Sistema de información geográfica para las 14 secretarías del municipio de Sa
 
 - **Frontend:** React + OpenLayers + Vite
 - **Backend:** Node.js + Express + JWT
-- **Mapas:** GeoServer (Tomcat)
 - **Base de datos:** PostgreSQL + PostGIS
+- **Datos geoespaciales:** API REST propia (`/api/geodata`)
 
 ## Requisitos
 
 - Node.js 18+
-- GeoServer corriendo en `http://localhost:8080/geoserver`
-- PostgreSQL (opcional, para futura implementación)
+- PostgreSQL con extensión PostGIS
+- Base de datos `qgis` con las tablas geoespaciales del municipio
 
 ## Instalación y Ejecución
 
@@ -31,14 +31,20 @@ cd backend
 npm install
 ```
 
-3. **Iniciar el backend:**
+3. **Configurar variables de entorno:**
+```bash
+cp backend/.env.example backend/.env
+# Editar backend/.env con las credenciales de la BD
+```
+
+4. **Iniciar el backend:**
 ```bash
 cd backend
 npm run dev
 ```
 El backend corre en `http://localhost:3001`
 
-4. **Iniciar el frontend:**
+5. **Iniciar el frontend:**
 ```bash
 cd frontend
 npm run dev
@@ -62,31 +68,31 @@ El frontend corre en `http://localhost:5173`
 alcaldia-geovisor/
 ├── frontend/              # Aplicación React
 │   ├── src/
-│   │   ├── pages/         # Páginas (Login, Mapa, Dashboard)
-│   │   ├── components/    # Componentes reutilizables
+│   │   ├── pages/         # Páginas (Login, Mapa, Dashboard, PDM)
+│   │   ├── organisms/     # Componentes complejos (MapViewer, LayerPanel)
 │   │   ├── context/       # Contextos de React (Auth, Map)
-│   │   ├── organisms/     # Componentes complejos (MapViewer)
-│   │   ├── config/        # Configuraciones
-│   │   └── services/      # Servicios API
+│   │   ├── config/        # Configuraciones (capas, roles, secretarías)
+│   │   └── services/      # Servicios API y estadísticas
 │   └── package.json
 ├── backend/               # API REST Node.js
 │   ├── src/
-│   │   ├── routes/        # Rutas de la API
-│   │   ├── middleware/    # Middlewares (auth, roles)
+│   │   ├── routes/        # Rutas (auth, geodata, layers, stats, pdm)
+│   │   ├── middleware/    # Middlewares (auth)
+│   │   ├── db/            # Pool de conexión y esquemas SQL
 │   │   └── server.js      # Entry point
 │   └── package.json
 ├── nginx/                 # Configuración Nginx (producción)
 └── docker-compose.yml     # Orquestación Docker
 ```
 
-## Capas de GeoServer Disponibles
+## Capas Disponibles
 
 ### Secretaría de Planeación
-- Predios Urbanos (`pg_predios_urbanos_m`)
+- Predios Urbanos
 - Nomenclatura Vial
 - Barrios Urbanos
 - UBAs (1-5, C)
-- Uso de Suelos (Estanco, Discotecas, Droguerías, etc.)
+- Uso de Suelos (Estanco, Discotecas, Droguerías, Ferreterías, IPS, Restaurantes, Servicios)
 
 ### Zonas Verdes
 - Zonas Verdes
@@ -94,8 +100,7 @@ alcaldia-geovisor/
 
 ### Sisben
 - Sisben Barrios
-- Sisben UBA 2
-- Sisben UBA 4
+- Sisben UBA 2 y UBA 4
 
 ### Educación
 - Predios Educativos
@@ -104,39 +109,42 @@ alcaldia-geovisor/
 - Equipo Institucional
 - Iglesias
 
+### Infraestructura
+- Transformadores de Alumbrado Público
+- Luminarias (Tradicionales y LED)
+- Apoyos de Alumbrado Público
+- Rutas de Alumbrado Público
+- Obras de Pavimentación
+
 ## Producción
 
-Para desplegar en producción (IP: `192.168.1.10`):
-
-1. Construir frontend:
 ```bash
-cd frontend
-npm run build
-```
+# Construir frontend
+cd frontend && npm run build
 
-2. Usar Docker Compose:
-```bash
+# Desplegar con Docker
 docker-compose up -d
 ```
 
-## Endpoints de la API
+## Endpoints Principales
 
 | Método | Endpoint | Descripción |
 |--------|----------|-------------|
 | POST | /api/auth/login | Iniciar sesión |
 | GET | /api/auth/me | Obtener perfil |
-| POST | /api/auth/logout | Cerrar sesión |
-| GET | /api/layers | Obtener capas |
+| GET | /api/geodata/:tabla | GeoJSON de una tabla PostGIS |
+| GET | /api/layers | Listar capas disponibles |
 | GET | /api/stats/general | Estadísticas generales |
+| GET | /api/pdm | Metas del Plan de Desarrollo |
 
 ## Hoja de Ruta
 
 - [x] Fase 1: Estructura del proyecto
 - [x] Fase 2: Backend + Autenticación JWT
 - [x] Fase 3: Frontend React + Login + Visor de mapas
-- [ ] Fase 4: Dashboards + estadísticas con Chart.js
-- [ ] Fase 5: Formularios de carga de datos
-- [ ] Fase 6: Apache Superset + mejoras
+- [x] Fase 4: Integración PostGIS directa + módulo PDM
+- [ ] Fase 5: Dashboards + estadísticas con Chart.js
+- [ ] Fase 6: Formularios de carga de datos
 
 ---
 
