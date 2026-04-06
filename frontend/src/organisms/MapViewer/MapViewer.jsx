@@ -62,22 +62,22 @@ const ALUMBRADO_WFS = {
 
 // Orden de prioridad para GetFeatureInfo (igual que el aplicativo original)
 const QUERY_PRIORITY = [
-  // 1. Uso de suelo
-  { id: 'uso_estanco',      props: (p) => `<strong>🏢 Establecimiento:</strong> ${p.nombre_establecimiento || ''}<br>📍 <strong>Dirección:</strong> ${p.direccion || ''}<br>🏷️ <strong>Tipo:</strong> ${p.tipo_establecimiento || ''}` },
-  { id: 'uso_discotecas',   props: (p) => `<strong>🏢 Establecimiento:</strong> ${p.nombre_establecimiento || ''}<br>📍 <strong>Dirección:</strong> ${p.direccion || ''}<br>🏷️ <strong>Tipo:</strong> ${p.tipo_establecimiento || ''}` },
-  { id: 'uso_droguerias',   props: (p) => `<strong>🏢 Establecimiento:</strong> ${p.nombre_establecimiento || ''}<br>📍 <strong>Dirección:</strong> ${p.direccion || ''}<br>🏷️ <strong>Tipo:</strong> ${p.tipo_establecimiento || ''}` },
-  { id: 'uso_ferreterias',  props: (p) => `<strong>🏢 Establecimiento:</strong> ${p.nombre_establecimiento || ''}<br>📍 <strong>Dirección:</strong> ${p.direccion || ''}<br>🏷️ <strong>Tipo:</strong> ${p.tipo_establecimiento || ''}` },
-  { id: 'uso_ips',          props: (p) => `<strong>🏢 Establecimiento:</strong> ${p.nombre_establecimiento || ''}<br>📍 <strong>Dirección:</strong> ${p.direccion || ''}<br>🏷️ <strong>Tipo:</strong> ${p.tipo_establecimiento || ''}` },
-  { id: 'uso_restaurantes', props: (p) => `<strong>🏢 Establecimiento:</strong> ${p.nombre_establecimiento || ''}<br>📍 <strong>Dirección:</strong> ${p.direccion || ''}<br>🏷️ <strong>Tipo:</strong> ${p.tipo_establecimiento || ''}` },
-  { id: 'uso_servicios',    props: (p) => `<strong>🏢 Establecimiento:</strong> ${p.nombre_establecimiento || ''}<br>📍 <strong>Dirección:</strong> ${p.direccion || ''}<br>🏷️ <strong>Tipo:</strong> ${p.tipo_establecimiento || ''}` },
+  // 1. Uso de suelo — columnas estandarizadas en BD
+  { id: 'uso_estanco',      props: (p) => `<strong>🏢 Establecimiento:</strong> ${p.nombre_establecimiento || '—'}<br>📍 <strong>Dirección:</strong> ${p.direccion || '—'}<br>🏷️ <strong>Tipo:</strong> ${p.tipo_establecimiento || '—'}` },
+  { id: 'uso_discotecas',   props: (p) => `<strong>🏢 Establecimiento:</strong> ${p.nombre_establecimiento || '—'}<br>📍 <strong>Dirección:</strong> ${p.direccion || '—'}<br>🏷️ <strong>Tipo:</strong> ${p.tipo_establecimiento || '—'}` },
+  { id: 'uso_droguerias',   props: (p) => `<strong>🏢 Establecimiento:</strong> ${p.nombre_establecimiento || '—'}<br>📍 <strong>Dirección:</strong> ${p.direccion || '—'}<br>🏷️ <strong>Tipo:</strong> ${p.tipo_establecimiento || '—'}` },
+  { id: 'uso_ferreterias',  props: (p) => `<strong>🏢 Establecimiento:</strong> ${p.nombre_establecimiento || '—'}<br>📍 <strong>Dirección:</strong> ${p.direccion || '—'}<br>🏷️ <strong>Tipo:</strong> ${p.tipo_establecimiento || '—'}` },
+  { id: 'uso_ips',          props: (p) => `<strong>🏢 Establecimiento:</strong> ${p.nombre_establecimiento || '—'}<br>📍 <strong>Dirección:</strong> ${p.direccion || '—'}<br>🏷️ <strong>Tipo:</strong> ${p.tipo_establecimiento || '—'}` },
+  { id: 'uso_restaurantes', props: (p) => `<strong>🏢 Establecimiento:</strong> ${p.nombre_establecimiento || '—'}<br>📍 <strong>Dirección:</strong> ${p.direccion || '—'}<br>🏷️ <strong>Tipo:</strong> ${p.tipo_establecimiento || '—'}` },
+  { id: 'uso_servicios',    props: (p) => `<strong>🏢 Establecimiento:</strong> ${p.nombre_establecimiento || '—'}<br>📍 <strong>Dirección:</strong> ${p.direccion || '—'}<br>🏷️ <strong>Tipo:</strong> ${p.tipo_establecimiento || '—'}` },
   // 2. Equipo institucional
-  { id: 'equipo_institucional', props: (p) => `<strong>Descripción:</strong> ${p.Nombre || ''}<br>📍 <strong>Barrio:</strong> ${p.NOMBRE_2 || ''}` },
+  { id: 'equipo_institucional', props: (p) => `<strong>Descripción:</strong> ${p.Nombre || '—'}<br>📍 <strong>Barrio:</strong> ${p.NOMBRE_2 || '—'}` },
   // 3. Predios educativos
-  { id: 'predios_educativos', props: (p) => `<strong>Nombre:</strong> ${p.Nombre || ''}<br><strong>Sede:</strong> ${p.sede || ''}<br><strong>Barrio:</strong> ${p.NOMBRE_2 || ''}<br><strong>Tipo:</strong> ${p.educacion || ''}<br><strong>Estudiantes:</strong> ${p.numero_estudiantes || ''}` },
+  { id: 'predios_educativos', props: (p) => `<strong>Nombre:</strong> ${p.Nombre || '—'}<br><strong>Sede:</strong> ${p.Sede || p.sede || '—'}<br><strong>Barrio:</strong> ${p.NOMBRE_2 || '—'}<br><strong>Tipo:</strong> ${p.educacion || '—'}<br><strong>Estudiantes:</strong> ${p.numero_estudiantes || '—'}` },
   // 4. Iglesias
-  { id: 'iglesias', props: (p) => `<strong>⛪ Nombre:</strong> ${p.NOMBRE || p.Nombre || p.nombre || '—'}<br>🆔 <strong>Código:</strong> ${p.COD || p.cod || '—'}` },
+  { id: 'iglesias', props: (p) => `<strong>⛪ Nombre:</strong> ${p.NOMBRE || '—'}<br>🆔 <strong>Código:</strong> ${p.COD || '—'}` },
   // 5. Zonas verdes
-  { id: 'zonas_verdes', props: (p) => `<strong>Descripción:</strong> ${p.Equipament || ''}<br>📍 <strong>Barrio:</strong> ${p.NOMBRE || ''}` },
+  { id: 'zonas_verdes', props: (p) => `<strong>Descripción:</strong> ${p.Equipament || '—'}<br>📍 <strong>Barrio:</strong> ${p.barrio || p.NOMBRE || '—'}` },
   // 5b. Obras de pavimentación (lote 1)
   { id: 'obras_pavimentacion', props: (p) => {
     const f1 = p['obras2 \uFFFD_1'];
