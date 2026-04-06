@@ -19,8 +19,22 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Configuración de CORS
+// FRONTEND_URL se define en las variables de entorno de Render.
+// Acepta localhost en desarrollo y el dominio de Vercel en producción.
+const allowedOrigins = [
+  'http://localhost:5173',
+  process.env.FRONTEND_URL,
+].filter(Boolean);
+
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: (origin, callback) => {
+    // Permitir llamadas sin origin (Postman, curl, SSR)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    // Permitir cualquier subdominio *.vercel.app (previews de PR)
+    if (/\.vercel\.app$/.test(origin)) return callback(null, true);
+    callback(new Error(`CORS bloqueado: ${origin}`));
+  },
   credentials: true
 }));
 

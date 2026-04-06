@@ -60,8 +60,10 @@ export default function SisbenHeatmapPanel() {
     setSisbenHeatmapVariable,
   } = useContext(MapContext);
 
-  // Solo visible cuando sisben_barrios está activa
-  if (!activeLayers.has('sisben_barrios')) return null;
+  // Visible cuando sisben_barrios o cualquier capa sis_uba* está activa
+  const SIS_UBA_IDS = ['sis_uba1', 'sis_uba2', 'sis_uba3', 'sis_uba4', 'sis_uba5', 'sis_ubac'];
+  const isSisbenActive = activeLayers.has('sisben_barrios') || SIS_UBA_IDS.some(id => activeLayers.has(id));
+  if (!isSisbenActive) return null;
 
   // Detectar campos numéricos disponibles en los features cargados (sin identificadores)
   const numericFields = useMemo(() => {

@@ -4,7 +4,6 @@ import { authMiddleware } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// Mapa de UBA IDs a tablas PostGIS
 const UBA_TABLE_MAP = {
   uba1: 'BARR_UBA_1',
   uba2: 'BARR_UBA2',
@@ -19,111 +18,188 @@ const UBA_LABELS = {
   uba4: 'UBA 4', uba5: 'UBA 5', ubac: 'UBA C'
 };
 
-// Detectar columna de geometría de una tabla
+const NUM_FIELDS = [
+  'poblacion_total', 'poblacion_hombre', 'poblacion_mujer',
+  'cantidad_hogares', 'cantidad_viviendas', 'personas_sisben'
+];
+
+// Detectar columna de geometría
 async function detectGeomColumn(tableName) {
-  const res = await pool.query(
-    `SELECT f_geometry_column FROM geometry_columns
-     WHERE f_table_schema = 'public' AND f_table_name = $1 LIMIT 1`,
-    [tableName]
-  );
-  if (res.rows.length > 0) return res.rows[0].f_geometry_column;
+  try {
+    const res = await pool.query(
+      `SELECT f_geometry_column FROM geometry_columns
+       WHERE f_table_schema = 'public' AND f_table_name = $1 LIMIT 1`,
+      [tableName]
+    );
+    if (res.rows.length > 0) return res.rows[0].f_geometry_column;
+  } catch { /* ignorar */ }
   for (const col of ['geom', 'the_geom', 'geometry', 'shape', 'wkb_geometry']) {
-    try {
-      await pool.query(`SELECT "${col}" FROM "${tableName}" LIMIT 0`);
-      return col;
-    } catch { /* no existe */ }
+    try { await pool.query(`SELECT "${col}" FROM "${tableName}" LIMIT 0`); return col; } catch { }
   }
   return null;
 }
 
-// Buscar la tabla de Sisben barrios (puede tener distintos nombres según la BD)
-async function findSisbenBarriosTable() {
-  const candidates = ['sisben_barrios', 'pg_sisben_barrios', 'sisben_barr', 'sisbenbarrios'];
-  for (const t of candidates) {
-    try {
-      await pool.query(`SELECT 1 FROM "${t}" LIMIT 0`);
-      return t;
-    } catch { /* no existe */ }
+// Detectar columna de nombre de barrio
+async function detectNameColumn(tableName) {
+  for (const col of ['nombre', 'NOMBRE', 'nombre_barrio', 'barrio', 'nom_barrio', 'name', 'NAME']) {
+    try { await pool.query(`SELECT "${col}" FROM "${tableName}" LIMIT 0`); return col; } catch { }
   }
   return null;
 }
 
-// GET /api/sisben/uba/:ubaId
-// Devuelve los barrios de una UBA con su información del Sisben (join espacial)
+// Buscar tabla Sisben barrios (puede tener distintos nombres)
+async function findSisbenTable() {
+  for (const t of ['sisben_barrios', 'pg_sisben_barrios', 'sisbenbarrios', 'sisben_barr']) {
+    try { await pool.query(`SELECT 1 FROM "${t}" LIMIT 0`); return t; } catch { }
+  }
+  return null;
+}
+
+// ── GET /api/sisben/uba/:ubaId ────────────────────────────────────────────────
+// Estadísticas tabulares: parte de sisben_barrios, filtra por nombres de la UBA
 router.get('/uba/:ubaId', authMiddleware, async (req, res) => {
   const { ubaId } = req.params;
-  const ubaTable = UBA_TABLE_MAP[ubaId];
-
-  if (!ubaTable) {
-    return res.status(400).json({ error: `UBA no válida. Valores: ${Object.keys(UBA_TABLE_MAP).join(', ')}` });
-  }
+  const ubaTable  = UBA_TABLE_MAP[ubaId];
+  if (!ubaTable) return res.status(400).json({ error: 'UBA no válida' });
 
   try {
-    // Verificar que la tabla UBA existe
-    try {
-      await pool.query(`SELECT 1 FROM "${ubaTable}" LIMIT 0`);
-    } catch {
-      return res.status(404).json({ error: `Tabla de UBA no encontrada: "${ubaTable}"` });
-    }
-
-    // Buscar tabla de Sisben barrios
-    const sisbenTable = await findSisbenBarriosTable();
+    const sisbenTable = await findSisbenTable();
     if (!sisbenTable) {
-      return res.status(404).json({
-        error: 'No se encontró la tabla de Sisben barrios en la base de datos.',
-        detail: 'Se buscó: sisben_barrios, pg_sisben_barrios, sisben_barr, sisbenbarrios'
-      });
+      return res.json({ ubaId, ubaLabel: UBA_LABELS[ubaId], totalBarrios: 0, barrios: [], totals: {} });
     }
 
-    const [sbGeom, ubaGeom] = await Promise.all([
+    const [sbNameCol, sbGeom, ubaNameCol] = await Promise.all([
+      detectNameColumn(sisbenTable),
       detectGeomColumn(sisbenTable),
-      detectGeomColumn(ubaTable)
+      detectNameColumn(ubaTable)
     ]);
 
-    if (!sbGeom) return res.status(500).json({ error: `No se encontró columna de geometría en ${sisbenTable}` });
-    if (!ubaGeom) return res.status(500).json({ error: `No se encontró columna de geometría en ${ubaTable}` });
+    if (!sbNameCol || !ubaNameCol) {
+      return res.json({ ubaId, ubaLabel: UBA_LABELS[ubaId], totalBarrios: 0, barrios: [], totals: {} });
+    }
 
-    // Join espacial: barrios del Sisben que intersectan con la UBA
-    const query = `
-      SELECT to_jsonb(t) - '${sbGeom}' AS data
-      FROM (
-        SELECT sb.*
-        FROM "${sisbenTable}" sb
-        WHERE ST_Intersects(
-          ST_Transform(sb."${sbGeom}", 4326),
-          ST_Transform(
-            (SELECT ST_Union("${ubaGeom}") FROM "${ubaTable}"),
-            4326
-          )
-        )
-        ORDER BY sb.nombre NULLS LAST
-      ) t
+    // Base: sisben_barrios. Filtro: solo barrios cuyos nombres están en la tabla UBA.
+    const geomExclude = sbGeom ? ` - '${sbGeom}'` : '';
+    const q = `
+      WITH uba_names AS (
+        SELECT DISTINCT LOWER(TRIM("${ubaNameCol}")) AS nombre_lower
+        FROM "${ubaTable}"
+        WHERE TRIM("${ubaNameCol}") != '' AND "${ubaNameCol}" IS NOT NULL
+      )
+      SELECT DISTINCT ON (LOWER(TRIM(sb."${sbNameCol}")))
+        to_jsonb(sb.*) ${geomExclude} AS datos
+      FROM "${sisbenTable}" sb
+      INNER JOIN uba_names u
+        ON LOWER(TRIM(sb."${sbNameCol}")) = u.nombre_lower
+      WHERE TRIM(sb."${sbNameCol}") != '' AND sb."${sbNameCol}" IS NOT NULL
+      ORDER BY LOWER(TRIM(sb."${sbNameCol}"))
     `;
 
-    const result = await pool.query(query);
-    const barrios = result.rows.map(r => r.data);
+    const result = await pool.query(q);
+    const barrios = result.rows.map(r => r.datos ?? {});
 
-    // Totales numéricos
-    const NUM_FIELDS = [
-      'poblacion_total', 'poblacion_hombre', 'poblacion_mujer',
-      'cantidad_hogares', 'cantidad_viviendas', 'personas_sisben'
-    ];
     const totals = NUM_FIELDS.reduce((acc, f) => {
-      acc[f] = barrios.reduce((sum, b) => sum + (Number(b[f]) || 0), 0);
+      acc[f] = barrios.reduce((s, b) => s + (Number(b[f]) || 0), 0);
       return acc;
     }, {});
 
-    res.json({
-      ubaId,
-      ubaLabel: UBA_LABELS[ubaId],
-      sisbenTable,
-      totalBarrios: barrios.length,
-      barrios,
-      totals
-    });
+    res.json({ ubaId, ubaLabel: UBA_LABELS[ubaId], totalBarrios: barrios.length, barrios, totals });
   } catch (err) {
-    console.error(`[Sisben UBA] Error en ${ubaId}:`, err.message);
+    console.error(`[Sisben UBA] ${ubaId}:`, err.message);
     res.status(500).json({ error: 'Error al consultar datos Sisben', detail: err.message });
+  }
+});
+
+// ── GET /api/sisben/uba/:ubaId/geojson ────────────────────────────────────────
+// GeoJSON: geometría de sisben_barrios filtrada por nombres de la UBA
+router.get('/uba/:ubaId/geojson', authMiddleware, async (req, res) => {
+  const { ubaId }  = req.params;
+  const ubaTable   = UBA_TABLE_MAP[ubaId];
+  if (!ubaTable) return res.status(400).json({ error: 'UBA no válida' });
+
+  try {
+    const sisbenTable = await findSisbenTable();
+    if (!sisbenTable) {
+      return res.json({ type: 'FeatureCollection', features: [] });
+    }
+
+    const [sbNameCol, sbGeom, ubaNameCol] = await Promise.all([
+      detectNameColumn(sisbenTable),
+      detectGeomColumn(sisbenTable),
+      detectNameColumn(ubaTable)
+    ]);
+
+    if (!sbNameCol || !ubaNameCol) {
+      return res.json({ type: 'FeatureCollection', features: [] });
+    }
+
+    let query;
+
+    if (sbGeom) {
+      // Caso principal: sisben_barrios tiene geometría propia → usarla directamente
+      query = `
+        WITH uba_names AS (
+          SELECT DISTINCT LOWER(TRIM("${ubaNameCol}")) AS nombre_lower
+          FROM "${ubaTable}"
+          WHERE TRIM("${ubaNameCol}") != '' AND "${ubaNameCol}" IS NOT NULL
+        ),
+        filtered AS (
+          SELECT DISTINCT ON (LOWER(TRIM(sb."${sbNameCol}")))
+            sb.*
+          FROM "${sisbenTable}" sb
+          INNER JOIN uba_names u
+            ON LOWER(TRIM(sb."${sbNameCol}")) = u.nombre_lower
+          WHERE TRIM(sb."${sbNameCol}") != '' AND sb."${sbNameCol}" IS NOT NULL
+          ORDER BY LOWER(TRIM(sb."${sbNameCol}"))
+        )
+        SELECT jsonb_build_object(
+          'type', 'FeatureCollection',
+          'features', COALESCE(jsonb_agg(
+            jsonb_build_object(
+              'type', 'Feature',
+              'geometry', ST_AsGeoJSON(ST_Transform("${sbGeom}", 4326))::jsonb,
+              'properties', to_jsonb(t) - '${sbGeom}'
+            ) ORDER BY t."${sbNameCol}"
+          ), '[]'::jsonb)
+        ) AS geojson
+        FROM filtered t
+      `;
+    } else {
+      // Fallback: sisben_barrios sin geometría → geometría de la tabla UBA + datos sisben
+      const ubaGeom = await detectGeomColumn(ubaTable);
+      if (!ubaGeom) return res.json({ type: 'FeatureCollection', features: [] });
+
+      query = `
+        WITH sisben_filtered AS (
+          SELECT DISTINCT ON (LOWER(TRIM(sb."${sbNameCol}")))
+            to_jsonb(sb.*) AS datos,
+            LOWER(TRIM(sb."${sbNameCol}")) AS nombre_lower
+          FROM "${sisbenTable}" sb
+          WHERE TRIM(sb."${sbNameCol}") != '' AND sb."${sbNameCol}" IS NOT NULL
+          ORDER BY LOWER(TRIM(sb."${sbNameCol}"))
+        )
+        SELECT jsonb_build_object(
+          'type', 'FeatureCollection',
+          'features', COALESCE(jsonb_agg(
+            jsonb_build_object(
+              'type', 'Feature',
+              'geometry', ST_AsGeoJSON(ST_Transform(uba."${ubaGeom}", 4326))::jsonb,
+              'properties', (to_jsonb(uba.*) - '${ubaGeom}') || COALESCE(sf.datos, '{}'::jsonb)
+            ) ORDER BY uba."${ubaNameCol}"
+          ), '[]'::jsonb)
+        ) AS geojson
+        FROM "${ubaTable}" uba
+        INNER JOIN sisben_filtered sf
+          ON LOWER(TRIM(uba."${ubaNameCol}")) = sf.nombre_lower
+        WHERE TRIM(uba."${ubaNameCol}") != '' AND uba."${ubaNameCol}" IS NOT NULL
+      `;
+    }
+
+    const result = await pool.query(query);
+    res.json(result.rows[0]?.geojson ?? { type: 'FeatureCollection', features: [] });
+  } catch (err) {
+    console.error(`[Sisben UBA GeoJSON] ${ubaId}:`, err.message);
+    res.status(500).json({ error: 'Error al generar GeoJSON', detail: err.message });
   }
 });
 

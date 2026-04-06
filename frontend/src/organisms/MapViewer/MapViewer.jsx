@@ -43,6 +43,13 @@ const PASTEL_BARRIOS = [
 // Capas que participan en el conteo de UBAs (no generan popup de prioridad)
 const UBA_IDS = new Set(['uba1', 'uba2', 'uba3', 'uba4', 'uba5', 'ubac']);
 
+// Capas Sisben por UBA (sis_uba*) → ubaId para el endpoint
+const SIS_UBA_IDS = new Set(['sis_uba1', 'sis_uba2', 'sis_uba3', 'sis_uba4', 'sis_uba5', 'sis_ubac']);
+const SIS_UBA_MAP = {
+  sis_uba1: 'uba1', sis_uba2: 'uba2', sis_uba3: 'uba3',
+  sis_uba4: 'uba4', sis_uba5: 'uba5', sis_ubac: 'ubac'
+};
+
 // Capas WFS de alumbrado — popup via forEachFeatureAtPixel
 const ALUMBRADO_WFS = {
   alumbrado_publico:        'Transformador',
@@ -478,6 +485,96 @@ export default function MapViewer() {
     });
   }, []);
 
+  // Crear capa Sisben UBA — geometría UBA + datos Sisben cruzados por nombre
+  const createSisbenUbaLayer = useCallback((layerConfig) => {
+    const ubaId = SIS_UBA_MAP[layerConfig.id];
+    const token = localStorage.getItem('token');
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    const apiUrl = `/api/sisben/uba/${ubaId}/geojson`;
+    console.log(`[GeoData SisbenUBA] "${layerConfig.id}" → ${apiUrl}`);
+
+    const source = new VectorSource();
+
+    fetch(apiUrl, { headers })
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then(geojson => {
+        const features = new GeoJSON().readFeatures(geojson, {
+          dataProjection: 'EPSG:4326',
+          featureProjection: 'EPSG:3857'
+        });
+        features.forEach((f, i) => f.set('_colorIdx', i % PASTEL_BARRIOS.length));
+        source.addFeatures(features);
+        console.log(`[WFS SisbenUBA] "${layerConfig.id}": ${features.length} barrios`);
+        const featuresData = features.map(f => {
+          const p = { ...f.getProperties() };
+          delete p.geometry;
+          return p;
+        });
+        setSisbenBarriosFeatures(featuresData);
+      })
+      .catch(err => console.error(`[WFS SisbenUBA ERROR] "${layerConfig.id}":`, err));
+
+    const styleFunction = (feature) => {
+      const { variable, min, max, isProportion } = sisbenHeatmapRef.current;
+
+      if (variable) {
+        const raw = Number(feature.get(variable));
+        const value = isNaN(raw) ? 0 : raw;
+        const [r, g, b] = getChoroplethColor(value, min, max);
+        let labelVal;
+        if (isProportion) {
+          labelVal = `${Math.round(value * 100)}%`;
+        } else if (!Number.isInteger(value)) {
+          labelVal = value.toLocaleString('es-CO', { maximumFractionDigits: 1 });
+        } else {
+          labelVal = value.toLocaleString('es-CO');
+        }
+        const barrioName = feature.get('nombre') || feature.get('nombre_barrio')
+          || feature.get('NOMBRE') || feature.get('barrio') || feature.get('nom_barrio') || '';
+        const labelText = barrioName ? `${labelVal}\n${barrioName}` : labelVal;
+        return new Style({
+          fill: new Fill({ color: `rgba(${r}, ${g}, ${b}, 0.78)` }),
+          stroke: new Stroke({ color: 'rgba(74, 20, 140, 0.5)', width: 1.2 }),
+          text: new Text({
+            text: labelText,
+            font: 'bold 11px sans-serif',
+            fill: new Fill({ color: '#1a0030' }),
+            stroke: new Stroke({ color: 'rgba(255,255,255,0.9)', width: 3 }),
+            overflow: true,
+            placement: 'point'
+          })
+        });
+      }
+
+      const [r, g, b] = PASTEL_BARRIOS[feature.get('_colorIdx') ?? 0];
+      const nombre = feature.get('nombre') || feature.get('nombre_barrio')
+        || feature.get('NOMBRE') || feature.get('barrio') || feature.get('nom_barrio') || '';
+      return new Style({
+        fill: new Fill({ color: `rgba(${r}, ${g}, ${b}, 0.65)` }),
+        stroke: new Stroke({ color: `rgba(${Math.max(r-40,0)}, ${Math.max(g-40,0)}, ${Math.max(b-40,0)}, 0.9)`, width: 1.8 }),
+        text: new Text({
+          text: nombre,
+          font: 'bold 11px sans-serif',
+          fill: new Fill({ color: '#111111' }),
+          stroke: new Stroke({ color: 'rgba(255,255,255,0.95)', width: 3 }),
+          overflow: true,
+          placement: 'point'
+        })
+      });
+    };
+
+    return new VectorLayer({
+      source,
+      style: styleFunction,
+      properties: { name: layerConfig.id },
+      visible: true,
+      zIndex: 5
+    });
+  }, [setSisbenBarriosFeatures]);
+
   // Inicializar mapa
   useEffect(() => {
     if (mapRef.current) return;
@@ -708,6 +805,8 @@ export default function MapViewer() {
             ? createSisbenBarriosLayer(layerConfig)
             : UBA_IDS.has(layerConfig.id)
             ? createUbaLayer(layerConfig)
+            : SIS_UBA_IDS.has(layerConfig.id)
+            ? createSisbenUbaLayer(layerConfig)
             : layerConfig.type === 'wfs'
               ? createWfsLayer(layerConfig)
               : createWmsLayer(layerConfig);
@@ -720,7 +819,7 @@ export default function MapViewer() {
     currentLayers.forEach(layerId => {
       if (!newActive.has(layerId)) {
         // Limpiar estado sisben al desactivar la capa
-        if (layerId === 'sisben_barrios') {
+        if (layerId === 'sisben_barrios' || SIS_UBA_IDS.has(layerId)) {
           setSelectedSisbenBarrio(null);
           setSisbenBarriosFeatures(null);
           setSisbenHeatmapVariable(null);
@@ -734,13 +833,10 @@ export default function MapViewer() {
       }
     });
   }, [activeLayers, createWmsLayer, createWfsLayer, createBarriosLayer, createUbaLayer, createSisbenBarriosLayer,
-      setSelectedSisbenBarrio, setSisbenBarriosFeatures, setSisbenHeatmapVariable]);
+      createSisbenUbaLayer, setSelectedSisbenBarrio, setSisbenBarriosFeatures, setSisbenHeatmapVariable]);
 
-  // Actualizar estilo coroplético de sisben_barrios cuando cambia la variable o los datos
+  // Actualizar estilo coroplético de capas Sisben cuando cambia la variable o los datos
   useEffect(() => {
-    const layer = layersRef.current.get('sisben_barrios');
-    if (!layer) return;
-
     if (sisbenHeatmapVariable && sisbenBarriosFeatures?.length) {
       const values = sisbenBarriosFeatures
         .map(p => Number(p[sisbenHeatmapVariable]))
@@ -755,7 +851,13 @@ export default function MapViewer() {
       sisbenHeatmapRef.current = { variable: null, min: 0, max: 1, isProportion: false };
     }
 
-    layer.changed();
+    // Refrescar estilos en sisben_barrios y en cualquier sis_uba* activa
+    const barLayer = layersRef.current.get('sisben_barrios');
+    if (barLayer) barLayer.changed();
+    SIS_UBA_IDS.forEach(id => {
+      const l = layersRef.current.get(id);
+      if (l) l.changed();
+    });
   }, [sisbenHeatmapVariable, sisbenBarriosFeatures]);
 
   // Gestionar interacciones de herramientas SIG
