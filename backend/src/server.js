@@ -10,6 +10,7 @@ import geodataRoutes from './routes/geodata.js';
 import capasRoutes from './routes/capas.js';
 import uploadsRoutes from './routes/uploads.js';
 import pdmRoutes from './routes/pdm.js';
+import sisbenRoutes from './routes/sisben.js';
 
 // Cargar variables de entorno
 dotenv.config();
@@ -60,6 +61,7 @@ app.use('/api/geodata', geodataRoutes);
 app.use('/api/capas', capasRoutes);
 app.use('/api/uploads', uploadsRoutes);
 app.use('/api/pdm', pdmRoutes);
+app.use('/api/sisben', sisbenRoutes);
 
 // Ruta de health check
 app.get('/api/health', (req, res) => {

@@ -1,0 +1,215 @@
+.suba-panel {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 310px;
+  max-height: calc(100vh - 115px);
+  overflow-y: auto;
+  background: var(--white, #fff);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.18);
+  border: 1px solid #e0e0e0;
+  z-index: 107;
+  font-family: 'Nunito', sans-serif;
+  animation: subaSlideIn .22s ease;
+}
+
+@keyframes subaSlideIn {
+  from { opacity: 0; transform: translateX(14px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ── Header ── */
+.suba-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px 11px;
+  border-radius: 12px 12px 0 0;
+  color: #fff;
+}
+
+.suba-panel__header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.suba-panel__icon {
+  font-size: 22px;
+  line-height: 1;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,.25));
+}
+
+.suba-panel__subtitle {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  opacity: .8;
+  line-height: 1;
+  margin-bottom: 2px;
+}
+
+.suba-panel__title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.suba-panel__close {
+  background: rgba(255,255,255,.2);
+  border: none;
+  color: #fff;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s;
+  flex-shrink: 0;
+}
+.suba-panel__close:hover { background: rgba(255,255,255,.35); }
+
+/* ── Body ── */
+.suba-panel__body {
+  padding: 4px 0;
+}
+
+.suba-panel__msg {
+  font-size: 13px;
+  color: #666;
+  text-align: center;
+  padding: 14px 16px;
+}
+.suba-panel__msg--error { color: #c62828; }
+
+/* ── Section ── */
+.suba-panel__section {
+  padding: 10px 14px;
+  border-bottom: 1px solid #f0f0f0;
+}
+.suba-panel__section:last-child { border-bottom: none; }
+
+.suba-panel__section-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+/* ── Row ── */
+.suba-panel__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  padding: 3px 0;
+}
+
+.suba-panel__label {
+  font-size: 12.5px;
+  color: #555;
+  font-weight: 500;
+  flex: 1;
+  min-width: 0;
+}
+
+.suba-panel__value {
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  text-align: right;
+  color: #222;
+}
+
+/* ── Barrio item ── */
+.suba-panel__barrio {
+  border-bottom: 1px solid #f5f5f5;
+  margin: 0 -2px;
+}
+.suba-panel__barrio:last-child { border-bottom: none; }
+
+.suba-panel__barrio-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: none;
+  border: none;
+  padding: 7px 2px;
+  cursor: pointer;
+  text-align: left;
+  border-radius: 6px;
+  transition: background .12s;
+}
+.suba-panel__barrio-header:hover { background: #f5f5f5; }
+.suba-panel__barrio-header--open { background: #fafafa; }
+
+.suba-panel__barrio-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.suba-panel__barrio-nombre {
+  flex: 1;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #222;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.suba-panel__barrio-pob {
+  font-size: 11.5px;
+  color: #666;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.suba-panel__barrio-chevron {
+  font-size: 9px;
+  color: #999;
+  flex-shrink: 0;
+}
+
+.suba-panel__barrio-detalle {
+  padding: 4px 0 6px 15px;
+  background: #fafafa;
+  border-radius: 0 0 6px 6px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .suba-panel {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-height: 60vh;
+    border-radius: 16px 16px 0 0;
+    z-index: 130;
+    animation: subaSlideUp .25s ease;
+  }
+  @keyframes subaSlideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .suba-panel__header { border-radius: 16px 16px 0 0; }
+}

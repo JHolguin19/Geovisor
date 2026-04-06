@@ -95,7 +95,20 @@ const LAYER_GROUPS = [
       { id: 'sisben_uba2',    label: 'Sisben UBA 2',  dot: '#AB47BC' },
       { id: 'sisben_uba4',    label: 'Sisben UBA 4',  dot: '#CE93D8' },
     ],
-    subcategories: []
+    subcategories: [
+      {
+        label: 'Análisis por UBA',
+        accent: '#6A1B9A',
+        layers: [
+          { id: 'sis_uba1', label: 'UBA 1 — Sisben', dot: '#E53935' },
+          { id: 'sis_uba2', label: 'UBA 2 — Sisben', dot: '#43A047' },
+          { id: 'sis_uba3', label: 'UBA 3 — Sisben', dot: '#1E88E5' },
+          { id: 'sis_uba4', label: 'UBA 4 — Sisben', dot: '#FB8C00' },
+          { id: 'sis_uba5', label: 'UBA 5 — Sisben', dot: '#8E24AA' },
+          { id: 'sis_ubac', label: 'UBA C — Sisben', dot: '#00ACC1' },
+        ]
+      }
+    ]
   },
 
   {

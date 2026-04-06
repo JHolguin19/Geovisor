@@ -295,6 +295,39 @@ export const LAYERS_BY_SECRETARIA = {
         color: '#CE93D8',
         visible: false,
         queryable: true
+      }),
+      // ── Análisis Sisben por UBA ──────────────────────────────────────────
+      // Muestran geometría de barrios de cada UBA y activan el panel de
+      // estadísticas Sisben cruzado con los datos de cada unidad barrial
+      createWfsLayer({
+        id: 'sis_uba1', name: 'UBA 1 — Sisben', tableName: 'BARR_UBA_1',
+        color: '#E53935', visible: false, queryable: false,
+        group: 'sisben_ubas', geometryType: 'polygon'
+      }),
+      createWfsLayer({
+        id: 'sis_uba2', name: 'UBA 2 — Sisben', tableName: 'BARR_UBA2',
+        color: '#43A047', visible: false, queryable: false,
+        group: 'sisben_ubas', geometryType: 'polygon'
+      }),
+      createWfsLayer({
+        id: 'sis_uba3', name: 'UBA 3 — Sisben', tableName: 'BARR_UBA3',
+        color: '#1E88E5', visible: false, queryable: false,
+        group: 'sisben_ubas', geometryType: 'polygon'
+      }),
+      createWfsLayer({
+        id: 'sis_uba4', name: 'UBA 4 — Sisben', tableName: 'BARR_UBA4',
+        color: '#FB8C00', visible: false, queryable: false,
+        group: 'sisben_ubas', geometryType: 'polygon'
+      }),
+      createWfsLayer({
+        id: 'sis_uba5', name: 'UBA 5 — Sisben', tableName: 'BARR_UBA5',
+        color: '#8E24AA', visible: false, queryable: false,
+        group: 'sisben_ubas', geometryType: 'polygon'
+      }),
+      createWfsLayer({
+        id: 'sis_ubac', name: 'UBA C — Sisben', tableName: 'BARRIOS_UBA_C',
+        color: '#00ACC1', visible: false, queryable: false,
+        group: 'sisben_ubas', geometryType: 'polygon'
       })
     ]
   },

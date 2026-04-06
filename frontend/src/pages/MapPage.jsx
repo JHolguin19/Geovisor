@@ -9,6 +9,7 @@ import SearchPanel from '../organisms/SearchPanel/SearchPanel';
 import SelectionResults from '../organisms/SelectionResults/SelectionResults';
 import SisbenPanel from '../organisms/SisbenPanel';
 import SisbenHeatmapPanel from '../organisms/SisbenHeatmapPanel';
+import SisbenUbaPanel from '../organisms/SisbenUbaPanel';
 import MapContext from '../context/MapContext';
 import { getSecretariaById } from '../config/secretarias';
 import './MapPage.css';
@@ -50,6 +51,7 @@ function MapPageInner() {
           <StatsPanel />
           <SisbenPanel />
           <SisbenHeatmapPanel />
+          <SisbenUbaPanel />
           <SelectionResults results={selectionResults} onClose={handleCloseSelection} />
         </main>
       </div>
