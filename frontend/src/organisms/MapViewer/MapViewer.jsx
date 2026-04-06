@@ -17,7 +17,7 @@ import Draw from 'ol/interaction/Draw';
 import { getLength, getArea } from 'ol/sphere';
 import { circular } from 'ol/geom/Polygon';
 import MapContext from '../../context/MapContext';
-import { GEOSERVER_CONFIG } from '../../config/geoserver';
+import MAP_CONFIG from '../../config/mapConfig';
 import { getGeoJsonApiUrl, getLayerById } from '../../config/layers';
 import './MapViewer.css';
 
@@ -515,8 +515,8 @@ export default function MapViewer() {
       layers: [basemapLayer, labelsLayer],
       overlays: [overlay],
       view: new View({
-        center: fromLonLat(GEOSERVER_CONFIG.defaultCenter),
-        zoom: GEOSERVER_CONFIG.defaultZoom,
+        center: fromLonLat(MAP_CONFIG.defaultCenter),
+        zoom: MAP_CONFIG.defaultZoom,
         projection: 'EPSG:3857'
       }),
       controls: []

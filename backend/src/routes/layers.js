@@ -8,50 +8,50 @@ const LAYERS_CONFIG = {
   planeacion: {
     name: 'Secretaría de Planeación',
     layers: [
-      { id: 'predios_urban', name: 'Predios Urbanos', geoserverLayer: 'pg_predios_urbanos_m' },
-      { id: 'nomenclatura_vial', name: 'Nomenclatura Vial', geoserverLayer: 'SANTANDER IGAC 2025 — U_NOMENCLATURA_VIAL_2025' },
-      { id: 'barrios_urban', name: 'Barrios Urbanos', geoserverLayer: 'pg_barriosurbanos' },
-      { id: 'uba1', name: 'UBA 1', geoserverLayer: 'pg_uba1' },
-      { id: 'uba2', name: 'UBA 2', geoserverLayer: 'pg_uba2' },
-      { id: 'uba3', name: 'UBA 3', geoserverLayer: 'pg_uba3' },
-      { id: 'uba4', name: 'UBA 4', geoserverLayer: 'pg_uba4' },
-      { id: 'uba5', name: 'UBA 5', geoserverLayer: 'pg_uba5' },
-      { id: 'ubac', name: 'UBA C', geoserverLayer: 'pg_ubac' },
-      { id: 'uso_estanco', name: 'Estanco', geoserverLayer: 'pg_uds_bar_estanco' },
-      { id: 'uso_discotecas', name: 'Discotecas', geoserverLayer: 'pg_uds_discos' },
-      { id: 'uso_droguerias', name: 'Droguerías', geoserverLayer: 'pg_uds_droguerias' },
-      { id: 'uso_ferreterias', name: 'Ferreterías', geoserverLayer: 'pg_uds_ferreterias' },
-      { id: 'uso_ips', name: 'IPS', geoserverLayer: 'pg_uds_ips' },
-      { id: 'uso_restaurantes', name: 'Restaurantes', geoserverLayer: 'pg_uds_restaurantes' },
-      { id: 'uso_servicios', name: 'Servicios', geoserverLayer: 'pg_uds_otros' }
+      { id: 'predios_urban', name: 'Predios Urbanos', tableName: 'pg_predios_urbanos_m' },
+      { id: 'nomenclatura_vial', name: 'Nomenclatura Vial', tableName: 'SANTANDER IGAC 2025 — U_NOMENCLATURA_VIAL_2025' },
+      { id: 'barrios_urban', name: 'Barrios Urbanos', tableName: 'pg_barriosurbanos' },
+      { id: 'uba1', name: 'UBA 1', tableName: 'pg_uba1' },
+      { id: 'uba2', name: 'UBA 2', tableName: 'pg_uba2' },
+      { id: 'uba3', name: 'UBA 3', tableName: 'pg_uba3' },
+      { id: 'uba4', name: 'UBA 4', tableName: 'pg_uba4' },
+      { id: 'uba5', name: 'UBA 5', tableName: 'pg_uba5' },
+      { id: 'ubac', name: 'UBA C', tableName: 'pg_ubac' },
+      { id: 'uso_estanco', name: 'Estanco', tableName: 'pg_uds_bar_estanco' },
+      { id: 'uso_discotecas', name: 'Discotecas', tableName: 'pg_uds_discos' },
+      { id: 'uso_droguerias', name: 'Droguerías', tableName: 'pg_uds_droguerias' },
+      { id: 'uso_ferreterias', name: 'Ferreterías', tableName: 'pg_uds_ferreterias' },
+      { id: 'uso_ips', name: 'IPS', tableName: 'pg_uds_ips' },
+      { id: 'uso_restaurantes', name: 'Restaurantes', tableName: 'pg_uds_restaurantes' },
+      { id: 'uso_servicios', name: 'Servicios', tableName: 'pg_uds_otros' }
     ]
   },
   zonas_verdes: {
     name: 'Zonas Verdes',
     layers: [
-      { id: 'zonas_verdes', name: 'Zonas Verdes', geoserverLayer: 'pg_zonasverdes' },
-      { id: 'gimnasios_biosaludables', name: 'Gimnasios Bio Saludables', geoserverLayer: 'pg_Gimnasiosbiosaludables' }
+      { id: 'zonas_verdes', name: 'Zonas Verdes', tableName: 'pg_zonasverdes' },
+      { id: 'gimnasios_biosaludables', name: 'Gimnasios Bio Saludables', tableName: 'pg_Gimnasiosbiosaludables' }
     ]
   },
   sisben: {
     name: 'Información Sisben',
     layers: [
-      { id: 'sisben_barrios', name: 'Sisben Barrios', geoserverLayer: 'pg_sisben_barrios' },
-      { id: 'sisben_uba2', name: 'Sisben UBA 2', geoserverLayer: 'pg_uba2_datospoblaciones' },
-      { id: 'sisben_uba4', name: 'Sisben UBA 4', geoserverLayer: 'sisben_uba4' }
+      { id: 'sisben_barrios', name: 'Sisben Barrios', tableName: 'pg_sisben_barrios' },
+      { id: 'sisben_uba2', name: 'Sisben UBA 2', tableName: 'pg_uba2_datospoblaciones' },
+      { id: 'sisben_uba4', name: 'Sisben UBA 4', tableName: 'sisben_uba4' }
     ]
   },
   educacion: {
     name: 'Secretaría de Educación',
     layers: [
-      { id: 'predios_educativos', name: 'Predios Educativos', geoserverLayer: 'pg_predios_educativos' }
+      { id: 'predios_educativos', name: 'Predios Educativos', tableName: 'pg_predios_educativos' }
     ]
   },
   equipo_institucional: {
     name: 'Equipo Institucional',
     layers: [
-      { id: 'equipo_institucional', name: 'Equipo Institucional', geoserverLayer: 'pg_predios_equipo_institucional' },
-      { id: 'iglesias', name: 'Iglesias', geoserverLayer: 'pg_predios_iglesias' }
+      { id: 'equipo_institucional', name: 'Equipo Institucional', tableName: 'pg_predios_equipo_institucional' },
+      { id: 'iglesias', name: 'Iglesias', tableName: 'pg_predios_iglesias' }
     ]
   }
 };

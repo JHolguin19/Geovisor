@@ -1,7 +1,6 @@
 import { useState, useContext, useCallback } from 'react';
 import GeoJSONFormat from 'ol/format/GeoJSON';
 import MapContext from '../../context/MapContext';
-import { GEOSERVER_CONFIG } from '../../config/geoserver';
 import './SearchPanel.css';
 
 function CloseIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>; }
@@ -21,18 +20,15 @@ export default function SearchPanel({ onClose }) {
     setSearched(false);
     try {
       const isPredi = type === 'predio';
-      const layerName = isPredi ? 'pg_predios_urbanos_m' : 'pg_barriosurbanos';
-      const cql = isPredi
-        ? `matricula_inmobiliaria ILIKE '%${query}%' OR direccion ILIKE '%${query}%' OR predio ILIKE '%${query}%'`
-        : `nombre ILIKE '%${query}%'`;
-      const params = new URLSearchParams({
-        service: 'WFS', version: '1.0.0', request: 'GetFeature',
-        typeName: `${GEOSERVER_CONFIG.workspace}:${layerName}`,
-        outputFormat: 'application/json',
-        CQL_FILTER: cql,
-        maxFeatures: 20
+      const tableName = isPredi ? 'predios_2025_m' : 'barriosurbanos';
+      const searchFields = isPredi
+        ? 'matriculainmobiliaria,direccion'
+        : 'nombre';
+      const token = localStorage.getItem('token');
+      const params = new URLSearchParams({ q: query.trim(), searchFields, limit: 20 });
+      const resp = await fetch(`/api/geodata/${tableName}?${params}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
-      const resp = await fetch(`${GEOSERVER_CONFIG.baseUrl}/${GEOSERVER_CONFIG.workspace}/ows?${params}`);
       const data = await resp.json();
       setResults(data.features || []);
     } catch (e) {
@@ -54,12 +50,12 @@ export default function SearchPanel({ onClose }) {
 
   const getLabel = (feat) => {
     const p = feat.properties || {};
-    if (type === 'predio') return `${p.direccion || p.predio || p.matricula_inmobiliaria || 'Sin dirección'}`;
+    if (type === 'predio') return `${p.direccion || p.matriculainmobiliaria || 'Sin dirección'}`;
     return p.nombre || '—';
   };
   const getSub = (feat) => {
     const p = feat.properties || {};
-    if (type === 'predio') return p.matricula_inmobiliaria || '';
+    if (type === 'predio') return p.matriculainmobiliaria || '';
     return '';
   };
 
@@ -78,7 +74,7 @@ export default function SearchPanel({ onClose }) {
       <div className="srch-input-row">
         <input
           className="srch-input"
-          placeholder={type === 'predio' ? 'Matrícula, dirección o número...' : 'Nombre del barrio...'}
+          placeholder={type === 'predio' ? 'Matrícula o dirección...' : 'Nombre del barrio...'}
           value={query}
           onChange={e => setQuery(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && search()}

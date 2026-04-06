@@ -17,7 +17,7 @@ export const ROLES = {
   },
   editor_geo: {
     name: 'Editor Geo',
-    description: 'Gestión de GeoServer',
+    description: 'Gestión de capas geoespaciales',
     permissions: ['read', 'write', 'delete', 'manage_layers', 'view_all']
   }
 };

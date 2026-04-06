@@ -12,7 +12,7 @@ const makePavimentacionSLD = (layerName) => `<?xml version="1.0" encoding="UTF-8
   xmlns:xlink="http://www.w3.org/1999/xlink"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <NamedLayer>
-    <Name>AlcaldiaGeovisor:${layerName}</Name>
+    <Name>${layerName}</Name>
     <UserStyle>
       <FeatureTypeStyle>
         <Rule>
@@ -43,7 +43,7 @@ const createVectorLayer = (config) => ({
   ...config
 });
 
-// Alias de compatibilidad — ambos crean capas vectoriales desde PostGIS
+// Alias internos — todas las capas son vectoriales desde PostGIS
 const createWmsLayer = createVectorLayer;
 const createWfsLayer = (config) => ({
   type: 'geojson',
@@ -66,7 +66,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWmsLayer({
         id: 'predios_urbanos',
         name: 'Predios Urbanos',
-        geoserverLayer: 'predios_2025_m',
+        tableName: 'predios_2025_m',
         color: '#E53935',
         cols: 'matriculainmobiliaria,codigo,direccion,areaterreno_m2,areaconstruida_m2,avaluo,destinoeconomico',
         visible: true,
@@ -86,7 +86,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWmsLayer({
         id: 'nomenclatura_vial',
         name: 'Nomenclatura Vial',
-        geoserverLayer: 'SANTANDER IGAC 2025 — U_NOMENCLATURA_VIAL_2025',
+        tableName: 'SANTANDER IGAC 2025 — U_NOMENCLATURA_VIAL_2025',
         visible: true,
         queryable: true,
         description: 'Nomenclatura vial del municipio'
@@ -94,7 +94,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWfsLayer({
         id: 'barrios_urbanos',
         name: 'Barrios Urbanos',
-        geoserverLayer: 'barriosurbanos',
+        tableName: 'barriosurbanos',
         visible: false,
         queryable: true,
         description: 'Barrios del área urbana',
@@ -104,7 +104,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWfsLayer({
         id: 'uba1',
         name: 'UBA 1',
-        geoserverLayer: 'BARR_UBA_1',
+        tableName: 'BARR_UBA_1',
         visible: false,
         queryable: true,
         group: 'ubas',
@@ -114,7 +114,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWfsLayer({
         id: 'uba2',
         name: 'UBA 2',
-        geoserverLayer: 'BARR_UBA2',
+        tableName: 'BARR_UBA2',
         visible: false,
         queryable: true,
         group: 'ubas',
@@ -123,7 +123,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWfsLayer({
         id: 'uba3',
         name: 'UBA 3',
-        geoserverLayer: 'BARR_UBA3',
+        tableName: 'BARR_UBA3',
         visible: false,
         queryable: true,
         group: 'ubas',
@@ -132,7 +132,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWfsLayer({
         id: 'uba4',
         name: 'UBA 4',
-        geoserverLayer: 'BARR_UBA4',
+        tableName: 'BARR_UBA4',
         visible: false,
         queryable: true,
         group: 'ubas',
@@ -141,7 +141,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWfsLayer({
         id: 'uba5',
         name: 'UBA 5',
-        geoserverLayer: 'BARR_UBA5',
+        tableName: 'BARR_UBA5',
         visible: false,
         queryable: true,
         group: 'ubas',
@@ -150,7 +150,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWfsLayer({
         id: 'ubac',
         name: 'UBA C',
-        geoserverLayer: 'BARRIOS_UBA_C',
+        tableName: 'BARRIOS_UBA_C',
         visible: false,
         queryable: true,
         group: 'ubas',
@@ -161,7 +161,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWmsLayer({
         id: 'uso_estanco',
         name: 'Estanco',
-        geoserverLayer: 'uds_barestanco',
+        tableName: 'uds_barestanco',
         style: 'pg_uds_estancos',
         visible: false,
         queryable: true,
@@ -171,7 +171,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWmsLayer({
         id: 'uso_discotecas',
         name: 'Discotecas',
-        geoserverLayer: 'uso_de_suelos_discotecas',
+        tableName: 'uso_de_suelos_discotecas',
         style: 'pg_uds_discotecas',
         visible: false,
         queryable: true,
@@ -181,7 +181,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWmsLayer({
         id: 'uso_droguerias',
         name: 'Droguerías',
-        geoserverLayer: 'uds2_droguerias',
+        tableName: 'uds2_droguerias',
         style: 'pg_uds_drogueria',
         visible: false,
         queryable: true,
@@ -191,7 +191,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWmsLayer({
         id: 'uso_ferreterias',
         name: 'Ferreterías',
-        geoserverLayer: 'uds_ferreterias',
+        tableName: 'uds_ferreterias',
         style: 'pg_uds_ferreteria',
         visible: false,
         queryable: true,
@@ -201,7 +201,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWmsLayer({
         id: 'uso_ips',
         name: 'IPS',
-        geoserverLayer: 'uds_ips',
+        tableName: 'uds_ips',
         style: 'pg_uds_ips',
         visible: false,
         queryable: true,
@@ -211,7 +211,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWmsLayer({
         id: 'uso_restaurantes',
         name: 'Restaurantes',
-        geoserverLayer: 'uds_restaurantes',
+        tableName: 'uds_restaurantes',
         style: 'pg_uds_restaurante',
         visible: false,
         queryable: true,
@@ -221,7 +221,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWmsLayer({
         id: 'uso_servicios',
         name: 'Servicios',
-        geoserverLayer: 'uds_otros',
+        tableName: 'uds_otros',
         style: 'pg_uds_otros',
         visible: false,
         queryable: true,
@@ -239,7 +239,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWmsLayer({
         id: 'zonas_verdes',
         name: 'Zonas Verdes',
-        geoserverLayer: 'zonasverdes',
+        tableName: 'zonasverdes',
         color: '#006400',
         visible: false,
         queryable: true,
@@ -249,7 +249,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWmsLayer({
         id: 'gimnasios_biosaludables',
         name: 'Gimnasios Biosaludables',
-        geoserverLayer: 'Gimnasiosbiosaludables',
+        tableName: 'Gimnasiosbiosaludables',
         color: '#22C55E',
         visible: false,
         queryable: true,
@@ -267,7 +267,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWfsLayer({
         id: 'sisben_barrios',
         name: 'Sisben Barrios',
-        geoserverLayer: 'sisben_barrios',
+        tableName: 'sisben_barrios',
         visible: false,
         queryable: true,
         geometryType: 'polygon',
@@ -276,7 +276,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWmsLayer({
         id: 'sisben_uba2',
         name: 'Sisben UBA 2',
-        geoserverLayer: 'uba2_datospoblaciones',
+        tableName: 'uba2_datospoblaciones',
         color: '#AB47BC',
         visible: false,
         queryable: true,
@@ -291,7 +291,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWmsLayer({
         id: 'sisben_uba4',
         name: 'Sisben UBA 4',
-        geoserverLayer: 'sisben_uba4',
+        tableName: 'sisben_uba4',
         color: '#CE93D8',
         visible: false,
         queryable: true
@@ -307,7 +307,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWmsLayer({
         id: 'predios_educativos',
         name: 'Predios Educativos',
-        geoserverLayer: 'predios_educativos',
+        tableName: 'predios_educativos',
         color: '#1E90FF',
         visible: false,
         queryable: true,
@@ -333,7 +333,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWmsLayer({
         id: 'equipo_institucional',
         name: 'Equipo Institucional',
-        geoserverLayer: 'predios_equipo_institucional',
+        tableName: 'predios_equipo_institucional',
         color: '#3FEBBA',
         visible: false,
         queryable: true,
@@ -343,7 +343,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWmsLayer({
         id: 'iglesias',
         name: 'Iglesias',
-        geoserverLayer: 'predios_iglesias',
+        tableName: 'predios_iglesias',
         color: '#FFD700',
         visible: false,
         queryable: true,
@@ -360,7 +360,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWfsLayer({
         id: 'alumbrado_publico',
         name: 'Transformadores',
-        geoserverLayer: 'subestaciones_alumbradopublico',
+        tableName: 'subestaciones_alumbradopublico',
         visible: false,
         queryable: true,
         description: 'Transformadores de alumbrado público',
@@ -370,7 +370,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWfsLayer({
         id: 'luminarias_tradicionales',
         name: 'Luminarias Tradicionales',
-        geoserverLayer: 'luminariastradicionales_alumbradopublico',
+        tableName: 'luminariastradicionales_alumbradopublico',
         visible: false,
         queryable: true,
         description: 'Luminarias tradicionales de alumbrado público',
@@ -380,7 +380,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWfsLayer({
         id: 'apoyos_alumbrado_publico',
         name: 'Apoyos Alumbrado Público',
-        geoserverLayer: 'apoyos_alumbradopublico',
+        tableName: 'apoyos_alumbradopublico',
         visible: false,
         queryable: true,
         description: 'Apoyos (postes) de alumbrado público',
@@ -390,7 +390,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWfsLayer({
         id: 'luminarias_led',
         name: 'Luminarias LED',
-        geoserverLayer: 'luminariasled_alumbradopublico',
+        tableName: 'luminariasled_alumbradopublico',
         visible: false,
         queryable: true,
         description: 'Luminarias LED de alumbrado público',
@@ -400,7 +400,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWfsLayer({
         id: 'rutas_alumbrado_publico',
         name: 'Rutas Alumbrado Público',
-        geoserverLayer: 'rutas_alumbradopublico',
+        tableName: 'rutas_alumbradopublico',
         visible: false,
         queryable: true,
         description: 'Rutas eléctricas de alumbrado público',
@@ -410,7 +410,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWmsLayer({
         id: 'obras_pavimentacion',
         name: 'Obras de Pavimentación',
-        geoserverLayer: 'obraspavimentacion_infraestructura',
+        tableName: 'obraspavimentacion_infraestructura',
         sldBody: makePavimentacionSLD('obraspavimentacion_infraestructura'),
         visible: false,
         queryable: true,
@@ -428,7 +428,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWmsLayer({
         id: 'pavimentacion2',
         name: 'Pavimentación 2 - Infraestructura',
-        geoserverLayer: 'pavimentacion2',
+        tableName: 'pavimentacion2',
         sldBody: makePavimentacionSLD('pavimentacion2'),
         visible: false,
         queryable: true,
@@ -549,16 +549,12 @@ export function getLayersByGroup(groupName) {
 
 // Obtener URL de la API PostGIS para una capa
 export function getGeoJsonApiUrl(layer) {
-  const base = `/api/geodata/${encodeURIComponent(layer.geoserverLayer)}`;
+  const base = `/api/geodata/${encodeURIComponent(layer.tableName)}`;
   const params = new URLSearchParams();
   if (layer.simplify) params.set('simplify', layer.simplify);
   if (layer.cols) params.set('cols', layer.cols);
   const qs = params.toString();
   return qs ? `${base}?${qs}` : base;
 }
-
-// Alias de compatibilidad
-export const getWfsUrl = getGeoJsonApiUrl;
-export const getWmsUrl = getGeoJsonApiUrl;
 
 export default LAYERS_BY_SECRETARIA;

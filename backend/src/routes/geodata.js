@@ -61,8 +61,31 @@ router.get('/:tableName', authMiddleware, async (req, res) => {
     let query;
     let params = [];
 
-    const { bbox } = req.query;
-    if (bbox) {
+    // Búsqueda por texto en campos específicos
+    const { bbox, q, searchFields, limit: limitParam } = req.query;
+    if (q && searchFields) {
+      const fields = searchFields.split(',').map(f => f.trim()).filter(Boolean);
+      const limit = Math.min(parseInt(limitParam) || 50, 200);
+      const conditions = fields.map((f, i) => `"${f}" ILIKE $${i + 1}`).join(' OR ');
+      const searchParams = fields.map(() => `%${q}%`);
+      query = `
+        SELECT jsonb_build_object(
+          'type', 'FeatureCollection',
+          'features', COALESCE(jsonb_agg(
+            jsonb_build_object(
+              'type', 'Feature',
+              'geometry', ${geomExpr},
+              'properties', to_jsonb(t) - '${geomCol}'
+            )
+          ), '[]'::jsonb)
+        ) AS geojson
+        FROM (
+          SELECT ${innerSelect} FROM "${tableName}"
+          WHERE ${conditions}
+          LIMIT ${limit}
+        ) t`;
+      params = searchParams;
+    } else if (bbox) {
       const parts = bbox.split(',').map(Number);
       if (parts.length === 4 && parts.every(n => !isNaN(n))) {
         const [minx, miny, maxx, maxy] = parts;

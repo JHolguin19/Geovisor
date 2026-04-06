@@ -279,7 +279,7 @@ export default function LayerPanel({ isOpen, onClose, secretariaId = 'sig' }) {
 
       {/* Footer */}
       <div className="lp-footer">
-        <span>GeoServer · AlcaldiaGeovisor</span>
+        <span>PostGIS · Alcaldía Santander de Quilichao</span>
       </div>
     </aside>
   );
