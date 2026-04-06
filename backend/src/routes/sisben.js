@@ -36,6 +36,18 @@ async function detectGeomColumn(tableName) {
   return null;
 }
 
+// Buscar la tabla de Sisben barrios (puede tener distintos nombres según la BD)
+async function findSisbenBarriosTable() {
+  const candidates = ['sisben_barrios', 'pg_sisben_barrios', 'sisben_barr', 'sisbenbarrios'];
+  for (const t of candidates) {
+    try {
+      await pool.query(`SELECT 1 FROM "${t}" LIMIT 0`);
+      return t;
+    } catch { /* no existe */ }
+  }
+  return null;
+}
+
 // GET /api/sisben/uba/:ubaId
 // Devuelve los barrios de una UBA con su información del Sisben (join espacial)
 router.get('/uba/:ubaId', authMiddleware, async (req, res) => {
@@ -47,12 +59,28 @@ router.get('/uba/:ubaId', authMiddleware, async (req, res) => {
   }
 
   try {
+    // Verificar que la tabla UBA existe
+    try {
+      await pool.query(`SELECT 1 FROM "${ubaTable}" LIMIT 0`);
+    } catch {
+      return res.status(404).json({ error: `Tabla de UBA no encontrada: "${ubaTable}"` });
+    }
+
+    // Buscar tabla de Sisben barrios
+    const sisbenTable = await findSisbenBarriosTable();
+    if (!sisbenTable) {
+      return res.status(404).json({
+        error: 'No se encontró la tabla de Sisben barrios en la base de datos.',
+        detail: 'Se buscó: sisben_barrios, pg_sisben_barrios, sisben_barr, sisbenbarrios'
+      });
+    }
+
     const [sbGeom, ubaGeom] = await Promise.all([
-      detectGeomColumn('sisben_barrios'),
+      detectGeomColumn(sisbenTable),
       detectGeomColumn(ubaTable)
     ]);
 
-    if (!sbGeom) return res.status(500).json({ error: 'No se encontró columna de geometría en sisben_barrios' });
+    if (!sbGeom) return res.status(500).json({ error: `No se encontró columna de geometría en ${sisbenTable}` });
     if (!ubaGeom) return res.status(500).json({ error: `No se encontró columna de geometría en ${ubaTable}` });
 
     // Join espacial: barrios del Sisben que intersectan con la UBA
@@ -60,7 +88,7 @@ router.get('/uba/:ubaId', authMiddleware, async (req, res) => {
       SELECT to_jsonb(t) - '${sbGeom}' AS data
       FROM (
         SELECT sb.*
-        FROM sisben_barrios sb
+        FROM "${sisbenTable}" sb
         WHERE ST_Intersects(
           ST_Transform(sb."${sbGeom}", 4326),
           ST_Transform(
@@ -88,6 +116,7 @@ router.get('/uba/:ubaId', authMiddleware, async (req, res) => {
     res.json({
       ubaId,
       ubaLabel: UBA_LABELS[ubaId],
+      sisbenTable,
       totalBarrios: barrios.length,
       barrios,
       totals

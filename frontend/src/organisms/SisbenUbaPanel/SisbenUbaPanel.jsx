@@ -55,9 +55,13 @@ export default function SisbenUbaPanel() {
     fetch(`/api/sisben/uba/${activeUbaId}`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {}
     })
-      .then(r => r.json())
-      .then(d => { setData(d); setLoading(false); })
-      .catch(() => { setError('No se pudo cargar la información'); setLoading(false); });
+      .then(async r => {
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.detail || d.error || `Error ${r.status}`);
+        setData(d);
+        setLoading(false);
+      })
+      .catch(e => { setError(e.message || 'No se pudo cargar la información'); setLoading(false); });
   }, [activeUbaId]);
 
   if (!activeLayerId) return null;
@@ -99,15 +103,15 @@ export default function SisbenUbaPanel() {
         {loading && <p className="suba-panel__msg">Cargando datos…</p>}
         {error   && <p className="suba-panel__msg suba-panel__msg--error">{error}</p>}
 
-        {data && !loading && (
+        {data && !loading && data.totals && (
           <>
             {/* Totales */}
             <div className="suba-panel__section">
               <div className="suba-panel__section-title" style={{ color }}>
-                Totales UBA · {data.totalBarrios} barrios
+                Totales UBA · {data.totalBarrios ?? 0} barrios
               </div>
               {NUM_FIELDS.map(({ key, label }) =>
-                data.totals[key] > 0 ? (
+                (data.totals[key] ?? 0) > 0 ? (
                   <div key={key} className="suba-panel__row">
                     <span className="suba-panel__label">{label}</span>
                     <span className="suba-panel__value" style={{ color }}>{fmt(data.totals[key])}</span>
