@@ -1,0 +1,908 @@
+/* =================================================================
+   PLANEACION.CSS — Módulo de Planeación
+   Extiende el design system del GeoVisor (App.css + SecretariaPortalPage.css)
+   Fuentes: Nunito (body) + Barlow Condensed (títulos)
+   ================================================================= */
+
+/* ── Shared page wrapper ── */
+.plan-page {
+  min-height: 100vh;
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  font-family: 'Nunito', sans-serif;
+  overflow-y: auto;
+}
+
+/* ── Header (igual al portal) ── */
+.plan-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  height: 68px;
+  background: var(--navy);
+  background-image:
+    linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
+  background-size: 28px 28px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.25);
+  flex-shrink: 0;
+}
+
+.plan-header-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.plan-logo {
+  height: 34px;
+  width: auto;
+  filter: drop-shadow(0 1px 3px rgba(0,0,0,.4));
+}
+
+.plan-header-text { display: flex; flex-direction: column; }
+
+.plan-entity {
+  font-size: 10.5px;
+  color: rgba(255,255,255,.5);
+  font-weight: 600;
+  letter-spacing: .3px;
+  text-transform: uppercase;
+}
+
+.plan-header-name {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: .4px;
+  color: #fff;
+}
+
+.plan-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.plan-back-btn {
+  padding: 7px 16px;
+  background: rgba(255,255,255,.1);
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 8px;
+  color: rgba(255,255,255,.85);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .15s var(--ease);
+  letter-spacing: .3px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.plan-back-btn:hover { background: rgba(255,255,255,.18); color: #fff; }
+
+/* ── Banda de color ── */
+.plan-band {
+  height: 4px;
+  flex-shrink: 0;
+}
+
+/* ── Main content ── */
+.plan-main {
+  flex: 1;
+  padding: 48px 40px;
+  max-width: 1100px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ── Hero ── */
+.plan-hero {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 48px;
+}
+
+.plan-hero-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 16px rgba(0,0,0,.18);
+}
+
+.plan-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--navy);
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.plan-subtitle {
+  font-size: 14px;
+  color: var(--text-muted);
+  font-weight: 500;
+  max-width: 560px;
+}
+
+/* ── Sección ── */
+.plan-section { margin-bottom: 40px; }
+
+.plan-section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 22px;
+}
+
+.plan-section-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── Grid de herramientas ── */
+.plan-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 18px;
+}
+
+/* ── Tarjeta de herramienta ── */
+.plan-card {
+  background: var(--white);
+  border-radius: 14px;
+  padding: 24px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  position: relative;
+  overflow: hidden;
+  transition: box-shadow .18s var(--ease), transform .18s var(--ease);
+}
+
+.plan-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--card-color, var(--blue));
+  border-radius: 14px 14px 0 0;
+}
+
+.plan-card--active:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-3px);
+}
+
+.plan-card--coming {
+  opacity: .6;
+}
+
+.plan-card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--card-color, var(--blue)) 12%, transparent);
+  color: var(--card-color, var(--blue));
+  flex-shrink: 0;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.plan-card-body { flex: 1; }
+
+.plan-card-name {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--navy);
+  letter-spacing: .3px;
+  margin-bottom: 6px;
+  line-height: 1.2;
+}
+
+.plan-card-desc {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+
+.plan-card-footer { margin-top: auto; }
+
+.plan-card-btn {
+  display: inline-block;
+  padding: 9px 18px;
+  background: var(--card-color, var(--navy));
+  color: #fff;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .3px;
+  transition: filter .15s var(--ease);
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: center;
+}
+.plan-card-btn:hover { filter: brightness(1.12); color: #fff; }
+
+.plan-card-badge {
+  display: inline-block;
+  padding: 5px 12px;
+  background: var(--surface);
+  color: var(--text-light);
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  width: 100%;
+  text-align: center;
+}
+
+/* =================================================================
+   VISOR MAP PAGE — Barra de navegación del visor
+   ================================================================= */
+
+.visor-topbar {
+  height: 48px;
+  background: var(--navy);
+  background-image:
+    linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
+  background-size: 28px 28px;
+  display: flex;
+  align-items: center;
+  padding: 0 18px;
+  gap: 8px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,.3);
+  border-bottom: 3px solid var(--visor-color, var(--blue));
+}
+
+.visor-topbar-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  background: rgba(255,255,255,.1);
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 6px;
+  color: rgba(255,255,255,.8);
+  font-size: 11.5px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background .15s var(--ease);
+  white-space: nowrap;
+  letter-spacing: .2px;
+}
+.visor-topbar-back:hover { background: rgba(255,255,255,.18); color: #fff; }
+
+.visor-topbar-sep {
+  color: rgba(255,255,255,.25);
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.visor-topbar-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+}
+
+.visor-topbar-badge {
+  margin-left: auto;
+  padding: 3px 10px;
+  background: color-mix(in srgb, var(--visor-color, var(--blue)) 25%, transparent);
+  border: 1px solid color-mix(in srgb, var(--visor-color, var(--blue)) 50%, transparent);
+  border-radius: 99px;
+  color: rgba(255,255,255,.85);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+}
+
+/* =================================================================
+   VISOR SEARCH BAR — Barra de búsqueda flotante
+   ================================================================= */
+
+.visor-search-wrap {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 500;
+  width: 90%;
+  max-width: 440px;
+}
+
+.visor-search-group {
+  display: flex;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  border: 1.5px solid var(--border);
+}
+
+.visor-search-input {
+  flex: 1;
+  padding: 10px 16px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 13.5px;
+  background: rgba(255,255,255,.97);
+  border: none;
+  outline: none;
+  color: var(--text);
+}
+.visor-search-input::placeholder { color: var(--text-light); }
+.visor-search-input:focus { background: #fff; }
+
+.visor-search-btn {
+  padding: 0 20px;
+  background: var(--navy);
+  color: #fff;
+  border: none;
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .15s var(--ease);
+  letter-spacing: .2px;
+  white-space: nowrap;
+}
+.visor-search-btn:hover { background: var(--navy-light); }
+
+/* =================================================================
+   VISOR SPINNER — Indicador de carga
+   ================================================================= */
+
+.visor-loader {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 800;
+  background: rgba(255,255,255,.95);
+  backdrop-filter: blur(8px);
+  padding: 20px 32px;
+  border-radius: 14px;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.visor-loader-spinner {
+  width: 22px;
+  height: 22px;
+  border: 2.5px solid var(--border);
+  border-top-color: var(--navy);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.visor-loader-text {
+  font-family: 'Nunito', sans-serif;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--navy);
+  white-space: nowrap;
+}
+
+.visor-error {
+  position: absolute;
+  top: 76px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 600;
+  background: #fff;
+  border: 1px solid #fca5a5;
+  color: #b91c1c;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: var(--shadow-md);
+  white-space: nowrap;
+}
+
+/* =================================================================
+   PANEL LATERAL — Side dashboard panels sobre el mapa
+   ================================================================= */
+
+.sidepanel {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 500;
+  width: 300px;
+  background: var(--white);
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  font-family: 'Nunito', sans-serif;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 100px);
+}
+
+.sidepanel-header {
+  padding: 14px 16px 10px;
+  background: var(--navy);
+  flex-shrink: 0;
+}
+
+.sidepanel-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.sidepanel-tabs {
+  display: flex;
+  gap: 4px;
+  background: rgba(255,255,255,.08);
+  border-radius: 8px;
+  padding: 3px;
+}
+
+.sidepanel-tab {
+  flex: 1;
+  padding: 5px 8px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: rgba(255,255,255,.6);
+  font-family: 'Nunito', sans-serif;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .14s var(--ease), color .14s var(--ease);
+  white-space: nowrap;
+  letter-spacing: .2px;
+}
+
+.sidepanel-tab--active {
+  background: rgba(255,255,255,.18);
+  color: #fff;
+}
+
+/* ── Header color variants ── */
+.sidepanel-header--blue   { background: var(--navy); }
+.sidepanel-header--green  { background: #1a5c2e; }
+
+/* ── Metric highlight (recaudo total, etc.) ── */
+.sidepanel-metric {
+  padding: 12px 16px;
+  text-align: center;
+  border-bottom: 1px solid var(--border-soft);
+  background: var(--white);
+  flex-shrink: 0;
+}
+
+.sidepanel-metric-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .7px;
+  color: var(--text-light);
+  display: block;
+  margin-bottom: 2px;
+}
+
+.sidepanel-metric-value {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--success);
+  letter-spacing: .3px;
+}
+
+/* ── Scrollable body ── */
+.sidepanel-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--surface);
+}
+
+/* ── List items ── */
+.sidepanel-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 16px;
+  background: var(--white);
+  border-bottom: 1px solid var(--border-soft);
+  cursor: pointer;
+  transition: background .12s var(--ease);
+  gap: 10px;
+}
+
+.sidepanel-item:hover { background: var(--sky-light); }
+
+.sidepanel-item--active {
+  background: var(--sky-light);
+  border-left: 3px solid var(--blue);
+  padding-left: 13px;
+}
+
+.sidepanel-item-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  flex: 1;
+}
+
+.sidepanel-item-label--muted { color: var(--text-muted); font-weight: 500; }
+.sidepanel-item-label--active { color: var(--blue); font-weight: 700; }
+
+.sidepanel-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 10px;
+  border-radius: 99px;
+  font-size: 11.5px;
+  font-weight: 700;
+  min-width: 34px;
+  white-space: nowrap;
+}
+
+.sidepanel-badge--primary  { background: var(--blue);    color: #fff; }
+.sidepanel-badge--secondary{ background: var(--text-muted); color: #fff; }
+.sidepanel-badge--success  { background: var(--success); color: #fff; }
+.sidepanel-badge--danger   { background: var(--error);   color: #fff; }
+.sidepanel-badge--outline  { background: var(--surface); color: var(--text-muted); border: 1px solid var(--border); }
+
+/* ── Sub-header row (label info inside body) ── */
+.sidepanel-subheader {
+  padding: 6px 16px;
+  background: var(--surface);
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  color: var(--text-light);
+  border-bottom: 1px solid var(--border-soft);
+  font-family: 'Barlow Condensed', sans-serif;
+}
+
+/* ── Show-all button ── */
+.sidepanel-show-all {
+  width: 100%;
+  padding: 10px 16px;
+  background: var(--white);
+  border: none;
+  border-bottom: 1px solid var(--border-soft);
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--blue);
+  cursor: pointer;
+  text-align: left;
+  transition: background .12s var(--ease);
+}
+.sidepanel-show-all:hover { background: var(--sky-light); }
+.sidepanel-show-all--active { background: var(--blue); color: #fff; }
+.sidepanel-show-all--active:hover { background: var(--navy-light); }
+
+/* ── Impact grid (stats en villamariana) ── */
+.sidepanel-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 12px;
+}
+
+.sidepanel-stat-card {
+  background: var(--white);
+  border-radius: 10px;
+  padding: 10px 12px;
+  border-left: 3px solid var(--stat-color, var(--blue));
+  box-shadow: var(--shadow-sm);
+}
+
+.sidepanel-stat-label {
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: var(--text-light);
+  display: block;
+  margin-bottom: 2px;
+}
+
+.sidepanel-stat-value {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--navy);
+  line-height: 1;
+}
+
+/* ── Highlight cards (familias/personas total) ── */
+.sidepanel-highlight-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 12px 12px 4px;
+}
+
+.sidepanel-highlight {
+  border-radius: 10px;
+  padding: 10px;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+}
+
+.sidepanel-highlight--primary { background: var(--navy); }
+.sidepanel-highlight--info    { background: var(--sky);  }
+
+.sidepanel-highlight-val {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 26px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1;
+  display: block;
+}
+
+.sidepanel-highlight-label {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: rgba(255,255,255,.7);
+}
+
+/* ── Section heading inside panel body ── */
+.sidepanel-body-section {
+  padding: 10px 12px 4px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  color: var(--text-light);
+  border-bottom: 1px solid var(--border-soft);
+}
+
+/* ── Zona warning ── */
+.sidepanel-zona-badge {
+  margin: 10px 12px 0;
+  padding: 7px 12px;
+  background: var(--amber-light);
+  border: 1px solid var(--amber);
+  border-radius: 8px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--amber);
+  text-align: center;
+}
+
+/* ── Tarifa item (two-line) ── */
+.sidepanel-tarifa-item {
+  padding: 10px 16px;
+  background: var(--white);
+  border-bottom: 1px solid var(--border-soft);
+  cursor: pointer;
+  transition: background .12s var(--ease);
+}
+.sidepanel-tarifa-item:hover { background: var(--sky-light); }
+.sidepanel-tarifa-item--active {
+  background: var(--sky-light);
+  border-left: 3px solid var(--blue);
+  padding-left: 13px;
+}
+
+.sidepanel-tarifa-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  display: block;
+  margin-bottom: 1px;
+}
+.sidepanel-tarifa-name--active { color: var(--blue); }
+
+.sidepanel-tarifa-value {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+}
+.sidepanel-tarifa-value--positive { color: var(--success); }
+.sidepanel-tarifa-value--zero     { color: var(--error);   }
+
+/* ── Footer ── */
+.sidepanel-footer {
+  padding: 7px 16px;
+  background: var(--white);
+  border-top: 1px solid var(--border-soft);
+  text-align: center;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--text-light);
+  letter-spacing: .3px;
+  flex-shrink: 0;
+}
+
+/* =================================================================
+   OL POPUP (Planeación override — usa el sistema de App.css)
+   ================================================================= */
+
+.plan-popup {
+  position: absolute;
+  background: var(--white);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  min-width: 230px;
+  max-width: 280px;
+  transform: translateX(-50%) translateY(calc(-100% - 14px));
+  pointer-events: auto;
+}
+
+.plan-popup::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 14px;
+  height: 14px;
+  background: var(--white);
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  clip-path: polygon(0 0, 100% 100%, 100% 0);
+  rotate: 45deg;
+}
+
+.plan-popup-header {
+  padding: 9px 14px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: .4px;
+  text-transform: uppercase;
+  color: #fff;
+  text-align: center;
+}
+
+.plan-popup-header--dark   { background: var(--navy); }
+.plan-popup-header--blue   { background: var(--blue); }
+.plan-popup-header--green  { background: #1a5c2e; }
+
+.plan-popup-body { padding: 10px 14px; }
+
+.plan-popup-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--border-soft);
+  gap: 8px;
+}
+.plan-popup-row:last-child { border-bottom: none; }
+
+.plan-popup-key {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.plan-popup-val {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--navy);
+  text-align: right;
+}
+
+.plan-popup-pill {
+  padding: 2px 10px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.plan-popup-pill--success { background: #dcfce7; color: #15803d; }
+.plan-popup-pill--danger  { background: #fee2e2; color: #b91c1c; }
+.plan-popup-pill--info    { background: #e0f2fe; color: #0369a1; }
+.plan-popup-pill--dark    { background: var(--navy); color: #fff; }
+.plan-popup-pill--muted   { background: var(--surface); color: var(--text-muted); }
+
+.plan-popup-closer {
+  position: absolute;
+  top: 7px;
+  right: 10px;
+  background: rgba(255,255,255,.2);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  color: rgba(255,255,255,.8);
+  font-size: 12px;
+  line-height: 1;
+  padding: 2px 5px;
+  transition: background .14s;
+}
+.plan-popup-closer:hover { background: rgba(255,255,255,.35); color: #fff; }
+
+/* =================================================================
+   TOOLTIP flotante sobre el mapa
+   ================================================================= */
+
+.plan-tooltip {
+  background: rgba(11,37,69,.88);
+  color: #fff;
+  padding: 5px 11px;
+  border-radius: 7px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  pointer-events: none;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0,0,0,.25);
+}
+
+/* =================================================================
+   RESPONSIVE
+   ================================================================= */
+@media (max-width: 768px) {
+  .plan-header  { padding: 0 16px; height: 56px; }
+  .plan-logo    { height: 26px; }
+  .plan-main    { padding: 28px 16px; }
+  .plan-title   { font-size: 26px; }
+  .plan-hero    { gap: 14px; margin-bottom: 32px; }
+  .plan-hero-icon { width: 44px; height: 44px; }
+  .plan-grid    { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .sidepanel    { width: 260px; }
+  .visor-search-wrap { max-width: 90%; }
+}
+
+@media (max-width: 480px) {
+  .plan-grid { grid-template-columns: 1fr; }
+  .plan-title { font-size: 22px; }
+  .sidepanel  { width: 220px; }
+}

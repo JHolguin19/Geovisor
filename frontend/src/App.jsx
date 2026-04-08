@@ -7,6 +7,9 @@ import MapPage from './pages/MapPage';
 import DashboardPage from './pages/DashboardPage';
 import SecretariaPortalPage from './pages/SecretariaPortalPage';
 import PdmPage from './pages/PdmPage';
+import DashboardCatastro from './pages/Planeacion/Catastro/DashboardCatastro';
+import DashboardVivienda from './pages/Planeacion/Vivienda/DashboardVivienda';
+import PlaneacionMapPage from './pages/Planeacion/PlaneacionMapPage';
 
 function PrivateRoute({ children, requiredRole }) {
   const { user, isAuthenticated, loading } = useContext(AuthContext);
@@ -45,6 +48,12 @@ function App() {
 
         {/* Ruta legacy /mapa → redirige al SIG completo */}
         <Route path="mapa" element={<Navigate to="/mapa/sig" replace />} />
+
+        {/* Rutas de Planeación — deben ir ANTES de portal/:secretariaId */}
+        <Route path="planeacion/catastro" element={<DashboardCatastro />} />
+        <Route path="planeacion/vivienda" element={<DashboardVivienda />} />
+        <Route path="planeacion/catastro/:visorId" element={<PlaneacionMapPage />} />
+        <Route path="planeacion/vivienda/:visorId" element={<PlaneacionMapPage />} />
 
         {/* Portal de secretaría (módulos) */}
         <Route path="portal/:secretariaId" element={<SecretariaPortalPage />} />

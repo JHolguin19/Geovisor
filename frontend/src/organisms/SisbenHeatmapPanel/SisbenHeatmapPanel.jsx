@@ -17,17 +17,37 @@ const FIELD_LABELS = {
   area_m2:            'Área (m²)',
 };
 
-// Campos a excluir del selector de variables (identificadores y columnas técnicas)
-const SKIP = new Set([
-  '_coloridx', 'gid', 'fid', 'id', 'objectid',
+// Orden y agrupación idénticos al panel lateral (SisbenPanel)
+const VARIABLE_GROUPS = [
+  {
+    label: 'Demografía',
+    fields: ['poblacion_total', 'poblacion_hombre', 'poblacion_mujer'],
+  },
+  {
+    label: 'Vivienda y Hogar',
+    fields: ['cantidad_viviendas', 'cantidad_hogares'],
+  },
+  {
+    label: 'Indicadores Sociales',
+    fields: ['ipm', 'incidencia_pobreza', 'nbi', 'personas_sisben', 'puntaje_promedio'],
+  },
+  {
+    label: 'Territorio',
+    fields: ['area_m2'],
+  },
+];
+
+// Campos que nunca son variables de calor (identificadores, geometría, texto)
+const SKIP_HEATMAP = new Set([
+  'geometry', '_coloridx', 'bbox', 'fid', 'gid', 'id',
   'cod', 'codigo', 'barrio_sa', 'barriosa', 'barrio_1', 'barrio1',
-  'shape_leng', 'shape_area', 'geometry', 'geom', 'bbox',
-  'nombre', 'nombre_barrio',
+  'objectid', 'shape_leng', 'shape_area', 'geom',
+  'nombre', 'nombre_barrio', 'nombre_barrio_sa', 'nombre1',
+  'uba',  // texto, no numérico
 ]);
 
-function shouldSkipField(key) {
-  return SKIP.has(key.toLowerCase()) || key.startsWith('_');
-}
+// Conjunto de campos ya cubiertos por las secciones fijas
+const DEFINED_FIELDS = new Set(VARIABLE_GROUPS.flatMap(g => g.fields));
 
 function fieldLabel(key) {
   if (FIELD_LABELS[key]) return FIELD_LABELS[key];
@@ -65,16 +85,39 @@ export default function SisbenHeatmapPanel() {
   const isSisbenActive = activeLayers.has('sisben_barrios') || SIS_UBA_IDS.some(id => activeLayers.has(id));
   if (!isSisbenActive) return null;
 
-  // Detectar campos numéricos disponibles en los features cargados (sin identificadores)
-  const numericFields = useMemo(() => {
+  // Grupos fijos filtrados por presencia en datos + grupo dinámico "Otros datos"
+  const availableGroups = useMemo(() => {
     if (!sisbenBarriosFeatures?.length) return [];
-    const first = sisbenBarriosFeatures[0];
-    return Object.keys(first).filter(key => {
-      if (shouldSkipField(key)) return false;
-      const val = first[key];
-      return val !== null && val !== '' && !isNaN(Number(val));
+
+    // Construir un Set de claves que tienen al menos un valor numérico en cualquier feature
+    const keysWithData = new Set();
+    for (const feat of sisbenBarriosFeatures) {
+      for (const [k, v] of Object.entries(feat)) {
+        if (v !== null && v !== '' && !isNaN(Number(v)) && isFinite(Number(v))) {
+          keysWithData.add(k);
+        }
+      }
+    }
+
+    const fixed = VARIABLE_GROUPS.map(g => ({
+      ...g,
+      fields: g.fields.filter(f => keysWithData.has(f)),
+    })).filter(g => g.fields.length > 0);
+
+    // Campos numéricos presentes en los datos pero no en ninguna sección fija
+    const extra = [...keysWithData].filter(key => {
+      if (SKIP_HEATMAP.has(key.toLowerCase()) || key.startsWith('_')) return false;
+      return !DEFINED_FIELDS.has(key);
     });
+
+    if (extra.length > 0) {
+      fixed.push({ label: 'Otros datos', fields: extra });
+    }
+
+    return fixed;
   }, [sisbenBarriosFeatures]);
+
+  const numericFields = useMemo(() => availableGroups.flatMap(g => g.fields), [availableGroups]);
 
   const { min, max } = useMemo(() => {
     if (!sisbenHeatmapVariable || !sisbenBarriosFeatures?.length)
@@ -125,8 +168,12 @@ export default function SisbenHeatmapPanel() {
                 onChange={e => setSisbenHeatmapVariable(e.target.value || null)}
               >
                 <option value="">— Seleccionar variable —</option>
-                {numericFields.map(f => (
-                  <option key={f} value={f}>{fieldLabel(f)}</option>
+                {availableGroups.map(g => (
+                  <optgroup key={g.label} label={g.label}>
+                    {g.fields.map(f => (
+                      <option key={f} value={f}>{fieldLabel(f)}</option>
+                    ))}
+                  </optgroup>
                 ))}
               </select>
             </div>

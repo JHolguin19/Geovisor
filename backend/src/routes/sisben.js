@@ -18,10 +18,18 @@ const UBA_LABELS = {
   uba4: 'UBA 4', uba5: 'UBA 5', ubac: 'UBA C'
 };
 
-const NUM_FIELDS = [
+// Campos que se suman en los totales de UBA
+const SUM_FIELDS = [
   'poblacion_total', 'poblacion_hombre', 'poblacion_mujer',
-  'cantidad_hogares', 'cantidad_viviendas', 'personas_sisben'
+  'cantidad_hogares', 'cantidad_viviendas', 'personas_sisben', 'area_m2'
 ];
+
+// Campos que se promedian (tasas / índices)
+const AVG_FIELDS = [
+  'puntaje_promedio', 'ipm', 'incidencia_pobreza', 'nbi'
+];
+
+const NUM_FIELDS = [...SUM_FIELDS, ...AVG_FIELDS];
 
 // Detectar columna de geometría
 async function detectGeomColumn(tableName) {
@@ -98,10 +106,14 @@ router.get('/uba/:ubaId', authMiddleware, async (req, res) => {
     const result = await pool.query(q);
     const barrios = result.rows.map(r => r.datos ?? {});
 
-    const totals = NUM_FIELDS.reduce((acc, f) => {
-      acc[f] = barrios.reduce((s, b) => s + (Number(b[f]) || 0), 0);
-      return acc;
-    }, {});
+    const totals = {};
+    for (const f of SUM_FIELDS) {
+      totals[f] = barrios.reduce((s, b) => s + (Number(b[f]) || 0), 0);
+    }
+    for (const f of AVG_FIELDS) {
+      const vals = barrios.map(b => Number(b[f])).filter(v => !isNaN(v) && v > 0);
+      totals[f] = vals.length > 0 ? vals.reduce((s, v) => s + v, 0) / vals.length : null;
+    }
 
     res.json({ ubaId, ubaLabel: UBA_LABELS[ubaId], totalBarrios: barrios.length, barrios, totals });
   } catch (err) {

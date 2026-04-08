@@ -4,6 +4,38 @@ import AuthContext from '../context/AuthContext';
 import { getSecretariaById } from '../config/secretarias';
 import './SecretariaPortalPage.css';
 
+// ── Módulos extra por secretaría ──────────────────────────────────────────────
+const MODULOS_PLANEACION = [
+  {
+    id: 'catastro',
+    nombre: 'Gestión Catastral',
+    descripcion: 'Visor de predios, avalúos, tarifas y estado de pagos 2025.',
+    icono: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+        <path d="M3 9h18M9 21V9"/>
+      </svg>
+    ),
+    activo: true,
+    getPath: () => '/planeacion/catastro',
+    color: '#1565C0',
+  },
+  {
+    id: 'vivienda',
+    nombre: 'Módulo de Vivienda',
+    descripcion: 'Beneficiarios del proyecto Villa Mariana por barrio y vereda.',
+    icono: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/>
+        <path d="M9 21V12h6v9"/>
+      </svg>
+    ),
+    activo: true,
+    getPath: () => '/planeacion/vivienda',
+    color: '#2E7D32',
+  },
+];
+
 // ── Iconos de módulos ─────────────────────────────────────────────────────────
 const MODULOS = [
   {
@@ -182,7 +214,7 @@ export default function SecretariaPortalPage() {
             Módulos disponibles
           </h2>
           <div className="portal-grid">
-            {MODULOS.map(m => (
+            {(secretariaId === 'planeacion' ? [...MODULOS_PLANEACION, ...MODULOS] : MODULOS).map(m => (
               <ModuloCard
                 key={m.id}
                 modulo={m}

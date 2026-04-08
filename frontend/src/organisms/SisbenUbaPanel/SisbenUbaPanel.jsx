@@ -17,18 +17,60 @@ const UBA_COLORS = {
   uba4: '#FB8C00', uba5: '#8E24AA', ubac: '#00ACC1'
 };
 
-const NUM_FIELDS = [
-  { key: 'poblacion_total',    label: 'Población Total' },
-  { key: 'poblacion_hombre',   label: 'Hombres' },
-  { key: 'poblacion_mujer',    label: 'Mujeres' },
-  { key: 'cantidad_hogares',   label: 'Hogares' },
-  { key: 'cantidad_viviendas', label: 'Viviendas' },
-  { key: 'personas_sisben',    label: 'Personas Sisben' },
+// Grupos de variables en el mismo orden que el mapa de calor
+const FIELD_GROUPS = [
+  {
+    label: 'Demografía',
+    fields: [
+      { key: 'poblacion_total',  label: 'Población Total' },
+      { key: 'poblacion_hombre', label: 'Hombres' },
+      { key: 'poblacion_mujer',  label: 'Mujeres' },
+    ],
+  },
+  {
+    label: 'Vivienda',
+    fields: [
+      { key: 'cantidad_hogares',   label: 'Hogares' },
+      { key: 'cantidad_viviendas', label: 'Viviendas' },
+    ],
+  },
+  {
+    label: 'Indicadores Sisben',
+    fields: [
+      { key: 'personas_sisben',  label: 'Personas Sisben' },
+      { key: 'puntaje_promedio', label: 'Puntaje Promedio', avg: true },
+    ],
+  },
+  {
+    label: 'Indicadores Sociales',
+    fields: [
+      { key: 'ipm',               label: 'Índice de Pobreza Multidimensional', avg: true },
+      { key: 'incidencia_pobreza', label: 'Incidencia de Pobreza', avg: true },
+      { key: 'nbi',               label: 'NBI', avg: true },
+    ],
+  },
+  {
+    label: 'Territorio',
+    fields: [
+      { key: 'area_m2', label: 'Área (m²)' },
+    ],
+  },
 ];
 
-function fmt(n) {
+// Lista plana para el detalle de barrio
+const ALL_FIELDS = FIELD_GROUPS.flatMap(g => g.fields);
+
+// avg=true → son promedios/tasas, se muestran con 2 decimales; proporciones 0-1 como %
+function fmt(n, avg = false) {
+  if (n === null || n === undefined) return '—';
   const num = Number(n);
-  return isNaN(num) || n === null ? '—' : num.toLocaleString('es-CO');
+  if (isNaN(num)) return '—';
+  if (avg) {
+    // Detectar si es proporción 0-1
+    if (num > 0 && num <= 1) return `${(num * 100).toLocaleString('es-CO', { maximumFractionDigits: 1 })}%`;
+    return num.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  return num.toLocaleString('es-CO', { maximumFractionDigits: 0 });
 }
 
 export default function SisbenUbaPanel() {
@@ -110,14 +152,21 @@ export default function SisbenUbaPanel() {
               <div className="suba-panel__section-title" style={{ color }}>
                 Totales UBA · {data.totalBarrios ?? 0} barrios
               </div>
-              {NUM_FIELDS.map(({ key, label }) =>
-                (data.totals[key] ?? 0) > 0 ? (
-                  <div key={key} className="suba-panel__row">
-                    <span className="suba-panel__label">{label}</span>
-                    <span className="suba-panel__value" style={{ color }}>{fmt(data.totals[key])}</span>
+              {FIELD_GROUPS.map(g => {
+                const visibles = g.fields.filter(({ key }) => data.totals[key] != null && data.totals[key] !== 0);
+                if (!visibles.length) return null;
+                return (
+                  <div key={g.label}>
+                    <div className="suba-panel__group-label">{g.label}</div>
+                    {visibles.map(({ key, label, avg }) => (
+                      <div key={key} className="suba-panel__row">
+                        <span className="suba-panel__label">{label}</span>
+                        <span className="suba-panel__value" style={{ color }}>{fmt(data.totals[key], avg)}</span>
+                      </div>
+                    ))}
                   </div>
-                ) : null
-              )}
+                );
+              })}
             </div>
 
             {/* Lista de barrios */}
@@ -131,7 +180,7 @@ export default function SisbenUbaPanel() {
               {data.barrios.map((b, i) => {
                 const nombre = b.nombre || b.nombre_barrio || b.NOMBRE || `Barrio ${i + 1}`;
                 const isOpen = expanded.has(nombre);
-                const detalle = NUM_FIELDS.filter(({ key }) => b[key] > 0);
+                const detalle = ALL_FIELDS.filter(({ key }) => b[key] != null && b[key] !== 0);
 
                 return (
                   <div key={nombre} className="suba-panel__barrio">
@@ -149,10 +198,10 @@ export default function SisbenUbaPanel() {
 
                     {isOpen && detalle.length > 0 && (
                       <div className="suba-panel__barrio-detalle">
-                        {detalle.map(({ key, label }) => (
+                        {detalle.map(({ key, label, avg }) => (
                           <div key={key} className="suba-panel__row">
                             <span className="suba-panel__label">{label}</span>
-                            <span className="suba-panel__value">{fmt(b[key])}</span>
+                            <span className="suba-panel__value">{fmt(b[key], avg)}</span>
                           </div>
                         ))}
                       </div>
