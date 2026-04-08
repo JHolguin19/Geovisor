@@ -10,6 +10,7 @@ import SelectionResults from '../organisms/SelectionResults/SelectionResults';
 import SisbenPanel from '../organisms/SisbenPanel';
 import SisbenHeatmapPanel from '../organisms/SisbenHeatmapPanel';
 import SisbenUbaPanel from '../organisms/SisbenUbaPanel';
+import AlumbradoPanel from '../organisms/AlumbradoPanel/AlumbradoPanel';
 import MapContext from '../context/MapContext';
 import { getSecretariaById } from '../config/secretarias';
 import './MapPage.css';
@@ -52,6 +53,7 @@ function MapPageInner() {
           <SisbenPanel />
           <SisbenHeatmapPanel />
           <SisbenUbaPanel />
+          <AlumbradoPanel />
           <SelectionResults results={selectionResults} onClose={handleCloseSelection} />
         </main>
       </div>

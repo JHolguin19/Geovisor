@@ -1,0 +1,227 @@
+.alum-panel {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 310px;
+  max-height: calc(100vh - 115px);
+  overflow-y: auto;
+  background: var(--white, #fff);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.18);
+  border: 1px solid #e0e0e0;
+  z-index: 107;
+  font-family: 'Nunito', sans-serif;
+  animation: alumSlideIn .22s ease;
+}
+
+@keyframes alumSlideIn {
+  from { opacity: 0; transform: translateX(14px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ── Header ── */
+.alum-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px 11px;
+  border-radius: 12px 12px 0 0;
+  color: #fff;
+}
+
+.alum-panel__header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.alum-panel__icon {
+  font-size: 22px;
+  line-height: 1;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,.25));
+}
+
+.alum-panel__subtitle {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  opacity: .8;
+  line-height: 1;
+  margin-bottom: 2px;
+}
+
+.alum-panel__title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.alum-panel__close {
+  background: rgba(255,255,255,.2);
+  border: none;
+  color: #fff;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s;
+  flex-shrink: 0;
+}
+.alum-panel__close:hover { background: rgba(255,255,255,.35); }
+
+/* ── Body ── */
+.alum-panel__body {
+  padding: 4px 0;
+}
+
+.alum-panel__msg {
+  font-size: 13px;
+  color: #666;
+  text-align: center;
+  padding: 14px 16px;
+}
+.alum-panel__msg--error { color: #c62828; }
+
+/* ── Section ── */
+.alum-panel__section {
+  padding: 10px 14px;
+  border-bottom: 1px solid #f0f0f0;
+}
+.alum-panel__section:last-child { border-bottom: none; }
+
+.alum-panel__section-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+/* ── Row ── */
+.alum-panel__row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 3px 0;
+}
+
+.alum-panel__row--total {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.alum-panel__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.alum-panel__label {
+  flex: 1;
+  font-size: 12.5px;
+  color: #555;
+  font-weight: 500;
+  min-width: 0;
+}
+
+.alum-panel__row--total .alum-panel__label {
+  font-weight: 700;
+  color: #222;
+}
+
+.alum-panel__value {
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  text-align: right;
+}
+
+/* ── UBA item ── */
+.alum-panel__uba {
+  border-bottom: 1px solid #f5f5f5;
+  margin: 0 -2px;
+}
+.alum-panel__uba:last-child { border-bottom: none; }
+
+.alum-panel__uba-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: none;
+  border: none;
+  padding: 7px 2px;
+  cursor: pointer;
+  text-align: left;
+  border-radius: 6px;
+  transition: background .12s;
+}
+.alum-panel__uba-header:hover { background: #f5f5f5; }
+.alum-panel__uba-header--open { background: #fafafa; }
+
+.alum-panel__uba-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.alum-panel__uba-nombre {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 700;
+  color: #222;
+}
+
+.alum-panel__uba-total {
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.alum-panel__uba-chevron {
+  font-size: 9px;
+  color: #999;
+  flex-shrink: 0;
+}
+
+.alum-panel__uba-detalle {
+  padding: 4px 0 6px 10px;
+  background: #fafafa;
+  border-radius: 0 0 6px 6px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .alum-panel {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-height: 60vh;
+    border-radius: 16px 16px 0 0;
+    z-index: 130;
+    animation: alumSlideUp .25s ease;
+  }
+  @keyframes alumSlideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .alum-panel__header { border-radius: 16px 16px 0 0; }
+}

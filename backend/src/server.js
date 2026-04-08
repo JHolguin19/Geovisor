@@ -13,6 +13,7 @@ import pdmRoutes from './routes/pdm.js';
 import sisbenRoutes from './routes/sisben.js';
 import catastroRoutes from './routes/catastro.js';
 import viviendaRoutes from './routes/vivienda.js';
+import alumbradoRoutes from './routes/alumbrado.js';
 
 // Cargar variables de entorno
 dotenv.config();
@@ -57,6 +58,7 @@ const geodataLimiter = rateLimit({
 app.use('/api/geodata', geodataLimiter);
 app.use('/api/catastro', geodataLimiter);
 app.use('/api/vivienda', geodataLimiter);
+app.use('/api/alumbrado', geodataLimiter);
 
 // Middlewares
 app.use(express.json());
@@ -82,6 +84,7 @@ app.use('/api/pdm', pdmRoutes);
 app.use('/api/sisben', sisbenRoutes);
 app.use('/api/catastro', catastroRoutes);
 app.use('/api/vivienda', viviendaRoutes);
+app.use('/api/alumbrado', alumbradoRoutes);
 
 // Ruta de health check
 app.get('/api/health', (req, res) => {

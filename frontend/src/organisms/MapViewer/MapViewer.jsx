@@ -207,6 +207,7 @@ export default function MapViewer() {
       .catch(err => console.error(`[GeoData ERROR] "${layerConfig.id}":`, err));
 
     const layerColor = layerConfig.color || '#3388ff';
+    const pointColor = layerConfig.style?.fillColor || layerColor;
 
     // Convertir color hex a rgba con opacidad
     const hexToRgba = (hex, alpha) => {
@@ -233,13 +234,14 @@ export default function MapViewer() {
       : null;
 
     // Estilo genérico: relleno semitransparente + borde del color del sidebar
+    // Para puntos usa style.fillColor si está definido (capas como alumbrado)
     const style = new Style({
       fill: new Fill({ color: hexToRgba(layerColor, 0.35) }),
       stroke: new Stroke({ color: layerColor, width: 1.5 }),
       image: new Circle({
-        radius: 6,
-        fill: new Fill({ color: layerColor }),
-        stroke: new Stroke({ color: '#ffffff', width: 1.5 })
+        radius: layerConfig.style?.radius || 6,
+        fill: new Fill({ color: pointColor }),
+        stroke: new Stroke({ color: layerConfig.style?.strokeColor || '#ffffff', width: 1.5 })
       })
     });
 
