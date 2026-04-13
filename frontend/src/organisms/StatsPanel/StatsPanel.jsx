@@ -2,13 +2,8 @@ import { useContext } from 'react';
 import MapContext from '../../context/MapContext';
 import { useMapStats } from '../../hooks/useMapStats';
 import { UBA_DATA, UBA_LAYER_IDS, USO_SUELO_LAYERS } from '../../services/statsService';
+import { UBA_ORDER, UBA_COLORS } from '../../constants/ubas';
 import './StatsPanel.css';
-
-const UBA_ORDER = ['uba1', 'uba2', 'uba3', 'uba4', 'uba5', 'ubac'];
-const UBA_COLORS = {
-  uba1: '#E53935', uba2: '#43A047', uba3: '#1E88E5',
-  uba4: '#FB8C00', uba5: '#8E24AA', ubac: '#00ACC1',
-};
 
 function SpinnerIcon() {
   return (

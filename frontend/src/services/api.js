@@ -164,4 +164,98 @@ export const pdmService = {
   },
 };
 
+// ============================
+// SERVICIOS DE CARGA DE DATOS
+// ============================
+
+export const uploadService = {
+  upload: async (file, metadata) => {
+    const formData = new FormData();
+    formData.append('archivo', file);
+    if (metadata.secretaria_id) formData.append('secretaria_id', metadata.secretaria_id);
+    if (metadata.table_name)    formData.append('nombre_tabla',  metadata.table_name);
+    if (metadata.lat_column)    formData.append('lat_col',        metadata.lat_column);
+    if (metadata.lon_column)    formData.append('lon_col',        metadata.lon_column);
+    const response = await api.post('/uploads', formData, {
+      timeout: 120000,
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  },
+
+  getHistory: async (secretariaId) => {
+    const response = await api.get('/uploads', { params: { secretaria_id: secretariaId } });
+    return response.data;
+  },
+
+  /** Elimina un upload y su tabla PostGIS */
+  delete: async (uploadId) => {
+    const response = await api.delete(`/uploads/${uploadId}`);
+    return response.data;
+  },
+
+  /** Analiza un archivo sin subirlo: retorna columnas, preview y detección lat/lon */
+  analyzeFile: async (file) => {
+    const formData = new FormData();
+    formData.append('archivo', file);
+    const response = await api.post('/uploads/analyze', formData, {
+      timeout: 30000,
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  },
+
+  /** Lista de capas base disponibles para cruce de atributos */
+  getBaseLayers: async () => {
+    const response = await api.get('/uploads/base-layers');
+    return response.data;
+  },
+
+  /** Campos (columnas no-geom) de una capa base específica */
+  getBaseLayerFields: async (tableName) => {
+    const response = await api.get(`/uploads/base-layer-fields/${tableName}`);
+    return response.data;
+  },
+};
+
+// ============================
+// SERVICIOS DE GEODATA (PREVIEW)
+// ============================
+
+// ============================
+// SERVICIOS DE USUARIOS (admin)
+// ============================
+
+export const usuariosService = {
+  getAll: async () => {
+    const res = await api.get('/usuarios');
+    return res.data;
+  },
+  create: async (data) => {
+    const res = await api.post('/usuarios', data);
+    return res.data;
+  },
+  update: async (id, data) => {
+    const res = await api.put(`/usuarios/${id}`, data);
+    return res.data;
+  },
+  toggle: async (id) => {
+    const res = await api.patch(`/usuarios/${id}/toggle`);
+    return res.data;
+  },
+  remove: async (id) => {
+    const res = await api.delete(`/usuarios/${id}`);
+    return res.data;
+  },
+};
+
+export const geodataService = {
+  getPreview: async (tableName, { limit = 50, cols } = {}) => {
+    const params = { limit };
+    if (cols) params.cols = cols;
+    const response = await api.get(`/geodata/${tableName}`, { params });
+    return response.data;
+  },
+};
+
 export default api;

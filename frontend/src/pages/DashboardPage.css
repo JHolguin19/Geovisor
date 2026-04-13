@@ -1,5 +1,5 @@
 .dashboard-page {
-  min-height: 100vh;
+  height: 100vh;
   background: var(--surface);
   display: flex;
   flex-direction: column;
@@ -53,6 +53,25 @@
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+.dash-admin-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: rgba(229,62,62,.15);
+  border: 1px solid rgba(229,62,62,.35);
+  border-radius: 7px;
+  color: #fc8181;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background .2s;
+}
+.dash-admin-btn:hover {
+  background: rgba(229,62,62,.25);
+  color: #feb2b2;
 }
 
 .dash-user-badge {
@@ -252,6 +271,7 @@
 
 /* ── Responsive ── */
 @media (max-width: 1024px) {
+  .dash-header { padding: 0 20px; }
   .dash-main { padding: 36px 24px; }
   .sec-grid { grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
 }

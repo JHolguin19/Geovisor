@@ -4,8 +4,12 @@ node_modules/
 
 # Environment variables (contain sensitive credentials)
 .env
+.env.local
+.env.*.local
 backend/.env
 frontend/.env
+**/.env
+!**/.env.example
 
 # Build outputs
 dist/

@@ -13,11 +13,15 @@ import SisbenUbaPanel from '../organisms/SisbenUbaPanel';
 import AlumbradoPanel from '../organisms/AlumbradoPanel/AlumbradoPanel';
 import MapContext from '../context/MapContext';
 import { getSecretariaById } from '../config/secretarias';
+import { useLayerPrefetch } from '../features/map/hooks/useLayerPrefetch';
 import './MapPage.css';
 
 function MapPageInner() {
   const { secretariaId = 'sig' } = useParams();
   const secretaria = getSecretariaById(secretariaId);
+
+  // Pre-carga GeoJSON de todas las capas en background al entrar al mapa
+  useLayerPrefetch(secretariaId);
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [searchOpen, setSearchOpen] = useState(false);

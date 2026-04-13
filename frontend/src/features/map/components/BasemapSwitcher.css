@@ -1,0 +1,54 @@
+/* ── Selector de mapa base ── */
+.basemap-switcher {
+  position: absolute;
+  bottom: 36px;
+  right: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  z-index: 100;
+  pointer-events: auto;
+}
+
+.bm-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 12px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 7px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all .15s var(--ease);
+  box-shadow: 0 1px 4px rgba(0,0,0,.15);
+  backdrop-filter: blur(4px);
+}
+
+.bm-btn svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  opacity: .7;
+}
+
+.bm-btn:hover {
+  background: #fff;
+  border-color: var(--sky);
+  color: var(--blue);
+  box-shadow: 0 2px 8px rgba(0,0,0,.2);
+}
+
+.bm-btn--active {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(11,37,69,.35);
+}
+
+.bm-btn--active svg { opacity: 1; }
+.bm-btn--active:hover { background: var(--blue); border-color: var(--blue); }

@@ -1,34 +1,29 @@
 // Servicio para obtener estadísticas y conteos de capas desde PostGIS
 
-// Datos estáticos de UBAs (número de predios y área)
-export const UBA_DATA = {
-  uba1: { uba: 'UBA1', numero_predios: 2197, area_m2: 718315 },
-  uba2: { uba: 'UBA2', numero_predios: 5959, area_m2: 1662210 },
-  uba3: { uba: 'UBA3', numero_predios: 2805, area_m2: 1054055 },
-  uba4: { uba: 'UBA4', numero_predios: 3258, area_m2: 902978 },
-  uba5: { uba: 'UBA5', numero_predios: 1537, area_m2: 608186 },
-  ubac: { uba: 'UBAC', numero_predios: 2028, area_m2: 1491423 }
-};
+import { UBA_DATA, UBA_ORDER } from '../constants/ubas';
+
+// Re-exportar para mantener compatibilidad con importadores existentes
+export { UBA_DATA };
 
 // Mapeo de IDs de capas a nombres de UBA
-export const UBA_LAYER_IDS = ['uba1', 'uba2', 'uba3', 'uba4', 'uba5', 'ubac'];
+export const UBA_LAYER_IDS = UBA_ORDER;
 
 // Capas de uso de suelo que se pueden contar
 export const USO_SUELO_LAYERS = {
-  uso_estanco: { tableName: 'uds_barestanco', nombre: 'Estanco', color: '#8B0000' },
-  uso_discotecas: { tableName: 'uso_de_suelos_discotecas', nombre: 'Discotecas', color: '#FF00FF' },
-  uso_droguerias: { tableName: 'uds2_droguerias', nombre: 'Droguerías', color: '#00BFFF' },
-  uso_ferreterias: { tableName: 'uds_ferreterias', nombre: 'Ferreterías', color: '#696969' },
-  uso_ips: { tableName: 'uds_ips', nombre: 'IPS', color: '#228B22' },
-  uso_restaurantes: { tableName: 'uds_restaurantes', nombre: 'Restaurantes', color: '#FFA500' },
-  uso_servicios: { tableName: 'uds_otros', nombre: 'Servicios', color: '#4682B4' },
-  zonas_verdes: { tableName: 'zonasverdes', nombre: 'Zonas Verdes', color: '#006400' },
-  gimnasios_biosaludables: { tableName: 'Gimnasiosbiosaludables', nombre: 'Gimnasios', color: '#ff5722' },
-  predios_educativos: { tableName: 'predios_educativos', nombre: 'Predios Educativos', color: '#1E90FF' },
-  equipo_institucional: { tableName: 'predios_equipo_institucional', nombre: 'Equipo Institucional', color: '#3FEBBA' },
-  iglesias: { tableName: 'predios_iglesias', nombre: 'Iglesias', color: '#FFD700' },
-  luminarias_tradicionales: { tableName: 'luminariastradicionales_alumbradopublico', nombre: 'Luminarias Tradicionales', color: '#FBBF24' },
-  luminarias_led: { tableName: 'luminariasled_alumbradopublico', nombre: 'Luminarias LED', color: '#A3E635' }
+  uso_estanco: { tableName: 'planeacion_estanco', nombre: 'Estanco', color: '#8B0000' },
+  uso_discotecas: { tableName: 'planeacion_discotecas', nombre: 'Discotecas', color: '#FF00FF' },
+  uso_droguerias: { tableName: 'planeacion_droguerias', nombre: 'Droguerías', color: '#00BFFF' },
+  uso_ferreterias: { tableName: 'planeacion_ferreterias', nombre: 'Ferreterías', color: '#696969' },
+  uso_ips: { tableName: 'planeacion_ips', nombre: 'IPS', color: '#228B22' },
+  uso_restaurantes: { tableName: 'planeacion_restaurantes', nombre: 'Restaurantes', color: '#FFA500' },
+  uso_servicios: { tableName: 'planeacion_servicios', nombre: 'Servicios', color: '#4682B4' },
+  zonas_verdes: { tableName: 'planeacion_zonas_verdes', nombre: 'Zonas Verdes', color: '#006400' },
+  gimnasios_biosaludables: { tableName: 'planeacion_gimnasios_biosaludables', nombre: 'Gimnasios', color: '#ff5722' },
+  predios_educativos: { tableName: 'educacion_predios_educativos', nombre: 'Predios Educativos', color: '#1E90FF' },
+  equipo_institucional: { tableName: 'planeacion_equipo_institucional', nombre: 'Equipo Institucional', color: '#3FEBBA' },
+  iglesias: { tableName: 'planeacion_iglesias', nombre: 'Iglesias', color: '#FFD700' },
+  luminarias_tradicionales: { tableName: 'obras_luminarias_tradicionales', nombre: 'Luminarias Tradicionales', color: '#FBBF24' },
+  luminarias_led: { tableName: 'obras_luminarias_led', nombre: 'Luminarias LED', color: '#A3E635' }
 };
 
 // Fetch autenticado a la API PostGIS
@@ -42,12 +37,12 @@ function apiGet(tableName) {
 // Obtener barrios de una UBA específica
 export async function getBarriosByUba(ubaLayerId) {
   const tableMap = {
-    uba1: 'BARR_UBA_1',
-    uba2: 'BARR_UBA2',
-    uba3: 'BARR_UBA3',
-    uba4: 'BARR_UBA4',
-    uba5: 'BARR_UBA5',
-    ubac: 'BARRIOS_UBA_C'
+    uba1: 'planeacion_uba1',
+    uba2: 'planeacion_uba2',
+    uba3: 'planeacion_uba3',
+    uba4: 'planeacion_uba4',
+    uba5: 'planeacion_uba5',
+    ubac: 'planeacion_ubac'
   };
   const tableName = tableMap[ubaLayerId];
   if (!tableName) return new Set();

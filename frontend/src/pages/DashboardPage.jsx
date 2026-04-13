@@ -1,5 +1,5 @@
 import { useContext, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
 import SECRETARIAS, { getSecretariaById } from '../config/secretarias';
 import './DashboardPage.css';
@@ -77,21 +77,22 @@ function SecretariaIcon({ id }) {
         <path d="M16 8h4l3 3v5h-7V8zM5.5 21a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM18.5 21a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
       </svg>
     ),
-    seguridad: (
+    gestion_riesgo: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-        <path d="M9 12l2 2 4-4" />
-      </svg>
-    ),
-    juridica: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 3v18M5 6l7-3 7 3M8 21h8M3 6l4.5 9M3 6c0 2.5 2 4.5 4.5 4.5S12 8.5 12 6M21 6l-4.5 9M21 6c0 2.5-2 4.5-4.5 4.5S12 8.5 12 6" />
+        <path d="M12 8v4M12 16h.01" />
       </svg>
     ),
     talento_humano: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
         <circle cx="12" cy="7" r="4" />
+      </svg>
+    ),
+    merquilichao: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 3h18v18H3zM3 9h18M9 21V9" />
+        <path d="M13 13h4M13 17h4" />
       </svg>
     ),
   };
@@ -148,6 +149,16 @@ export default function DashboardPage() {
           </div>
         </div>
         <div className="dash-header-right">
+          {user?.role === 'admin' && (
+            <NavLink to="/admin/usuarios" className="dash-admin-btn">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+              </svg>
+              Usuarios
+            </NavLink>
+          )}
           {user && (
             <span className="dash-user-badge">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">

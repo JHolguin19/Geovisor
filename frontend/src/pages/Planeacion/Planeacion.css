@@ -889,6 +889,10 @@
 /* =================================================================
    RESPONSIVE
    ================================================================= */
+@media (max-width: 1024px) {
+  .plan-main    { padding: 36px 24px; }
+}
+
 @media (max-width: 768px) {
   .plan-header  { padding: 0 16px; height: 56px; }
   .plan-logo    { height: 26px; }
@@ -899,10 +903,16 @@
   .plan-grid    { grid-template-columns: 1fr 1fr; gap: 12px; }
   .sidepanel    { width: 260px; }
   .visor-search-wrap { max-width: 90%; }
+  .visor-topbar { padding: 0 12px; gap: 6px; }
+  .visor-topbar-title { font-size: 13px; letter-spacing: .3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+  .visor-topbar-back  { padding: 4px 8px; font-size: 10.5px; }
+  .visor-topbar-badge { display: none; }
 }
 
 @media (max-width: 480px) {
   .plan-grid { grid-template-columns: 1fr; }
   .plan-title { font-size: 22px; }
-  .sidepanel  { width: 220px; }
+  .sidepanel  { width: calc(100vw - 32px); right: 16px; left: 16px; top: 8px; }
+  .visor-topbar-sep { display: none; }
+  .visor-topbar-back span { display: none; }
 }

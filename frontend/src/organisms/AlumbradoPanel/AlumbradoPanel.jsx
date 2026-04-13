@@ -1,5 +1,6 @@
 import { useContext, useEffect, useState } from 'react';
 import MapContext from '../../context/MapContext';
+import { UBA_COLORS, UBA_ORDER } from '../../constants/ubas';
 import './AlumbradoPanel.css';
 
 // Capas que activan el panel (excluye rutas)
@@ -9,13 +10,6 @@ const ALUMBRADO_LAYER_IDS = new Set([
   'apoyos_alumbrado_publico',
   'luminarias_led',
 ]);
-
-const UBA_COLORS = {
-  uba1: '#E53935', uba2: '#43A047', uba3: '#1E88E5',
-  uba4: '#FB8C00', uba5: '#8E24AA', ubac: '#00ACC1'
-};
-
-const UBA_ORDER = ['uba1', 'uba2', 'uba3', 'uba4', 'uba5', 'ubac'];
 
 const HEADER_COLOR = '#F59E0B';
 

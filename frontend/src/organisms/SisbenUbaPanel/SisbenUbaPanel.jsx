@@ -1,21 +1,10 @@
 import { useContext, useEffect, useState } from 'react';
 import MapContext from '../../context/MapContext';
+import { UBA_COLORS, SIS_UBA_MAP } from '../../constants/ubas';
 import './SisbenUbaPanel.css';
 
-// Mapeo de layer ID → ubaId para el endpoint
-const SISBEN_UBA_LAYERS = {
-  sis_uba1: 'uba1',
-  sis_uba2: 'uba2',
-  sis_uba3: 'uba3',
-  sis_uba4: 'uba4',
-  sis_uba5: 'uba5',
-  sis_ubac: 'ubac'
-};
-
-const UBA_COLORS = {
-  uba1: '#E53935', uba2: '#43A047', uba3: '#1E88E5',
-  uba4: '#FB8C00', uba5: '#8E24AA', ubac: '#00ACC1'
-};
+// Alias para mantener compatibilidad interna
+const SISBEN_UBA_LAYERS = SIS_UBA_MAP;
 
 // Grupos de variables en el mismo orden que el mapa de calor
 const FIELD_GROUPS = [

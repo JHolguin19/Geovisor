@@ -6,10 +6,13 @@ import LoginPage from './pages/LoginPage';
 import MapPage from './pages/MapPage';
 import DashboardPage from './pages/DashboardPage';
 import SecretariaPortalPage from './pages/SecretariaPortalPage';
+import UploadPage from './pages/UploadPage';
+import DataExplorerPage from './pages/DataExplorerPage';
 import PdmPage from './pages/PdmPage';
 import DashboardCatastro from './pages/Planeacion/Catastro/DashboardCatastro';
 import DashboardVivienda from './pages/Planeacion/Vivienda/DashboardVivienda';
 import PlaneacionMapPage from './pages/Planeacion/PlaneacionMapPage';
+import AdminUsuariosPage from './pages/AdminUsuariosPage';
 
 function PrivateRoute({ children, requiredRole }) {
   const { user, isAuthenticated, loading } = useContext(AuthContext);
@@ -57,12 +60,24 @@ function App() {
 
         {/* Portal de secretaría (módulos) */}
         <Route path="portal/:secretariaId" element={<SecretariaPortalPage />} />
+        <Route path="portal/:secretariaId/upload" element={<UploadPage />} />
+        <Route path="portal/:secretariaId/datos" element={<DataExplorerPage />} />
 
         {/* Geovisor por secretaría */}
         <Route path="mapa/:secretariaId" element={<MapPage />} />
 
         {/* Seguimiento PDM */}
         <Route path="pdm" element={<PdmPage />} />
+
+        {/* Administración — solo admin */}
+        <Route
+          path="admin/usuarios"
+          element={
+            <PrivateRoute requiredRole="admin">
+              <AdminUsuariosPage />
+            </PrivateRoute>
+          }
+        />
       </Route>
 
       {/* Catch-all */}

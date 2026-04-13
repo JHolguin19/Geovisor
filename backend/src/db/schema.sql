@@ -99,6 +99,16 @@ CREATE TABLE IF NOT EXISTS uploads (
   completed_at     TIMESTAMP
 );
 
+-- 7. REFRESH TOKENS (autenticación JWT)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS refresh_tokens (
+  id         SERIAL       PRIMARY KEY,
+  user_id    INTEGER      NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+  token      VARCHAR(255) NOT NULL UNIQUE,
+  expires_at TIMESTAMP    NOT NULL,
+  created_at TIMESTAMP    DEFAULT NOW()
+);
+
 -- FK circular: geo_tablas.upload_id → uploads.id
 ALTER TABLE geo_tablas
   ADD CONSTRAINT fk_geo_tablas_upload
@@ -113,3 +123,5 @@ CREATE INDEX IF NOT EXISTS idx_uploads_secretaria  ON uploads(secretaria_id);
 CREATE INDEX IF NOT EXISTS idx_uploads_estado      ON uploads(estado);
 CREATE INDEX IF NOT EXISTS idx_usuarios_secretaria ON usuarios(secretaria_id);
 CREATE INDEX IF NOT EXISTS idx_geo_tablas_secretaria ON geo_tablas(secretaria_id);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_token  ON refresh_tokens(token);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user   ON refresh_tokens(user_id);

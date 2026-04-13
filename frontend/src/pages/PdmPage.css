@@ -58,9 +58,10 @@
   align-items: center;
   gap: 20px;
   flex-shrink: 0;
+  flex-wrap: wrap;
 }
 
-.pdm-header-left { display: flex; align-items: center; gap: 20px; }
+.pdm-header-left { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
 
 .pdm-back-btn {
   color: rgba(255,255,255,.65);
@@ -82,7 +83,11 @@
   display: flex;
   padding: 0 24px;
   flex-shrink: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
+.pdm-tabs::-webkit-scrollbar { display: none; }
 
 .pdm-tab {
   padding: 12px 20px;
@@ -95,6 +100,8 @@
   cursor: pointer;
   transition: color .15s, border-color .15s;
   margin-bottom: -1px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .pdm-tab:hover { color: var(--pdm-text); }
 .pdm-tab--active { color: var(--pdm-blue); border-bottom-color: var(--pdm-blue); }
@@ -889,6 +896,10 @@
 }
 
 @media (max-width: 768px) {
+  .pdm-header         { padding: 10px 16px; gap: 12px; }
+  .pdm-header-title h1 { font-size: 15px; }
+  .pdm-tabs           { padding: 0 12px; }
+  .pdm-tab            { padding: 10px 14px; font-size: 12px; }
   .pdm-main           { padding: 12px 12px 32px; }
   .pdm-gauges-row     { gap: 24px; }
   .pdm-gauge-divider  { display: none; }
@@ -899,4 +910,24 @@
   .pdm-estado-row     { grid-template-columns: 1fr; }
   .pdm-estado-layout  { grid-template-columns: 1fr; }
   .pdm-modal-kpis     { grid-template-columns: 1fr; }
+  .pdm-filters        { padding: 12px; gap: 10px; }
+  .pdm-filter-group   { min-width: 100%; }
+}
+
+@media (max-width: 480px) {
+  .pdm-header         { padding: 8px 12px; }
+  .pdm-tabs           { padding: 0 8px; }
+  .pdm-tab            { padding: 8px 10px; font-size: 11.5px; }
+  .pdm-main           { padding: 8px 8px 24px; }
+  .pdm-budget-cards   { grid-template-columns: 1fr; }
+  .pdm-budget-grid    { grid-template-columns: 1fr; }
+  .pdm-estado-cards   { flex-direction: column; align-items: stretch; }
+  .pdm-estado-card    { width: auto; }
+  .pdm-gauge-ring     { width: 110px; height: 110px; }
+  .pdm-gauge-inner    { width: 84px; height: 84px; }
+  .pdm-gauge-value    { font-size: 20px; }
+  .pdm-modal          { border-radius: 10px; }
+  .pdm-modal-kpis     { padding: 14px 16px; }
+  .pdm-modal-header   { padding: 16px; }
+  .pdm-modal-section  { padding: 14px 16px; }
 }

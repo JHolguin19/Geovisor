@@ -3,18 +3,18 @@
 export const SECRETARIAS = [
   {
     id: 'sig',
-    name: 'Sec. de Información Geográfica',
+    name: 'Sistema de Información Geográfica',
     shortName: 'SIG',
     code: 'SIG',
     color: '#1A5F9B',
     description: 'Gestión territorial, catastro y análisis geoespacial completo del municipio.',
-    layersKey: 'sig',   // 'sig' = todas las capas
+    layersKey: 'sig',
     hasMapa: true,
     orden: 1
   },
   {
     id: 'planeacion',
-    name: 'Secretaría de Planeación',
+    name: 'Secretaría de Planeación, Ordenamiento Territorial y Vivienda',
     shortName: 'Planeación',
     code: 'PLA',
     color: '#1565C0',
@@ -25,7 +25,7 @@ export const SECRETARIAS = [
   },
   {
     id: 'obras',
-    name: 'Secretaría de Infraestructura',
+    name: 'Secretaría de Planeación, Ordenamiento Territorial y Vivienda',
     shortName: 'Infraestructura',
     code: 'OBR',
     color: '#4E342E',
@@ -35,20 +35,20 @@ export const SECRETARIAS = [
     orden: 3
   },
   {
-    id: 'ambiente',
-    name: 'Secretaría de Ambiente',
-    shortName: 'Ambiente',
-    code: 'AMB',
-    color: '#2E7D32',
-    description: 'Zonas verdes, espacios públicos y equipamiento biosaludable.',
-    layersKey: 'zonas_verdes',
+    id: 'gobierno',
+    name: 'Secretaría de Gobierno, Paz y Convivencia',
+    shortName: 'Gobierno',
+    code: 'GOB',
+    color: '#00695C',
+    description: 'Equipamiento institucional, templos y sedes gubernamentales.',
+    layersKey: 'equipo_institucional',
     hasMapa: true,
     orden: 4
   },
   {
     id: 'educacion',
-    name: 'Secretaría de Educación',
-    shortName: 'Educación',
+    name: 'Secretaría de Educación y Cultura',
+    shortName: 'Educación y Cultura',
     code: 'EDU',
     color: '#E65100',
     description: 'Instituciones educativas, sedes y cobertura territorial.',
@@ -58,8 +58,8 @@ export const SECRETARIAS = [
   },
   {
     id: 'desarrollo_social',
-    name: 'Secretaría de Desarrollo Social',
-    shortName: 'Desarrollo Social',
+    name: 'Secretaría de Bienestar Social y Participación Comunitaria',
+    shortName: 'Bienestar Social',
     code: 'DES',
     color: '#6A1B9A',
     description: 'Información Sisben, población y datos socioeconómicos por UBA.',
@@ -68,13 +68,13 @@ export const SECRETARIAS = [
     orden: 6
   },
   {
-    id: 'gobierno',
-    name: 'Secretaría de Gobierno',
-    shortName: 'Gobierno',
-    code: 'GOB',
-    color: '#00695C',
-    description: 'Equipamiento institucional, templos y sedes gubernamentales.',
-    layersKey: 'equipo_institucional',
+    id: 'ambiente',
+    name: 'Secretaría de Fomento Económico y Agroambiental',
+    shortName: 'Fomento Económico',
+    code: 'AMB',
+    color: '#2E7D32',
+    description: 'Fomento económico, agroambiental, zonas verdes y espacios públicos.',
+    layersKey: 'zonas_verdes',
     hasMapa: true,
     orden: 7
   },
@@ -101,70 +101,59 @@ export const SECRETARIAS = [
     orden: 9
   },
   {
-    id: 'cultura',
-    name: 'Secretaría de Cultura',
-    shortName: 'Cultura',
-    code: 'CUL',
-    color: '#AD1457',
-    description: 'Espacios culturales, patrimonio y cobertura de eventos municipales.',
-    layersKey: null,
-    hasMapa: false,
-    orden: 10
-  },
-  {
     id: 'deportes',
-    name: 'Secretaría de Deportes',
-    shortName: 'Deportes',
+    name: 'Instituto Municipal para el Deporte y la Recreación',
+    shortName: 'Deporte y Recreación',
     code: 'DEP',
     color: '#00838F',
     description: 'Escenarios deportivos, parques y equipamiento recreativo.',
     layersKey: null,
     hasMapa: false,
-    orden: 11
+    orden: 10
   },
   {
     id: 'transito',
-    name: 'Secretaría de Tránsito',
-    shortName: 'Tránsito',
-    code: 'TRA',
+    name: 'Secretaría de Movilidad',
+    shortName: 'Movilidad',
+    code: 'MOV',
     color: '#E64A19',
     description: 'Vías, semáforos, señalización y movilidad urbana.',
+    layersKey: null,
+    hasMapa: false,
+    orden: 11
+  },
+  {
+    id: 'gestion_riesgo',
+    name: 'Oficina de Gestión del Riesgo de Desastres',
+    shortName: 'Gestión del Riesgo',
+    code: 'GRD',
+    color: '#37474F',
+    description: 'Prevención, atención y recuperación ante desastres y emergencias.',
     layersKey: null,
     hasMapa: false,
     orden: 12
   },
   {
-    id: 'seguridad',
-    name: 'Secretaría de Seguridad',
-    shortName: 'Seguridad',
-    code: 'SEG',
-    color: '#37474F',
-    description: 'Cuadrantes de seguridad, cámaras y cobertura de vigilancia.',
+    id: 'talento_humano',
+    name: 'Departamento Administrativo de Desarrollo Institucional',
+    shortName: 'Desarrollo Institucional',
+    code: 'DAD',
+    color: '#5D4037',
+    description: 'Desarrollo institucional, talento humano y gestión administrativa.',
     layersKey: null,
     hasMapa: false,
     orden: 13
   },
   {
-    id: 'juridica',
-    name: 'Secretaría Jurídica',
-    shortName: 'Jurídica',
-    code: 'JUR',
-    color: '#4527A0',
-    description: 'Predios en litigio, linderos y asuntos legales territoriales.',
+    id: 'merquilichao',
+    name: 'Merquilichao',
+    shortName: 'Merquilichao',
+    code: 'MER',
+    color: '#F57F17',
+    description: 'Plaza de mercado y gestión de comercio municipal.',
     layersKey: null,
     hasMapa: false,
     orden: 14
-  },
-  {
-    id: 'talento_humano',
-    name: 'Talento Humano',
-    shortName: 'Talento Humano',
-    code: 'TH',
-    color: '#5D4037',
-    description: 'Distribución de funcionarios y sedes administrativas.',
-    layersKey: null,
-    hasMapa: false,
-    orden: 15
   }
 ];
 

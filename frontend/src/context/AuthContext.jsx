@@ -1,5 +1,6 @@
 import { createContext, useState, useEffect, useCallback } from 'react';
 import api from '../services/api';
+import { clearCache as clearGeoCache } from '../features/map/layers/geoJsonCache';
 
 const AuthContext = createContext(null);
 
@@ -18,6 +19,7 @@ export function AuthProvider({ children }) {
         } catch (error) {
           console.error('Token inválido:', error);
           localStorage.removeItem('token');
+          localStorage.removeItem('refreshToken');
           setToken(null);
         }
       }
@@ -30,8 +32,9 @@ export function AuthProvider({ children }) {
   const login = useCallback(async (username, password) => {
     try {
       const response = await api.post('/auth/login', { username, password });
-      const { user, token } = response.data;
+      const { user, token, refreshToken } = response.data;
       localStorage.setItem('token', token);
+      localStorage.setItem('refreshToken', refreshToken);
       setToken(token);
       setUser(user);
       return { success: true, user };
@@ -45,8 +48,13 @@ export function AuthProvider({ children }) {
   }, []);
 
   // Logout
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
+    try {
+      await api.post('/auth/logout');
+    } catch { /* ignorar error si el token ya expiró */ }
     localStorage.removeItem('token');
+    localStorage.removeItem('refreshToken');
+    clearGeoCache();
     setToken(null);
     setUser(null);
   }, []);
