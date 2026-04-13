@@ -68,7 +68,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWmsLayer({
         id: 'predios_urbanos',
         name: 'Predios Urbanos',
-        tableName: 'planeacion_predios_2025',
+        tableName: 'predios_2025_m',
         color: '#E53935',
         cols: 'matriculainmobiliaria,codigo,direccion,areaterreno_m2,areaconstruida_m2,avaluo,destinoeconomico',
         visible: true,
@@ -88,7 +88,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWmsLayer({
         id: 'nomenclatura_vial',
         name: 'Nomenclatura Vial',
-        tableName: 'planeacion_nomenclatura_vial',
+        tableName: 'SANTANDER IGAC 2025 — U_NOMENCLATURA_VIAL_2025',
         visible: true,
         queryable: true,
         description: 'Nomenclatura vial del municipio'
@@ -96,7 +96,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWfsLayer({
         id: 'barrios_urbanos',
         name: 'Barrios Urbanos',
-        tableName: 'planeacion_barrios_urbanos',
+        tableName: 'barriosurbanos',
         visible: false,
         queryable: true,
         description: 'Barrios del área urbana',
@@ -106,7 +106,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWfsLayer({
         id: 'uba1',
         name: 'UBA 1',
-        tableName: 'planeacion_uba1',
+        tableName: 'BARR_UBA_1',
         visible: false,
         queryable: true,
         group: 'ubas',
@@ -116,7 +116,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWfsLayer({
         id: 'uba2',
         name: 'UBA 2',
-        tableName: 'planeacion_uba2',
+        tableName: 'BARR_UBA2',
         visible: false,
         queryable: true,
         group: 'ubas',
@@ -125,7 +125,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWfsLayer({
         id: 'uba3',
         name: 'UBA 3',
-        tableName: 'planeacion_uba3',
+        tableName: 'BARR_UBA3',
         visible: false,
         queryable: true,
         group: 'ubas',
@@ -134,7 +134,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWfsLayer({
         id: 'uba4',
         name: 'UBA 4',
-        tableName: 'planeacion_uba4',
+        tableName: 'BARR_UBA4',
         visible: false,
         queryable: true,
         group: 'ubas',
@@ -143,7 +143,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWfsLayer({
         id: 'uba5',
         name: 'UBA 5',
-        tableName: 'planeacion_uba5',
+        tableName: 'BARR_UBA5',
         visible: false,
         queryable: true,
         group: 'ubas',
@@ -152,7 +152,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWfsLayer({
         id: 'ubac',
         name: 'UBA C',
-        tableName: 'planeacion_ubac',
+        tableName: 'BARRIOS_UBA_C',
         visible: false,
         queryable: true,
         group: 'ubas',
@@ -163,7 +163,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWmsLayer({
         id: 'uso_estanco',
         name: 'Estanco',
-        tableName: 'planeacion_estanco',
+        tableName: 'uds_barestanco',
         style: 'pg_uds_estancos',
         visible: false,
         queryable: true,
@@ -173,7 +173,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWmsLayer({
         id: 'uso_discotecas',
         name: 'Discotecas',
-        tableName: 'planeacion_discotecas',
+        tableName: 'uso_de_suelos_discotecas',
         style: 'pg_uds_discotecas',
         visible: false,
         queryable: true,
@@ -183,7 +183,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWmsLayer({
         id: 'uso_droguerias',
         name: 'Droguerías',
-        tableName: 'planeacion_droguerias',
+        tableName: 'uds2_droguerias',
         style: 'pg_uds_drogueria',
         visible: false,
         queryable: true,
@@ -193,7 +193,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWmsLayer({
         id: 'uso_ferreterias',
         name: 'Ferreterías',
-        tableName: 'planeacion_ferreterias',
+        tableName: 'uds_ferreterias',
         style: 'pg_uds_ferreteria',
         visible: false,
         queryable: true,
@@ -203,7 +203,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWmsLayer({
         id: 'uso_ips',
         name: 'IPS',
-        tableName: 'planeacion_ips',
+        tableName: 'uds_ips',
         style: 'pg_uds_ips',
         visible: false,
         queryable: true,
@@ -213,7 +213,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWmsLayer({
         id: 'uso_restaurantes',
         name: 'Restaurantes',
-        tableName: 'planeacion_restaurantes',
+        tableName: 'uds_restaurantes',
         style: 'pg_uds_restaurante',
         visible: false,
         queryable: true,
@@ -223,7 +223,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWmsLayer({
         id: 'uso_servicios',
         name: 'Servicios',
-        tableName: 'planeacion_servicios',
+        tableName: 'uds_otros',
         style: 'pg_uds_otros',
         visible: false,
         queryable: true,
@@ -241,7 +241,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWmsLayer({
         id: 'zonas_verdes',
         name: 'Zonas Verdes',
-        tableName: 'planeacion_zonas_verdes',
+        tableName: 'zonasverdes',
         color: '#006400',
         visible: false,
         queryable: true,
@@ -251,7 +251,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWmsLayer({
         id: 'gimnasios_biosaludables',
         name: 'Gimnasios Biosaludables',
-        tableName: 'planeacion_gimnasios_biosaludables',
+        tableName: 'Gimnasiosbiosaludables',
         color: '#22C55E',
         visible: false,
         queryable: true,
@@ -269,7 +269,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWfsLayer({
         id: 'sisben_barrios',
         name: 'Sisben Barrios',
-        tableName: 'planeacion_sisben_barrios',
+        tableName: 'sisben_barrios',
         visible: false,
         queryable: true,
         geometryType: 'polygon',
@@ -278,7 +278,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWmsLayer({
         id: 'sisben_uba2',
         name: 'Sisben UBA 2',
-        tableName: 'planeacion_sisben_uba2',
+        tableName: 'uba2_datospoblaciones',
         color: '#AB47BC',
         visible: false,
         queryable: true,
@@ -293,7 +293,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWmsLayer({
         id: 'sisben_uba4',
         name: 'Sisben UBA 4',
-        tableName: 'planeacion_sisben_uba4',
+        tableName: 'uba4_sisben_barrios',
         color: '#CE93D8',
         visible: false,
         queryable: true
@@ -302,32 +302,32 @@ export const LAYERS_BY_SECRETARIA = {
       // Muestran geometría de barrios de cada UBA y activan el panel de
       // estadísticas Sisben cruzado con los datos de cada unidad barrial
       createWfsLayer({
-        id: 'sis_uba1', name: 'UBA 1 — Sisben', tableName: 'planeacion_uba1',
+        id: 'sis_uba1', name: 'UBA 1 — Sisben', tableName: 'BARR_UBA_1',
         color: '#E53935', visible: false, queryable: false,
         group: 'sisben_ubas', geometryType: 'polygon'
       }),
       createWfsLayer({
-        id: 'sis_uba2', name: 'UBA 2 — Sisben', tableName: 'planeacion_uba2',
+        id: 'sis_uba2', name: 'UBA 2 — Sisben', tableName: 'BARR_UBA2',
         color: '#43A047', visible: false, queryable: false,
         group: 'sisben_ubas', geometryType: 'polygon'
       }),
       createWfsLayer({
-        id: 'sis_uba3', name: 'UBA 3 — Sisben', tableName: 'planeacion_uba3',
+        id: 'sis_uba3', name: 'UBA 3 — Sisben', tableName: 'BARR_UBA3',
         color: '#1E88E5', visible: false, queryable: false,
         group: 'sisben_ubas', geometryType: 'polygon'
       }),
       createWfsLayer({
-        id: 'sis_uba4', name: 'UBA 4 — Sisben', tableName: 'planeacion_uba4',
+        id: 'sis_uba4', name: 'UBA 4 — Sisben', tableName: 'BARR_UBA4',
         color: '#FB8C00', visible: false, queryable: false,
         group: 'sisben_ubas', geometryType: 'polygon'
       }),
       createWfsLayer({
-        id: 'sis_uba5', name: 'UBA 5 — Sisben', tableName: 'planeacion_uba5',
+        id: 'sis_uba5', name: 'UBA 5 — Sisben', tableName: 'BARR_UBA5',
         color: '#8E24AA', visible: false, queryable: false,
         group: 'sisben_ubas', geometryType: 'polygon'
       }),
       createWfsLayer({
-        id: 'sis_ubac', name: 'UBA C — Sisben', tableName: 'planeacion_ubac',
+        id: 'sis_ubac', name: 'UBA C — Sisben', tableName: 'BARRIOS_UBA_C',
         color: '#00ACC1', visible: false, queryable: false,
         group: 'sisben_ubas', geometryType: 'polygon'
       })
@@ -342,7 +342,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWmsLayer({
         id: 'predios_educativos',
         name: 'Predios Educativos',
-        tableName: 'educacion_predios_educativos',
+        tableName: 'predios_educativos',
         color: '#1E90FF',
         visible: false,
         queryable: true,
@@ -368,7 +368,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWmsLayer({
         id: 'equipo_institucional',
         name: 'Equipo Institucional',
-        tableName: 'planeacion_equipo_institucional',
+        tableName: 'predios_equipo_institucional',
         color: '#3FEBBA',
         visible: false,
         queryable: true,
@@ -378,7 +378,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWmsLayer({
         id: 'iglesias',
         name: 'Iglesias',
-        tableName: 'planeacion_iglesias',
+        tableName: 'predios_iglesias',
         color: '#FFD700',
         visible: false,
         queryable: true,
@@ -395,7 +395,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWfsLayer({
         id: 'alumbrado_publico',
         name: 'Transformadores',
-        tableName: 'obras_transformadores',
+        tableName: 'subestaciones_alumbradopublico',
         visible: false,
         queryable: true,
         description: 'Transformadores de alumbrado público',
@@ -405,7 +405,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWfsLayer({
         id: 'luminarias_tradicionales',
         name: 'Luminarias Tradicionales',
-        tableName: 'obras_luminarias_tradicionales',
+        tableName: 'luminariastradicionales_alumbradopublico',
         visible: false,
         queryable: true,
         description: 'Luminarias tradicionales de alumbrado público',
@@ -415,7 +415,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWfsLayer({
         id: 'apoyos_alumbrado_publico',
         name: 'Apoyos Alumbrado Público',
-        tableName: 'obras_apoyos_alumbrado',
+        tableName: 'apoyos_alumbradopublico',
         visible: false,
         queryable: true,
         description: 'Apoyos (postes) de alumbrado público',
@@ -425,7 +425,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWfsLayer({
         id: 'luminarias_led',
         name: 'Luminarias LED',
-        tableName: 'obras_luminarias_led',
+        tableName: 'luminariasled_alumbradopublico',
         visible: false,
         queryable: true,
         description: 'Luminarias LED de alumbrado público',
@@ -435,7 +435,7 @@ export const LAYERS_BY_SECRETARIA = {
       createWfsLayer({
         id: 'rutas_alumbrado_publico',
         name: 'Rutas Alumbrado Público',
-        tableName: 'obras_rutas_alumbrado',
+        tableName: 'rutas_alumbradopublico',
         visible: false,
         queryable: true,
         description: 'Rutas eléctricas de alumbrado público',
@@ -445,8 +445,8 @@ export const LAYERS_BY_SECRETARIA = {
       createWmsLayer({
         id: 'obras_pavimentacion',
         name: 'Obras de Pavimentación',
-        tableName: 'obras_pavimentacion',
-        sldBody: makePavimentacionSLD('obras_pavimentacion'),
+        tableName: 'obraspavimentacion_infraestructura',
+        sldBody: makePavimentacionSLD('obraspavimentacion_infraestructura'),
         visible: false,
         queryable: true,
         zIndex: 15,
@@ -463,8 +463,8 @@ export const LAYERS_BY_SECRETARIA = {
       createWmsLayer({
         id: 'pavimentacion2',
         name: 'Pavimentación 2 - Infraestructura',
-        tableName: 'obras_pavimentacion2',
-        sldBody: makePavimentacionSLD('obras_pavimentacion2'),
+        tableName: 'pavimentacion2',
+        sldBody: makePavimentacionSLD('pavimentacion2'),
         visible: false,
         queryable: true,
         zIndex: 15,

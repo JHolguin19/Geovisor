@@ -20,7 +20,7 @@ export default function SearchPanel({ onClose }) {
     setSearched(false);
     try {
       const isPredi = type === 'predio';
-      const tableName = isPredi ? 'planeacion_predios_2025' : 'planeacion_barrios_urbanos';
+      const tableName = isPredi ? 'predios_2025_m' : 'barriosurbanos';
       const searchFields = isPredi
         ? 'matriculainmobiliaria,direccion'
         : 'nombre';
