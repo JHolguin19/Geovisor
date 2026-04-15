@@ -1,10 +1,13 @@
 import { Link, useLocation } from 'react-router-dom';
+import { useContext } from 'react';
+import AuthContext from '../../context/AuthContext';
 import './Header.css';
 
 const NAV_ITEMS = [
   {
     to: '/dashboard',
     label: 'Dashboard',
+    roles: null, // visible para todos
     icon: (
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
@@ -12,10 +15,35 @@ const NAV_ITEMS = [
       </svg>
     )
   },
+  {
+    to: '/pipeline',
+    label: 'Pipeline de Datos',
+    roles: ['admin', 'editor_geo'], // solo roles privilegiados
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="2" y="3" width="6" height="18" rx="1"/>
+        <rect x="9" y="8" width="6" height="13" rx="1"/>
+        <rect x="16" y="5" width="6" height="16" rx="1"/>
+      </svg>
+    )
+  },
+  {
+    to: '/admin/usuarios',
+    label: 'Usuarios',
+    roles: ['admin'], // solo admin
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+      </svg>
+    )
+  },
 ];
 
 export default function Header({ onToggleSidebar, secretariaName, secretariaColor }) {
   const { pathname } = useLocation();
+  const { user } = useContext(AuthContext);
 
   return (
     <header className="app-header">
@@ -44,16 +72,18 @@ export default function Header({ onToggleSidebar, secretariaName, secretariaColo
         </div>
 
         <nav className="header-nav">
-          {NAV_ITEMS.map(item => (
-            <Link
-              key={item.to}
-              to={item.to}
-              className={`header-nav-link${pathname === item.to ? ' active' : ''}`}
-            >
-              {item.icon}
-              <span>{item.label}</span>
-            </Link>
-          ))}
+          {NAV_ITEMS
+            .filter(item => !item.roles || item.roles.includes(user?.role))
+            .map(item => (
+              <Link
+                key={item.to}
+                to={item.to}
+                className={`header-nav-link${pathname.startsWith(item.to) ? ' active' : ''}`}
+              >
+                {item.icon}
+                <span>{item.label}</span>
+              </Link>
+            ))}
         </nav>
       </div>
 

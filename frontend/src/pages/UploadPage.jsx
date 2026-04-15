@@ -871,6 +871,17 @@ export default function UploadPage() {
                 <button className="upload-btn upload-btn--secondary" onClick={clearFile}>
                   Subir otro archivo
                 </button>
+                {(result.id || result.upload_id) && (
+                  <button
+                    className="upload-btn upload-btn--primary"
+                    style={{ background: '#1E3A5F' }}
+                    onClick={() => navigate(
+                      `/portal/${secretariaId}/process/${result.id || result.upload_id}`
+                    )}
+                  >
+                    Procesar en Pipeline ETL →
+                  </button>
+                )}
                 {result.tiene_geometria && (
                   <button
                     className="upload-btn upload-btn--primary"

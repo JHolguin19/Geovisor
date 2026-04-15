@@ -86,6 +86,48 @@ export const schemas = {
   }),
 };
 
+// ── Schemas ETL ───────────────────────────────────────────────────────────────
+
+const columnMappingItem = z.object({
+  source: z.string().min(1, 'source requerido'),
+  target: z.string().min(1, 'target requerido').regex(/^[a-z0-9_]+$/, 'target debe ser snake_case'),
+  type:   z.enum(['TEXT', 'INTEGER', 'NUMERIC', 'BIGINT', 'DATE', 'BOOLEAN']).default('TEXT'),
+});
+
+const validationRuleItem = z.object({
+  field:    z.string().min(1),
+  rule:     z.enum(['required', 'min', 'max', 'min_length', 'max_length', 'regex', 'lat_range', 'lon_range']),
+  params:   z.record(z.string()).optional().default({}),
+  severity: z.enum(['warning', 'error']).optional().default('warning'),
+});
+
+export const etlProcessSchema = z.object({
+  upload_id:        z.number().int().positive('upload_id debe ser un entero positivo'),
+  geo_mode:         z.enum(['coords', 'join', 'spatial', 'none']).default('none'),
+  geo_config:       z.record(z.unknown()).optional().default({}),
+  column_mapping:   z.array(columnMappingItem).min(1, 'Se requiere al menos una columna en el mapeo'),
+  validation_rules: z.array(validationRuleItem).optional().default([]),
+});
+
+export const etlPromoteSchema = z.object({
+  table_name:     z.string().max(100).regex(/^[a-z0-9_]+$/, 'Nombre de tabla debe ser snake_case').optional(),
+  include_errors: z.boolean().optional().default(false),
+  create_layer:   z.boolean().optional().default(false),
+  layer_name:     z.string().max(200).optional(),
+  layer_color:    z.string().regex(/^#[0-9a-fA-F]{6}$/).optional().default('#3B82F6'),
+});
+
+export const etlRejectSchema = z.object({
+  reason: z.string().max(500).optional().default('Sin motivo especificado'),
+});
+
+export const etlReprocessSchema = z.object({
+  geo_mode:         z.enum(['coords', 'join', 'spatial', 'none']).optional(),
+  geo_config:       z.record(z.unknown()).optional(),
+  column_mapping:   z.array(columnMappingItem).optional(),
+  validation_rules: z.array(validationRuleItem).optional(),
+});
+
 // ── Middleware factory ────────────────────────────────────────────────────────
 
 /**

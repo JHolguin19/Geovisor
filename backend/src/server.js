@@ -20,6 +20,8 @@ import catastroRoutes from './routes/catastro.js';
 import viviendaRoutes from './routes/vivienda.js';
 import alumbradoRoutes from './routes/alumbrado.routes.js';
 import usuariosRoutes from './routes/usuarios.routes.js';
+import etlRoutes from './routes/etl.routes.js';
+import tablesRoutes from './routes/tables.routes.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 dotenv.config();
@@ -98,6 +100,8 @@ app.use('/api/catastro',  catastroRoutes);
 app.use('/api/vivienda',  viviendaRoutes);
 app.use('/api/alumbrado', alumbradoRoutes);
 app.use('/api/usuarios',  usuariosRoutes);
+app.use('/api/etl',       etlRoutes);
+app.use('/api/tables',    tablesRoutes);
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });

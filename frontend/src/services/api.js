@@ -258,4 +258,124 @@ export const geodataService = {
   },
 };
 
+// ============================
+// SERVICIO ETL — PIPELINE
+// ============================
+
+export const etlService = {
+  /** Iniciar procesamiento de un upload (raw → staging) */
+  process: async ({ uploadId, geoMode, geoConfig, columnMapping, validationRules }) => {
+    const res = await api.post('/etl/process', {
+      upload_id:        uploadId,
+      geo_mode:         geoMode,
+      geo_config:       geoConfig       || {},
+      column_mapping:   columnMapping   || [],
+      validation_rules: validationRules || [],
+    });
+    return res.data;
+  },
+
+  /** Obtener estado de un job */
+  getJob: async (jobId) => {
+    const res = await api.get(`/etl/${jobId}`);
+    return res.data;
+  },
+
+  /** Preview paginado de los datos en staging */
+  getPreview: async (jobId, { page = 1, limit = 50, status } = {}) => {
+    const params = { page, limit };
+    if (status) params.status = status;
+    const res = await api.get(`/etl/${jobId}/preview`, { params });
+    return res.data;
+  },
+
+  /** Filas con error */
+  getErrors: async (jobId, { page = 1, limit = 100 } = {}) => {
+    const res = await api.get(`/etl/${jobId}/errors`, { params: { page, limit } });
+    return res.data;
+  },
+
+  /** GeoJSON de geometrías generadas en staging (para mini-mapa) */
+  getGeoJSON: async (jobId, { limit = 2000 } = {}) => {
+    const res = await api.get(`/etl/${jobId}/geojson`, { params: { limit } });
+    return res.data;
+  },
+
+  /** Promover staging a producción */
+  promote: async (jobId, options = {}) => {
+    const res = await api.post(`/etl/${jobId}/promote`, options);
+    return res.data;
+  },
+
+  /** Rechazar un job */
+  reject: async (jobId, reason = '') => {
+    const res = await api.post(`/etl/${jobId}/reject`, { reason });
+    return res.data;
+  },
+
+  /** Re-procesar con nueva configuración */
+  reprocess: async (jobId, newConfig) => {
+    const res = await api.post(`/etl/${jobId}/reprocess`, {
+      geo_mode:         newConfig.geoMode,
+      geo_config:       newConfig.geoConfig,
+      column_mapping:   newConfig.columnMapping,
+      validation_rules: newConfig.validationRules,
+    });
+    return res.data;
+  },
+
+  /** Historial del pipeline (Dashboard Kanban) */
+  getHistory: async ({ page = 1, limit = 50, secretaria, status } = {}) => {
+    const params = { page, limit };
+    if (secretaria) params.secretaria = secretaria;
+    if (status)     params.status     = status;
+    const res = await api.get('/etl/history', { params });
+    return res.data;
+  },
+
+  /** Estadísticas por estado (contadores para el Kanban) */
+  getStats: async ({ secretaria } = {}) => {
+    const params = {};
+    if (secretaria) params.secretaria = secretaria;
+    const res = await api.get('/etl/stats', { params });
+    return res.data;
+  },
+};
+
+// ============================
+// SERVICIO GESTIÓN DE TABLAS
+// ============================
+
+export const tablesService = {
+  /** Listar tablas agrupadas por schema (raw / staging / public) */
+  getSchemas: async () => {
+    const res = await api.get('/tables/schemas');
+    return res.data;
+  },
+
+  /** Mover tabla entre schemas */
+  move: async ({ fromSchema, fromTable, toSchema, toName }) => {
+    const res = await api.post('/tables/move', { fromSchema, fromTable, toSchema, toName });
+    return res.data;
+  },
+
+  /** Renombrar tabla */
+  rename: async ({ schema, oldName, newName }) => {
+    const res = await api.post('/tables/rename', { schema, oldName, newName });
+    return res.data;
+  },
+
+  /** Eliminar tabla */
+  drop: async (schema, tableName) => {
+    const res = await api.delete(`/tables/${schema}/${encodeURIComponent(tableName)}`);
+    return res.data;
+  },
+
+  /** Info de una tabla */
+  getInfo: async (schema, tableName) => {
+    const res = await api.get(`/tables/${schema}/${encodeURIComponent(tableName)}/info`);
+    return res.data;
+  },
+};
+
 export default api;

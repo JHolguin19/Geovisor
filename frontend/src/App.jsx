@@ -13,6 +13,9 @@ import DashboardCatastro from './pages/Planeacion/Catastro/DashboardCatastro';
 import DashboardVivienda from './pages/Planeacion/Vivienda/DashboardVivienda';
 import PlaneacionMapPage from './pages/Planeacion/PlaneacionMapPage';
 import AdminUsuariosPage from './pages/AdminUsuariosPage';
+import DataPipelinePage from './pages/DataPipelinePage';
+import ProcessingPage from './pages/ProcessingPage';
+import SchemaManagerPage from './pages/SchemaManagerPage';
 
 function PrivateRoute({ children, requiredRole }) {
   const { user, isAuthenticated, loading } = useContext(AuthContext);
@@ -58,9 +61,14 @@ function App() {
         <Route path="planeacion/catastro/:visorId" element={<PlaneacionMapPage />} />
         <Route path="planeacion/vivienda/:visorId" element={<PlaneacionMapPage />} />
 
+        {/* Pipeline ETL de datos */}
+        <Route path="pipeline" element={<DataPipelinePage />} />
+        <Route path="pipeline/schemas" element={<SchemaManagerPage />} />
+
         {/* Portal de secretaría (módulos) */}
         <Route path="portal/:secretariaId" element={<SecretariaPortalPage />} />
         <Route path="portal/:secretariaId/upload" element={<UploadPage />} />
+        <Route path="portal/:secretariaId/process/:uploadId" element={<ProcessingPage />} />
         <Route path="portal/:secretariaId/datos" element={<DataExplorerPage />} />
 
         {/* Geovisor por secretaría */}
