@@ -20,10 +20,20 @@
   --font-mono:    'IBM Plex Mono', monospace;
 
   font-family: var(--font-ui);
-  min-height: 100vh;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   background: var(--surface-2);
-  padding: 1.5rem 1.75rem 3rem;
   color: var(--text-main);
+}
+
+.processing-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 1.5rem 1.75rem 3rem;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* ── Header ─────────────────────────────────────────────────────────────────── */

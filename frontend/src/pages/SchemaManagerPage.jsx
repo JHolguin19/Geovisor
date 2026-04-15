@@ -285,6 +285,7 @@ export default function SchemaManagerPage() {
 
   return (
     <div className="sm-page">
+      <div className="sm-scroll">
       {/* Header */}
       <div className="sm-header">
         <button className="sm-back" onClick={() => navigate('/pipeline')}>
@@ -320,21 +321,25 @@ export default function SchemaManagerPage() {
       {error && <div className="sm-error">{error}</div>}
 
       {/* Kanban columns */}
-      <div className="sm-board">
-        {['raw', 'staging', 'public'].map(key => (
-          <SchemaColumn
-            key={key}
-            schemaKey={key}
-            tables={filter(schemas[key] || [])}
-            loading={loading}
-            onMove={handleMove}
-            onRename={handleRename}
-            onDrop={handleDrop}
-          />
-        ))}
+      <div className="sm-board-wrap">
+        <div className="sm-board">
+          {['raw', 'staging', 'public'].map(key => (
+            <SchemaColumn
+              key={key}
+              schemaKey={key}
+              tables={filter(schemas[key] || [])}
+              loading={loading}
+              onMove={handleMove}
+              onRename={handleRename}
+              onDrop={handleDrop}
+            />
+          ))}
+        </div>
       </div>
 
-      {/* Toast */}
+      </div>{/* /sm-scroll */}
+
+      {/* Toast (fuera del scroll para que quede fijo) */}
       {toast && (
         <div className={`sm-toast sm-toast--${toast.type}`}>
           {toast.msg}

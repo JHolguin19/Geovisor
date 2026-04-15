@@ -28,9 +28,26 @@
 
   font-family: var(--font-ui);
   background: var(--surface-2);
-  min-height: 100vh;
-  padding: 1.5rem 1.75rem 3rem;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   color: var(--text-main);
+}
+
+.pipeline-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 1.5rem 1.75rem 3rem;
+}
+
+/* Wrapper para scroll horizontal del kanban en pantallas estrechas */
+.kanban-board-wrap {
+  overflow-x: auto;
+  min-width: 0;
+  /* Scroll suave en iOS */
+  -webkit-overflow-scrolling: touch;
 }
 
 /* ── Encabezado ─────────────────────────────────────────────────────────────── */
@@ -281,9 +298,10 @@
 /* ── KANBAN BOARD ───────────────────────────────────────────────────────────── */
 .kanban-board {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(280px, 1fr));
   gap: 1.25rem;
   align-items: start;
+  min-width: 0;
 }
 
 /* ── Kanban Column ──────────────────────────────────────────────────────────── */
@@ -730,14 +748,18 @@
 
 /* ── Responsive ─────────────────────────────────────────────────────────────── */
 @media (max-width: 1100px) {
-  .kanban-board { grid-template-columns: repeat(2, 1fr); }
+  /* El kanban scrollea horizontalmente en lugar de colapsar columnas */
+  .kanban-board {
+    grid-template-columns: repeat(3, minmax(260px, 1fr));
+  }
 }
 
 @media (max-width: 720px) {
-  .pipeline-page { padding: 1rem; }
-  .kanban-board  { grid-template-columns: 1fr; }
-  .kanban-column__body { max-height: 70vh; }
+  .pipeline-scroll { padding: 1rem 1rem 3rem; }
   .pipeline-page__head { flex-direction: column; align-items: flex-start; }
   .filter-bar { flex-direction: column; align-items: stretch; }
   .filter-bar__search { max-width: none; }
+  /* En mobile el kanban scrollea lateralmente — NO colapsa a 1 col */
+  .kanban-board { grid-template-columns: repeat(3, minmax(240px, 1fr)); }
+  .stats-bar { flex-wrap: wrap; gap: 0.4rem; }
 }

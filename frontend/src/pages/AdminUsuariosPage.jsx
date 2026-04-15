@@ -220,6 +220,8 @@ export default function AdminUsuariosPage() {
         <span className="admin-band-title">Gestión de Usuarios</span>
       </div>
 
+      {/* Scroll container */}
+      <div className="admin-scroll">
       {/* Main */}
       <main className="admin-main">
         <div className="admin-toolbar">
@@ -302,6 +304,7 @@ export default function AdminUsuariosPage() {
           )}
         </div>
       </main>
+      </div>{/* /admin-scroll */}
 
       {/* Modal */}
       {modal && (

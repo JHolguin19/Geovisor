@@ -1,11 +1,19 @@
 /* ── AdminUsuariosPage ─────────────────────────────────────────────────────── */
 
 .admin-page {
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   background: var(--surface);
   display: flex;
   flex-direction: column;
   font-family: 'Nunito', sans-serif;
+}
+
+.admin-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Header */

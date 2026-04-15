@@ -227,6 +227,8 @@ export default function SecretariaPortalPage() {
       {/* ── Banda de color de secretaría ── */}
       <div className="portal-band" style={{ background: secretaria.color }} />
 
+      {/* ── Scroll container ── */}
+      <div className="portal-scroll">
       {/* ── Main ── */}
       <main className="portal-main">
         <div className="portal-hero">
@@ -259,6 +261,7 @@ export default function SecretariaPortalPage() {
           </div>
         </section>
       </main>
+      </div>{/* /portal-scroll */}
     </div>
   );
 }

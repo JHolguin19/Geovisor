@@ -354,7 +354,8 @@ function TableView({ items }) {
 // ─── COMPONENTE PRINCIPAL ─────────────────────────────────────────────────────
 
 export default function DataPipelinePage() {
-  const { user } = useContext(AuthContext);
+  const { user }   = useContext(AuthContext);
+  const navigate   = useNavigate();
   const isPrivileged = ['admin', 'editor_geo'].includes(user?.role);
 
   const [items,        setItems]        = useState([]);
@@ -422,6 +423,7 @@ export default function DataPipelinePage() {
 
   return (
     <div className="pipeline-page">
+      <div className="pipeline-scroll">
       {/* ── ENCABEZADO ── */}
       <div className="pipeline-page__head">
         <div className="pipeline-page__title-group">
@@ -549,21 +551,23 @@ export default function DataPipelinePage() {
 
       {/* ── CONTENIDO ── */}
       {loading ? (
-        <div className="kanban-board">
-          {COLUMNS.map(col => (
-            <div className="kanban-column" key={col.id}>
-              <div className="kanban-column__header" style={{ '--col-accent': col.accent }}>
-                <div className="kanban-column__icon">{col.icon}</div>
-                <div className="kanban-column__titles">
-                  <h2 className="kanban-column__label">{col.label}</h2>
-                  <span className="kanban-column__sublabel">{col.sublabel}</span>
+        <div className="kanban-board-wrap">
+          <div className="kanban-board">
+            {COLUMNS.map(col => (
+              <div className="kanban-column" key={col.id}>
+                <div className="kanban-column__header" style={{ '--col-accent': col.accent }}>
+                  <div className="kanban-column__icon">{col.icon}</div>
+                  <div className="kanban-column__titles">
+                    <h2 className="kanban-column__label">{col.label}</h2>
+                    <span className="kanban-column__sublabel">{col.sublabel}</span>
+                  </div>
+                </div>
+                <div className="kanban-column__body">
+                  <SkeletonCard /><SkeletonCard /><SkeletonCard />
                 </div>
               </div>
-              <div className="kanban-column__body">
-                <SkeletonCard /><SkeletonCard /><SkeletonCard />
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       ) : filtered.length === 0 ? (
         <div className="pipeline-empty">
@@ -589,20 +593,23 @@ export default function DataPipelinePage() {
           )}
         </div>
       ) : view === 'kanban' ? (
-        <div className="kanban-board">
-          {COLUMNS.map(col => (
-            <KanbanColumn
-              key={col.id}
-              column={col}
-              items={filtered}
-              onPromote={handlePromote}
-              onReject={handleReject}
-            />
-          ))}
+        <div className="kanban-board-wrap">
+          <div className="kanban-board">
+            {COLUMNS.map(col => (
+              <KanbanColumn
+                key={col.id}
+                column={col}
+                items={filtered}
+                onPromote={handlePromote}
+                onReject={handleReject}
+              />
+            ))}
+          </div>
         </div>
       ) : (
         <TableView items={filtered} />
       )}
+      </div>{/* /pipeline-scroll */}
     </div>
   );
 }

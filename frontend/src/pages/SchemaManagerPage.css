@@ -12,10 +12,27 @@
   --radius:    10px;
 
   font-family: var(--font-ui);
-  min-height: 100vh;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   background: var(--surface-2);
-  padding: 1.5rem 1.75rem 3rem;
   color: var(--text-main);
+}
+
+.sm-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 1.5rem 1.75rem 3rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Wrapper para scroll horizontal del board */
+.sm-board-wrap {
+  overflow-x: auto;
+  min-width: 0;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* ── Header ── */
@@ -118,9 +135,10 @@
 /* ── Board (3 columns) ── */
 .sm-board {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(260px, 1fr));
   gap: 1rem;
   align-items: start;
+  min-width: 0;
 }
 
 /* ── Column ── */
@@ -376,9 +394,10 @@
 
 /* ── Responsive ── */
 @media (max-width: 1100px) {
-  .sm-board { grid-template-columns: repeat(2, 1fr); }
+  .sm-board { grid-template-columns: repeat(3, minmax(240px, 1fr)); }
 }
 @media (max-width: 700px) {
-  .sm-page  { padding: 1rem; }
-  .sm-board { grid-template-columns: 1fr; }
+  .sm-scroll { padding: 1rem 1rem 3rem; }
+  /* Scroll horizontal en mobile — no colapsa a 1 col */
+  .sm-board { grid-template-columns: repeat(3, minmax(220px, 1fr)); }
 }

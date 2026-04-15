@@ -277,6 +277,7 @@ export default function ProcessingPage() {
 
   return (
     <div className="processing-page">
+      <div className="processing-scroll">
       {/* ── HEADER ── */}
       <div className="pp-header">
         <button className="pp-back" onClick={() => navigate('/pipeline')}>
@@ -404,6 +405,7 @@ export default function ProcessingPage() {
           />
         )}
       </div>
+      </div>{/* /processing-scroll */}
     </div>
   );
 }
