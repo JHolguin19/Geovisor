@@ -95,6 +95,22 @@ const MODULOS = [
     color: '#2E7D32',
   },
   {
+    id: 'pipeline',
+    nombre: 'Pipeline de Datos',
+    descripcion: 'Gestiona el flujo ETL de archivos: desde la ingesta (raw) hasta la publicación en producción.',
+    icono: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 6h16M4 12h16M4 18h16"/>
+        <circle cx="4" cy="6" r="1.5" fill="currentColor"/>
+        <circle cx="4" cy="12" r="1.5" fill="currentColor"/>
+        <circle cx="4" cy="18" r="1.5" fill="currentColor"/>
+      </svg>
+    ),
+    activo: true,
+    getPath: (secretariaId) => `/portal/${secretariaId}/datos?tab=pipeline`,
+    color: '#6D28D9',
+  },
+  {
     id: 'explorar_datos',
     nombre: 'Explorar Datos',
     descripcion: 'Consulta y previsualiza los archivos cargados por la secretaría con vista de tabla interactiva.',

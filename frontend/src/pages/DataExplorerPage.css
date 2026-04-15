@@ -346,6 +346,171 @@
 .dex-error-page { padding: 60px; text-align: center; color: var(--text-muted); }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   TABS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.dex-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 28px;
+}
+
+.dex-tab {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 20px 12px;
+  background: none; border: none; border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  font-family: 'Nunito', sans-serif; font-size: 13.5px; font-weight: 700;
+  color: var(--text-muted); cursor: pointer;
+  transition: color .15s, border-color .15s;
+}
+.dex-tab:hover { color: var(--navy); }
+.dex-tab--active { color: var(--blue); }
+
+.dex-tab-count {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 22px; height: 18px; padding: 0 6px;
+  background: var(--surface); border-radius: 99px;
+  font-size: 11px; font-weight: 700; color: var(--text-muted);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PIPELINE TAB — SCHEMAS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.dex-pipeline-sections { display: flex; flex-direction: column; gap: 32px; margin-bottom: 48px; }
+
+.dex-schema-section { }
+
+.dex-schema-header {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
+}
+.dex-schema-badge {
+  display: inline-flex; align-items: center;
+  padding: 4px 12px; border-radius: 99px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+}
+.dex-schema-count { font-size: 13px; color: var(--text-muted); font-weight: 600; }
+.dex-schema-empty {
+  padding: 24px 20px; background: var(--surface); border-radius: 12px;
+  font-size: 13px; color: var(--text-light); text-align: center;
+  border: 1px dashed var(--border);
+}
+
+/* ── Pipe cards ── */
+.dex-pipe-list { display: flex; flex-direction: column; gap: 8px; }
+
+.dex-pipe-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow .18s var(--ease);
+}
+.dex-pipe-card:hover  { box-shadow: var(--shadow-md); }
+.dex-pipe-card--open  { box-shadow: var(--shadow-md); }
+
+.dex-pipe-card-header {
+  display: flex; align-items: center; gap: 14px;
+  padding: 13px 16px;
+  background: none; border: none; cursor: pointer;
+  text-align: left; font-family: inherit; width: 100%;
+  transition: background .12s;
+}
+.dex-pipe-card-header:hover { background: var(--surface); }
+
+.dex-pipe-schema-dot {
+  flex-shrink: 0; width: 10px; height: 10px; border-radius: 50%;
+}
+
+.dex-badge--etl {
+  border: 1px solid currentColor;
+  font-size: 10px; font-weight: 700; letter-spacing: .5px;
+  text-transform: uppercase; padding: 2px 8px; border-radius: 99px;
+  white-space: nowrap; flex-shrink: 0;
+}
+
+/* Botón pipeline */
+.dex-action-btn--pipeline {
+  color: #6D28D9; background: transparent;
+}
+.dex-action-btn--pipeline:hover:not(:disabled) {
+  background: #EDE9FE; border-color: #8B5CF6;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   COLUMN MAPPING PANEL
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.dex-cols-panel {
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  animation: dex-slideDown .2s var(--ease);
+}
+
+.dex-cols-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 20px; border-bottom: 1px solid var(--border);
+  background: var(--white);
+}
+.dex-cols-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 12px; font-weight: 700; letter-spacing: .6px;
+  text-transform: uppercase; color: var(--text-muted);
+}
+
+.dex-cols-table-wrap {
+  overflow-x: auto; max-height: 360px; overflow-y: auto;
+}
+
+.dex-cols-table {
+  width: 100%; border-collapse: collapse; font-size: 12.5px;
+}
+.dex-cols-table thead {
+  position: sticky; top: 0; z-index: 1;
+  background: var(--white);
+}
+.dex-cols-table th {
+  padding: 8px 14px; text-align: left;
+  font-family: 'Barlow Condensed', sans-serif; font-size: 10.5px; font-weight: 700;
+  letter-spacing: .7px; text-transform: uppercase; color: var(--text-muted);
+  border-bottom: 2px solid var(--border); white-space: nowrap;
+}
+.dex-cols-table td {
+  padding: 7px 14px; border-bottom: 1px solid var(--border-soft);
+  background: var(--white); white-space: nowrap;
+}
+.dex-cols-table tbody tr:hover td { background: var(--surface); }
+
+.dex-col-name {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px; color: var(--navy); font-weight: 600;
+}
+
+.dex-type-chip {
+  display: inline-block; padding: 2px 8px; border-radius: 5px;
+  font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; font-weight: 700;
+  letter-spacing: .3px; white-space: nowrap;
+}
+
+.dex-nullable {
+  display: inline-flex; align-items: center;
+  padding: 2px 8px; border-radius: 5px;
+  font-size: 11px; font-weight: 700;
+}
+.dex-nullable--yes { background: #F0FDF4; color: #166534; }
+.dex-nullable--no  { background: #FEF2F2; color: #991B1B; }
+
+.dex-cell--default {
+  font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+  color: var(--text-light); max-width: 180px;
+  overflow: hidden; text-overflow: ellipsis; display: inline-block;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    RESPONSIVE
    ═══════════════════════════════════════════════════════════════════════════ */
 
