@@ -93,7 +93,7 @@ export async function promoteToProduction({
   const job = jobRes.rows[0];
 
   // Control de acceso: secretaría solo puede promover sus propios datos
-  if (!['admin', 'editor_geo'].includes(user.role) && job.secretaria_id !== user.secretaria) {
+  if (!['admin', 'editor_geo'].includes(user.role) && user.secretaria && job.secretaria_id && job.secretaria_id !== user.secretaria) {
     throw new AppError('No tienes permiso para publicar estos datos', 403);
   }
 

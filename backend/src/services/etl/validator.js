@@ -62,11 +62,22 @@ async function applyValidationRules(client, stagingTable, rules) {
           message = `El campo "${field}" no puede superar ${rule.params.value} caracteres`;
           break;
 
-        case 'regex':
-          // PELIGRO: escapar el patrón para evitar inyección SQL
-          condition = `"${field}" IS NOT NULL AND "${field}"::TEXT !~ '^${rule.params.pattern.replace(/'/g, "''")}$'`;
-          message = `El campo "${field}" no cumple el formato esperado`;
-          break;
+        case 'regex': {
+          // Usar parámetro SQL para el patrón y evitar inyección
+          const patternParam = `$${3}`;
+          const safePattern = String(rule.params.pattern || '.*');
+          await client.query(`
+            UPDATE staging."${stagingTable}"
+            SET _status        = CASE
+                  WHEN _status = 'error' OR $1 = 'error' THEN 'error'
+                  ELSE $1
+                END,
+                _status_detail = COALESCE(_status_detail || ' | ', '') || $2
+            WHERE "${field}" IS NOT NULL AND "${field}"::TEXT !~ ('^' || ${patternParam} || '$')
+          `, [rule.severity || 'warning', `El campo "${field}" no cumple el formato esperado`, safePattern]);
+          applied++;
+          continue; // Ya ejecutó el UPDATE, saltar al siguiente
+        }
 
         case 'lat_range':
           // Validar que la latitud esté en rango válido Colombia: ~1-12 lat

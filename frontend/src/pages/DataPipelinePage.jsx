@@ -7,7 +7,7 @@ import './DataPipelinePage.css';
 // ─── CONSTANTES ───────────────────────────────────────────────────────────────
 
 const STATUS_CONFIG = {
-  legacy:     { label: 'Legacy',      color: '#9E9E9E', bg: '#F5F5F5',  column: null },
+  legacy:     { label: 'Legacy',      color: '#9E9E9E', bg: '#F5F5F5',  column: 'production' },
   raw:        { label: 'En Ingesta',  color: '#F59E0B', bg: '#FFFBEB',  column: 'raw' },
   processing: { label: 'Procesando',  color: '#3B82F6', bg: '#EFF6FF',  column: 'staging' },
   staging:    { label: 'En Revisión', color: '#F97316', bg: '#FFF7ED',  column: 'staging' },
@@ -374,8 +374,8 @@ export default function DataPipelinePage() {
         etlService.getHistory({ limit: 100 }),
         etlService.getStats(),
       ]);
-      setItems(histRes?.items || []);
-      setStats(statsRes || {});
+      setItems(histRes.data?.items || []);
+      setStats(statsRes.data || {});
       setError(null);
     } catch (e) {
       setError('No se pudo cargar el pipeline. Verifica tu conexión.');
