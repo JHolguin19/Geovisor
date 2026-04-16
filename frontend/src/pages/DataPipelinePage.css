@@ -50,6 +50,46 @@
   -webkit-overflow-scrolling: touch;
 }
 
+/* ── Breadcrumb ─────────────────────────────────────────────────────────────── */
+.pipeline-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+  font-size: 0.82rem;
+  color: var(--text-sub);
+}
+
+.breadcrumb-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: none;
+  border: none;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+  color: var(--primary);
+  font-size: 0.82rem;
+  font-family: var(--font-ui);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--transition);
+}
+.breadcrumb-link:hover {
+  background: #EFF6FF;
+}
+
+.breadcrumb-sep {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+.breadcrumb-current {
+  color: var(--text-sub);
+  font-weight: 400;
+}
+
 /* ── Encabezado ─────────────────────────────────────────────────────────────── */
 .pipeline-page__head {
   display: flex;

@@ -25,7 +25,7 @@ export const SECRETARIAS = [
   },
   {
     id: 'obras',
-    name: 'Secretaría de Planeación, Ordenamiento Territorial y Vivienda',
+    name: 'Secretaría de Infraestructura',
     shortName: 'Infraestructura',
     code: 'OBR',
     color: '#4E342E',
