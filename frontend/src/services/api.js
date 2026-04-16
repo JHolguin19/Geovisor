@@ -256,6 +256,11 @@ export const geodataService = {
     const response = await api.get(`/geodata/${tableName}`, { params });
     return response.data;
   },
+
+  exportTable: async (tableName) => {
+    const response = await api.get(`/geodata/${tableName}/export`, { responseType: 'blob' });
+    return response;
+  },
 };
 
 // ============================

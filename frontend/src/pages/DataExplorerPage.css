@@ -248,6 +248,16 @@
   background: var(--sky-light); border-color: var(--blue);
 }
 
+.dex-action-btn--download {
+  color: #065F46; background: #D1FAE5; border-color: #6EE7B7;
+}
+.dex-action-btn--download:hover:not(:disabled) {
+  background: #A7F3D0; border-color: #34D399;
+}
+.dex-action-btn--download:disabled {
+  opacity: 0.6; cursor: not-allowed;
+}
+
 .dex-action-btn--delete {
   color: var(--text-muted); background: transparent;
 }

@@ -6,6 +6,7 @@ import * as geodataCtrl from '../controllers/geodata.controller.js';
 
 const router = Router();
 
+router.get('/:tableName/export', authMiddleware, asyncHandler(geodataCtrl.exportTable));
 router.get('/:tableName', authMiddleware, validate(schemas.geodataQuery, 'query'), asyncHandler(geodataCtrl.getTableData));
 
 export default router;

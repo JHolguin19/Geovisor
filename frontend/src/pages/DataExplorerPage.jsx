@@ -114,6 +114,9 @@ export default function DataExplorerPage() {
   const [confirmId,      setConfirmId]      = useState(null);
   const [deletingId,     setDeletingId]     = useState(null);
 
+  // descarga Excel
+  const [downloadingId,  setDownloadingId]  = useState(null);
+
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -162,6 +165,30 @@ export default function DataExplorerPage() {
     } catch (err) {
       alert(err.response?.data?.error || err.message || 'Error al eliminar.');
     } finally { setDeletingId(null); }
+  };
+
+  const handleDownload = async (u) => {
+    const tabla = u.tabla_destino || u.tabla || u.table_name;
+    if (!tabla) return;
+    setDownloadingId(u.id);
+    try {
+      const response = await geodataService.exportTable(tabla);
+      const blob = new Blob([response.data], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
+      const url  = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href     = url;
+      link.download = `${tabla}.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      alert(err.response?.data?.error || err.message || 'Error al descargar el archivo.');
+    } finally {
+      setDownloadingId(null);
+    }
   };
 
   const filtered = uploads.filter(u => {
@@ -461,6 +488,27 @@ export default function DataExplorerPage() {
                                     <path d="M3.6 9h16.8M3.6 15h16.8M12 3a15 15 0 010 18M12 3a15 15 0 000 18"/>
                                   </svg>
                                   <span>Mapa</span>
+                                </button>
+                              )}
+                              {/* Botón descargar Excel */}
+                              {estado === 'completado' && (u.tabla_destino || u.tabla) && (
+                                <button
+                                  className="dex-action-btn dex-action-btn--download"
+                                  title="Descargar como Excel"
+                                  disabled={downloadingId === id}
+                                  onClick={() => handleDownload(u)}
+                                >
+                                  {downloadingId === id ? (
+                                    <span className="dex-spinner dex-spinner--sm" style={{ borderTopColor: secColor }} />
+                                  ) : (
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+                                         strokeLinecap="round" strokeLinejoin="round" width="15" height="15">
+                                      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                                      <polyline points="7 10 12 15 17 10"/>
+                                      <line x1="12" y1="15" x2="12" y2="3"/>
+                                    </svg>
+                                  )}
+                                  <span>{downloadingId === id ? 'Descargando…' : 'Excel'}</span>
                                 </button>
                               )}
                               <button

@@ -1,3 +1,4 @@
+import ExcelJS from 'exceljs';
 import { pool } from '../db/pool.js';
 import { detectGeomColumn } from '../utils/geoUtils.js';
 import { AppError } from '../middleware/errorHandler.js';
@@ -99,4 +100,81 @@ export async function getGeoJsonForTable(tableName, { bbox, q, searchFields, sim
 
   const result = await pool.query(query, params);
   return result.rows[0]?.geojson ?? { type: 'FeatureCollection', features: [] };
+}
+
+/**
+ * Exporta todos los datos de una tabla (sin geometría) como workbook Excel.
+ * @returns {ExcelJS.Workbook}
+ */
+export async function exportTableAsExcel(tableName) {
+  const allowed = await getAllowedTables();
+  if (!allowed.has(tableName)) throw new AppError('Tabla no permitida', 403);
+
+  // Obtener columnas (excluyendo geometría)
+  const geomCol = await detectGeomColumn(tableName);
+  const colsRes = await pool.query(`
+    SELECT column_name, data_type
+    FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = $1
+    ORDER BY ordinal_position
+  `, [tableName]);
+
+  const dataCols = colsRes.rows
+    .filter(c => c.column_name !== geomCol && c.column_name !== 'gid')
+    .map(c => c.column_name);
+
+  if (!dataCols.length) throw new AppError('La tabla no tiene columnas exportables', 400);
+
+  const colList = dataCols.map(c => `"${c}"`).join(', ');
+  const rows = await pool.query(`SELECT ${colList} FROM "${tableName}" LIMIT 100000`);
+
+  // Construir workbook
+  const wb = new ExcelJS.Workbook();
+  wb.creator = 'GeoVisor Alcaldía';
+  wb.created = new Date();
+
+  const ws = wb.addWorksheet(tableName.slice(0, 31)); // Excel limita nombres a 31 chars
+
+  // Encabezados con estilo
+  ws.columns = dataCols.map(col => ({
+    header: col,
+    key: col,
+    width: Math.min(Math.max(col.length + 4, 12), 40),
+  }));
+
+  const headerRow = ws.getRow(1);
+  headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+  headerRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E3A5F' } };
+  headerRow.alignment = { vertical: 'middle', horizontal: 'center' };
+  headerRow.height = 20;
+
+  // Datos
+  for (const row of rows.rows) {
+    ws.addRow(dataCols.map(col => {
+      const val = row[col];
+      if (val === null || val === undefined) return '';
+      if (typeof val === 'object') return JSON.stringify(val);
+      return val;
+    }));
+  }
+
+  // Bordes en toda la tabla
+  ws.eachRow((row, rowNumber) => {
+    row.eachCell(cell => {
+      cell.border = {
+        top:    { style: 'thin', color: { argb: 'FFD1D5DB' } },
+        left:   { style: 'thin', color: { argb: 'FFD1D5DB' } },
+        bottom: { style: 'thin', color: { argb: 'FFD1D5DB' } },
+        right:  { style: 'thin', color: { argb: 'FFD1D5DB' } },
+      };
+      if (rowNumber > 1) {
+        cell.alignment = { vertical: 'middle', wrapText: false };
+        if (rowNumber % 2 === 0) {
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF8FAFC' } };
+        }
+      }
+    });
+  });
+
+  return { workbook: wb, rowCount: rows.rows.length, colCount: dataCols.length };
 }
