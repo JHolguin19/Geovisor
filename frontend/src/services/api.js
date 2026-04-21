@@ -199,6 +199,31 @@ export const pdmAnualService = {
     });
     return response.data;
   },
+
+  getTrayectoria: async () => {
+    const response = await api.get('/pdm/anual/trayectoria');
+    return response.data;
+  },
+
+  getDivergencia: async (year) => {
+    const response = await api.get(`/pdm/anual/${year}/divergencia`);
+    return response.data;
+  },
+
+  exportYear: async (year) => {
+    const token = localStorage.getItem('token');
+    const resp = await fetch(`/api/pdm/anual/${year}/export`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (!resp.ok) throw new Error('Error al exportar');
+    const blob = await resp.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `PDM_${year}.xlsx`;
+    a.click();
+    URL.revokeObjectURL(url);
+  },
 };
 
 // ============================

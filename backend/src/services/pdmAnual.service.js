@@ -275,3 +275,210 @@ export async function uploadPdmExcel(filePath, year) {
 
   return { actualizados, sin_cambios, errores, total_filas: rows.length };
 }
+
+// ── Trayectoria cuatrienal ─────────────────────────────────────────────────
+
+export async function getTrayectoriaCuatrienal() {
+  // Resumen global
+  const [globalRes, pilaresRes, secRes] = await Promise.all([
+    pool.query(`
+      SELECT
+        COUNT(*)                                                                                        AS total_metas,
+        ROUND(AVG(cumplimiento_cuatrienio) FILTER (WHERE cumplimiento_cuatrienio IS NOT NULL) * 100, 1) AS pct_cuatrienio,
+        COUNT(*) FILTER (WHERE cumplimiento_cuatrienio IS NOT NULL AND cumplimiento_cuatrienio >= 0.8)  AS en_meta,
+        COUNT(*) FILTER (WHERE cumplimiento_cuatrienio IS NOT NULL AND cumplimiento_cuatrienio >= 0.5
+                           AND cumplimiento_cuatrienio < 0.8)                                          AS en_riesgo,
+        COUNT(*) FILTER (WHERE cumplimiento_cuatrienio IS NOT NULL AND cumplimiento_cuatrienio < 0.5)  AS critico,
+        COUNT(*) FILTER (WHERE cumplimiento_cuatrienio IS NULL)                                        AS sin_dato,
+        ROUND(AVG(eficiencia_2024) FILTER (WHERE eficiencia_2024 IS NOT NULL) * 100, 1)                AS eff_2024,
+        ROUND(AVG(eficiencia_2025) FILTER (WHERE eficiencia_2025 IS NOT NULL) * 100, 1)                AS eff_2025,
+        ROUND(AVG(eficiencia_2026) FILTER (WHERE eficiencia_2026 IS NOT NULL) * 100, 1)                AS eff_2026,
+        ROUND(AVG(eficiencia_2027) FILTER (WHERE eficiencia_2027 IS NOT NULL) * 100, 1)                AS eff_2027
+      FROM pdm_metas
+    `),
+    pool.query(`
+      SELECT
+        num_pilar, nom_pilar,
+        COUNT(*) AS total_metas,
+        COUNT(*) FILTER (WHERE meta_cuatrienio IS NOT NULL) AS con_meta_cuatrienio,
+        ROUND(AVG(cumplimiento_cuatrienio) FILTER (WHERE cumplimiento_cuatrienio IS NOT NULL) * 100, 1) AS pct_cuatrienio,
+        ROUND(AVG(eficiencia_2024) FILTER (WHERE eficiencia_2024 IS NOT NULL) * 100, 1) AS eff_2024,
+        ROUND(AVG(eficiencia_2025) FILTER (WHERE eficiencia_2025 IS NOT NULL) * 100, 1) AS eff_2025,
+        ROUND(AVG(eficiencia_2026) FILTER (WHERE eficiencia_2026 IS NOT NULL) * 100, 1) AS eff_2026,
+        ROUND(AVG(eficiencia_2027) FILTER (WHERE eficiencia_2027 IS NOT NULL) * 100, 1) AS eff_2027,
+        COUNT(*) FILTER (WHERE cumplimiento_cuatrienio IS NOT NULL AND cumplimiento_cuatrienio < 0.5) AS en_riesgo,
+        ROUND(SUM(
+          COALESCE((presupuesto_2024->>'total_apropiacion')::numeric,0) +
+          COALESCE((presupuesto_2025->>'total_apropiacion')::numeric,0) +
+          COALESCE((presupuesto_2026->>'total_apropiacion')::numeric,0) +
+          COALESCE((presupuesto_2027->>'total_apropiacion')::numeric,0)
+        ) / 1000000, 0) AS total_apropiacion_m
+      FROM pdm_metas
+      WHERE num_pilar IS NOT NULL
+      GROUP BY num_pilar, nom_pilar
+      ORDER BY num_pilar
+    `),
+    pool.query(`
+      SELECT
+        secretaria,
+        COUNT(*) AS total_metas,
+        ROUND(AVG(eficiencia_2024) FILTER (WHERE eficiencia_2024 IS NOT NULL) * 100, 1) AS eff_2024,
+        ROUND(AVG(eficiencia_2025) FILTER (WHERE eficiencia_2025 IS NOT NULL) * 100, 1) AS eff_2025,
+        ROUND(AVG(eficiencia_2026) FILTER (WHERE eficiencia_2026 IS NOT NULL) * 100, 1) AS eff_2026,
+        ROUND(AVG(eficiencia_2027) FILTER (WHERE eficiencia_2027 IS NOT NULL) * 100, 1) AS eff_2027,
+        ROUND(AVG(cumplimiento_cuatrienio) FILTER (WHERE cumplimiento_cuatrienio IS NOT NULL) * 100, 1) AS pct_cuatrienio,
+        COUNT(*) FILTER (WHERE cumplimiento_cuatrienio IS NOT NULL AND cumplimiento_cuatrienio < 0.5) AS en_riesgo
+      FROM pdm_metas
+      GROUP BY secretaria
+      ORDER BY pct_cuatrienio DESC NULLS LAST
+    `),
+  ]);
+
+  return {
+    global: globalRes.rows[0],
+    pilares: pilaresRes.rows,
+    secretarias: secRes.rows,
+  };
+}
+
+// ── Divergencia físico-financiero ──────────────────────────────────────────
+
+export async function getDivergenciaFisFinan(year) {
+  const y = assertYear(year);
+
+  const { rows } = await pool.query(`
+    SELECT
+      meta_num,
+      secretaria,
+      LEFT(descripcion_meta, 90) AS descripcion_meta,
+      meta_pdm_${y},
+      meta_fisica_${y},
+      ROUND(eficiencia_${y} * 100, 1) AS eficiencia_pct,
+      ROUND(COALESCE((presupuesto_${y}->>'total_apropiacion')::numeric, 0) / 1000000, 2) AS apropiacion_m,
+      ROUND(COALESCE((presupuesto_${y}->>'neto_registros')::numeric, 0) / 1000000, 2) AS comprometido_m,
+      ROUND(COALESCE((presupuesto_${y}->>'total_obligacion')::numeric, 0) / 1000000, 2) AS obligado_m,
+      ROUND(
+        COALESCE((presupuesto_${y}->>'total_obligacion')::numeric, 0) /
+        NULLIF((presupuesto_${y}->>'total_apropiacion')::numeric, 0) * 100, 1
+      ) AS ejec_financiera_pct,
+      ROUND(
+        (
+          COALESCE((presupuesto_${y}->>'total_obligacion')::numeric, 0) /
+          NULLIF((presupuesto_${y}->>'total_apropiacion')::numeric, 0)
+          - COALESCE(eficiencia_${y}, 0)
+        ) * 100, 1
+      ) AS divergencia_pct
+    FROM pdm_metas
+    WHERE
+      meta_pdm_${y} IS NOT NULL
+      AND (presupuesto_${y}->>'total_apropiacion')::numeric > 0
+      AND (
+        (
+          COALESCE((presupuesto_${y}->>'total_obligacion')::numeric, 0) /
+          NULLIF((presupuesto_${y}->>'total_apropiacion')::numeric, 0)
+          - COALESCE(eficiencia_${y}, 0)
+        ) > 0.25
+        OR (
+          COALESCE(eficiencia_${y}, 0) < 0.05
+          AND (presupuesto_${y}->>'neto_registros')::numeric > 0
+        )
+      )
+    ORDER BY divergencia_pct DESC NULLS LAST
+    LIMIT 25
+  `);
+
+  return rows;
+}
+
+// ── Export Excel ───────────────────────────────────────────────────────────
+
+export async function exportYearExcel(year) {
+  const y = assertYear(year);
+
+  const [overviewRes, secRes, metasRes] = await Promise.all([
+    pool.query(`
+      SELECT
+        COUNT(*) AS total_metas,
+        COUNT(*) FILTER (WHERE meta_pdm_${y} IS NOT NULL) AS programadas,
+        COUNT(*) FILTER (WHERE meta_pdm_${y} IS NULL) AS no_programadas,
+        COUNT(*) FILTER (WHERE meta_pdm_${y} IS NOT NULL AND (meta_fisica_${y} IS NULL OR meta_fisica_${y} = 0)) AS sin_ejecucion,
+        ROUND(AVG(eficiencia_${y}) FILTER (WHERE eficiencia_${y} IS NOT NULL) * 100, 1) AS eficiencia_promedio,
+        ROUND(SUM(COALESCE((presupuesto_${y}->>'total_apropiacion')::numeric,0))/1000000, 0) AS apropiacion_m,
+        ROUND(SUM(COALESCE((presupuesto_${y}->>'neto_registros')::numeric,0))/1000000, 0) AS comprometido_m,
+        ROUND(SUM(COALESCE((presupuesto_${y}->>'total_obligacion')::numeric,0))/1000000, 0) AS obligado_m,
+        COUNT(*) FILTER (WHERE eficiencia_${y} >= 0.8) AS semaforo_verde,
+        COUNT(*) FILTER (WHERE eficiencia_${y} >= 0.5 AND eficiencia_${y} < 0.8) AS semaforo_amarillo,
+        COUNT(*) FILTER (WHERE eficiencia_${y} < 0.5 AND eficiencia_${y} IS NOT NULL) AS semaforo_rojo
+      FROM pdm_metas
+    `),
+    pool.query(`
+      SELECT secretaria,
+        COUNT(*) FILTER (WHERE meta_pdm_${y} IS NOT NULL) AS programadas,
+        ROUND(AVG(eficiencia_${y}) FILTER (WHERE eficiencia_${y} IS NOT NULL)*100,1) AS eficiencia_pct,
+        ROUND(SUM(COALESCE((presupuesto_${y}->>'total_apropiacion')::numeric,0))/1000000,0) AS apropiacion_m,
+        ROUND(SUM(COALESCE((presupuesto_${y}->>'neto_registros')::numeric,0))/1000000,0) AS comprometido_m,
+        ROUND(SUM(COALESCE((presupuesto_${y}->>'total_obligacion')::numeric,0))/1000000,0) AS obligado_m,
+        COUNT(*) FILTER (WHERE eficiencia_${y} >= 0.8) AS verde,
+        COUNT(*) FILTER (WHERE eficiencia_${y} >= 0.5 AND eficiencia_${y} < 0.8) AS amarillo,
+        COUNT(*) FILTER (WHERE eficiencia_${y} < 0.5 AND eficiencia_${y} IS NOT NULL) AS rojo
+      FROM pdm_metas
+      GROUP BY secretaria ORDER BY apropiacion_m DESC NULLS LAST
+    `),
+    pool.query(`
+      SELECT meta_num, secretaria, nom_pilar, descripcion_meta,
+        meta_pdm_${y} AS meta_pdm,
+        meta_fisica_${y} AS meta_fisica,
+        ROUND(eficiencia_${y}*100,1) AS eficiencia_pct,
+        ROUND(COALESCE((presupuesto_${y}->>'total_apropiacion')::numeric,0)/1000000,2) AS apropiacion_m,
+        ROUND(COALESCE((presupuesto_${y}->>'neto_registros')::numeric,0)/1000000,2) AS comprometido_m,
+        ROUND(COALESCE((presupuesto_${y}->>'total_obligacion')::numeric,0)/1000000,2) AS obligado_m,
+        CASE
+          WHEN eficiencia_${y} >= 0.8 THEN 'EN META'
+          WHEN eficiencia_${y} >= 0.5 THEN 'ALERTA'
+          WHEN eficiencia_${y} IS NOT NULL THEN 'CRITICA'
+          ELSE 'SIN DATO'
+        END AS semaforo,
+        observaciones_${y} AS observaciones,
+        compromisos_${y} AS compromisos
+      FROM pdm_metas
+      WHERE meta_pdm_${y} IS NOT NULL
+      ORDER BY meta_num ASC NULLS LAST
+    `),
+  ]);
+
+  const ExcelJS = (await import('exceljs')).default;
+  const wb = new ExcelJS.Workbook();
+  wb.creator = 'GeoVisor Alcaldía';
+  wb.created = new Date();
+
+  // ── Hoja 1: Resumen ──
+  const sh1 = wb.addWorksheet('Resumen');
+  const ov = overviewRes.rows[0];
+  sh1.addRow(['SEGUIMIENTO PDM — AÑO ' + y]);
+  sh1.addRow([]);
+  sh1.addRow(['Indicador', 'Valor']);
+  sh1.addRow(['Total metas', ov.total_metas]);
+  sh1.addRow(['Programadas', ov.programadas]);
+  sh1.addRow(['No programadas', ov.no_programadas]);
+  sh1.addRow(['Sin ejecución', ov.sin_ejecucion]);
+  sh1.addRow(['Eficiencia promedio (%)', ov.eficiencia_promedio]);
+  sh1.addRow(['Apropiación (M$)', ov.apropiacion_m]);
+  sh1.addRow(['Comprometido (M$)', ov.comprometido_m]);
+  sh1.addRow(['Obligado (M$)', ov.obligado_m]);
+  sh1.addRow(['Semáforo verde', ov.semaforo_verde]);
+  sh1.addRow(['Semáforo amarillo', ov.semaforo_amarillo]);
+  sh1.addRow(['Semáforo rojo', ov.semaforo_rojo]);
+
+  // ── Hoja 2: Por Secretaría ──
+  const sh2 = wb.addWorksheet('Por Secretaría');
+  sh2.addRow(['Secretaría','Programadas','Eficiencia (%)','Apropiación M$','Comprometido M$','Obligado M$','Verde','Amarillo','Rojo']);
+  secRes.rows.forEach(r => sh2.addRow([r.secretaria, r.programadas, r.eficiencia_pct, r.apropiacion_m, r.comprometido_m, r.obligado_m, r.verde, r.amarillo, r.rojo]));
+
+  // ── Hoja 3: Detalle Metas ──
+  const sh3 = wb.addWorksheet('Metas');
+  sh3.addRow(['N° Meta','Secretaría','Pilar','Descripción','Meta PDM','Meta Física','Eficiencia (%)','Apropiación M$','Comprometido M$','Obligado M$','Semáforo','Observaciones','Compromisos']);
+  metasRes.rows.forEach(r => sh3.addRow([r.meta_num, r.secretaria, r.nom_pilar, r.descripcion_meta, r.meta_pdm, r.meta_fisica, r.eficiencia_pct, r.apropiacion_m, r.comprometido_m, r.obligado_m, r.semaforo, r.observaciones, r.compromisos]));
+
+  const buffer = await wb.xlsx.writeBuffer();
+  return buffer;
+}

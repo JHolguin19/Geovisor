@@ -9,7 +9,7 @@ function fmtM(val) {
   return `$${n.toLocaleString('es-CO')} M`;
 }
 
-export default function AnualOverviewTab({ data, year }) {
+export default function AnualOverviewTab({ data, year, divergencia }) {
   if (!data) return <div className="pdm-loading-full">Cargando datos del año {year}…</div>;
 
   const d = data;
@@ -118,6 +118,57 @@ export default function AnualOverviewTab({ data, year }) {
           })}
         </div>
       </section>
+
+      {/* Alertas divergencia físico-financiero */}
+      {divergencia && divergencia.length > 0 && (
+        <section className="pdm-section">
+          <h2 className="pdm-section-h">
+            Alertas — Divergencia físico-financiero
+            <span className="pdm-section-badge pdm-section-badge--warn">{divergencia.length}</span>
+          </h2>
+          <p className="pdm-section-sub">
+            Metas donde la ejecución financiera supera significativamente el avance físico — requieren justificación ante Contraloría.
+          </p>
+          <div className="pdm-table-wrapper">
+            <table className="pdm-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Secretaría</th>
+                  <th>Descripción</th>
+                  <th className="th-c">Ef. Física</th>
+                  <th className="th-c">Ef. Financiera</th>
+                  <th className="th-c" style={{ color: 'var(--pdm-red)' }}>Divergencia</th>
+                  <th className="th-r">Obligado M$</th>
+                </tr>
+              </thead>
+              <tbody>
+                {divergencia.map(r => (
+                  <tr key={r.meta_num} className="pdm-row">
+                    <td className="td-meta-num">{r.meta_num}</td>
+                    <td style={{ fontSize: 12 }}>{r.secretaria}</td>
+                    <td style={{ fontSize: 12, maxWidth: 260 }} title={r.descripcion_meta}>{r.descripcion_meta}</td>
+                    <td className="th-c">
+                      <span className="tray-eff-chip" style={{ color: colorPct(parseFloat(r.eficiencia_pct)||0), background: colorPct(parseFloat(r.eficiencia_pct)||0)+'18' }}>
+                        {r.eficiencia_pct != null ? r.eficiencia_pct + '%' : '—'}
+                      </span>
+                    </td>
+                    <td className="th-c">
+                      <span className="tray-eff-chip" style={{ color: 'var(--pdm-blue)', background: 'var(--pdm-blue)18' }}>
+                        {r.ejec_financiera_pct != null ? r.ejec_financiera_pct + '%' : '—'}
+                      </span>
+                    </td>
+                    <td className="th-c">
+                      <span className="chip-baja">+{r.divergencia_pct}%</span>
+                    </td>
+                    <td className="th-r td-money">${parseFloat(r.obligado_m).toFixed(2)} M</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
     </>
   );
 }

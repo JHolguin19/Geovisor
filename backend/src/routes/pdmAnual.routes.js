@@ -19,11 +19,20 @@ const upload = multer({
   },
 });
 
+// Trayectoria cuatrienal y comparativo (sin parámetro de año)
+router.get('/trayectoria', authMiddleware, asyncHandler(ctrl.getTrayectoria));
+
 // Lectura — autenticado
 router.get('/:year/overview',     authMiddleware, validate(schemas.pdmYear, 'params'), asyncHandler(ctrl.getYearOverview));
 router.get('/:year/secretarias',  authMiddleware, validate(schemas.pdmYear, 'params'), asyncHandler(ctrl.getYearSecretarias));
 router.get('/:year/pilares',      authMiddleware, validate(schemas.pdmYear, 'params'), asyncHandler(ctrl.getYearPilares));
 router.get('/:year/metas',        authMiddleware, validate(schemas.pdmYear, 'params'), asyncHandler(ctrl.getYearMetas));
+
+// Divergencia físico-financiero por año
+router.get('/:year/divergencia', authMiddleware, validate(schemas.pdmYear, 'params'), asyncHandler(ctrl.getDivergencia));
+
+// Export Excel por año
+router.get('/:year/export', authMiddleware, validate(schemas.pdmYear, 'params'), asyncHandler(ctrl.exportYear));
 
 // Upload — solo admin/editor_geo
 router.post(
