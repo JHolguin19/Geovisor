@@ -71,14 +71,14 @@ export default function AnualOverviewTab({ data, year }) {
         </div>
         <div className="pdm-a-charts-row">
           <DonutChart segments={[
-            { value: programadas, color: 'var(--pdm-blue)' },
-            { value: np, color: '#cbd5e1' },
+            { value: programadas - sinEjec, color: 'var(--pdm-blue)' },
             { value: sinEjec, color: 'var(--pdm-red)' },
+            { value: np, color: '#cbd5e1' },
           ]} />
           <div className="pdm-a-donut-legend">
-            <span><i style={{ background: 'var(--pdm-blue)' }} /> Programadas ({programadas})</span>
-            <span><i style={{ background: '#cbd5e1' }} /> No programadas ({np})</span>
+            <span><i style={{ background: 'var(--pdm-blue)' }} /> Con ejecución ({programadas - sinEjec})</span>
             <span><i style={{ background: 'var(--pdm-red)' }} /> Sin ejecución ({sinEjec})</span>
+            <span><i style={{ background: '#cbd5e1' }} /> No programadas ({np})</span>
           </div>
           <HBarChart bars={[
             { label: 'En meta', value: verde, color: 'var(--pdm-green)' },

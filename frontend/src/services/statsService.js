@@ -26,89 +26,8 @@ export const USO_SUELO_LAYERS = {
   luminarias_led: { tableName: 'luminariasled_alumbradopublico', nombre: 'Luminarias LED', color: '#A3E635' }
 };
 
-// Fetch autenticado a la API PostGIS
-function apiGet(tableName) {
-  const token = localStorage.getItem('token');
-  return fetch(`/api/geodata/${encodeURIComponent(tableName)}`, {
-    headers: token ? { Authorization: `Bearer ${token}` } : {}
-  }).then(r => r.json());
-}
-
-// Obtener barrios de una UBA específica
-export async function getBarriosByUba(ubaLayerId) {
-  const tableMap = {
-    uba1: 'BARR_UBA_1',
-    uba2: 'BARR_UBA2',
-    uba3: 'BARR_UBA3',
-    uba4: 'BARR_UBA4',
-    uba5: 'BARR_UBA5',
-    ubac: 'BARRIOS_UBA_C'
-  };
-  const tableName = tableMap[ubaLayerId];
-  if (!tableName) return new Set();
-
-  try {
-    const data = await apiGet(tableName);
-    const barrios = new Set();
-    data.features.forEach(feature => {
-      const barrio = feature.properties.nombre?.trim().toUpperCase();
-      if (barrio) barrios.add(barrio);
-    });
-    return barrios;
-  } catch (error) {
-    console.error(`Error obteniendo barrios de ${ubaLayerId}:`, error);
-    return new Set();
-  }
-}
-
-// Contar elementos de una capa de uso de suelo por barrios
-export async function countByBarrios(tableName, barriosSet) {
-  try {
-    const data = await apiGet(tableName);
-
-    let count = 0;
-    const seenIds = new Set();
-
-    data.features.forEach(feature => {
-      const barrioPredio = (
-        feature.properties.ubicacion ||
-        feature.properties.NOMBRE_2 ||
-        feature.properties.barrio ||
-        feature.properties.NOMBRE ||
-        ''
-      ).trim().toUpperCase();
-
-      const idPredial = feature.properties.codigo || feature.properties.CODIGO || feature.properties.matricula_inmobiliaria;
-
-      if (barriosSet.has(barrioPredio)) {
-        if (idPredial) {
-          seenIds.add(idPredial);
-        } else {
-          count++;
-        }
-      }
-    });
-
-    if (seenIds.size > 0) return seenIds.size;
-    return count;
-  } catch (error) {
-    console.error(`Error contando ${tableName}:`, error);
-    return 0;
-  }
-}
-
-// Obtener conteo total de una capa
-export async function getTotalCount(tableName) {
-  try {
-    const data = await apiGet(tableName);
-    return data.features.length;
-  } catch (error) {
-    console.error(`Error obteniendo total de ${tableName}:`, error);
-    return 0;
-  }
-}
-
 // Función principal: obtener estadísticas por UBA para capas activas
+// Llama al endpoint PostGIS del backend en lugar de descargar GeoJSON completo
 export async function getStatsByUba(activeUbaLayers, activeUsoSueloLayers) {
   const results = {
     ubaData: {},
@@ -123,26 +42,22 @@ export async function getStatsByUba(activeUbaLayers, activeUsoSueloLayers) {
 
   if (!activeUsoSueloLayers || activeUsoSueloLayers.length === 0) return results;
 
-  const barriosPorUba = {};
-  for (const ubaId of activeUbaLayers) {
-    barriosPorUba[ubaId] = await getBarriosByUba(ubaId);
-    results.porUba[ubaId] = {};
-  }
+  const token = localStorage.getItem('token');
+  const layersParam = activeUsoSueloLayers.join(',');
+  const ubasParam = activeUbaLayers.join(',');
+  const url = `/api/stats/uso-suelo?layers=${encodeURIComponent(layersParam)}&ubas=${encodeURIComponent(ubasParam)}`;
 
-  for (const layerId of activeUsoSueloLayers) {
-    const layerConfig = USO_SUELO_LAYERS[layerId];
-    if (!layerConfig) continue;
+  try {
+    const resp = await fetch(url, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const data = await resp.json();
 
-    const totalCount = await getTotalCount(layerConfig.tableName);
-    results.usoSueloCount[layerId] = totalCount;
-
-    for (const ubaId of activeUbaLayers) {
-      const barrios = barriosPorUba[ubaId];
-      if (barrios.size === 0) continue;
-
-      const count = await countByBarrios(layerConfig.tableName, barrios);
-      if (count > 0) results.porUba[ubaId][layerId] = count;
-    }
+    results.usoSueloCount = data.total || {};
+    results.porUba = data.porUba || {};
+  } catch (error) {
+    console.error('Error obteniendo estadísticas de uso de suelo:', error);
   }
 
   return results;
@@ -153,7 +68,4 @@ export default {
   USO_SUELO_LAYERS,
   UBA_LAYER_IDS,
   getStatsByUba,
-  getTotalCount,
-  getBarriosByUba,
-  countByBarrios
 };
