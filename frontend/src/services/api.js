@@ -165,6 +165,43 @@ export const pdmService = {
 };
 
 // ============================
+// SERVICIOS PDM ANUAL
+// ============================
+
+export const pdmAnualService = {
+  getYearOverview: async (year) => {
+    const response = await api.get(`/pdm/anual/${year}/overview`);
+    return response.data;
+  },
+
+  getYearSecretarias: async (year) => {
+    const response = await api.get(`/pdm/anual/${year}/secretarias`);
+    return response.data;
+  },
+
+  getYearPilares: async (year) => {
+    const response = await api.get(`/pdm/anual/${year}/pilares`);
+    return response.data;
+  },
+
+  getYearMetas: async (year, params = {}) => {
+    const response = await api.get(`/pdm/anual/${year}/metas`, { params });
+    return response.data;
+  },
+
+  uploadPdm: async (file, year) => {
+    const formData = new FormData();
+    formData.append('archivo', file);
+    formData.append('year', year);
+    const response = await api.post('/pdm/anual/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 120000,
+    });
+    return response.data;
+  },
+};
+
+// ============================
 // SERVICIOS DE CARGA DE DATOS
 // ============================
 

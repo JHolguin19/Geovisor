@@ -9,6 +9,7 @@ import SecretariaPortalPage from './pages/SecretariaPortalPage';
 import UploadPage from './pages/UploadPage';
 import DataExplorerPage from './pages/DataExplorerPage';
 import PdmPage from './pages/PdmPage';
+import PdmAnualPage from './pages/PdmAnualPage';
 import DashboardCatastro from './pages/Planeacion/Catastro/DashboardCatastro';
 import DashboardVivienda from './pages/Planeacion/Vivienda/DashboardVivienda';
 import PlaneacionMapPage from './pages/Planeacion/PlaneacionMapPage';
@@ -75,6 +76,7 @@ function App() {
         <Route path="mapa/:secretariaId" element={<MapPage />} />
 
         {/* Seguimiento PDM */}
+        <Route path="pdm/anual" element={<PdmAnualPage />} />
         <Route path="pdm" element={<PdmPage />} />
 
         {/* Administración — solo admin */}

@@ -1,0 +1,363 @@
+/* ============================================================
+   PdmAnualPage.css — Seguimiento PDM por año
+   Reutiliza variables y clases de PdmPage.css
+   ============================================================ */
+
+/* ── Layout scroll ──────────────────────────────────────────────────────── */
+
+.pdm-a-page {
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: var(--pdm-bg);
+  font-family: system-ui, -apple-system, sans-serif;
+  color: var(--pdm-text);
+}
+
+.pdm-a-scroll {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* ── Header extras ──────────────────────────────────────────────────────── */
+
+.pdm-a-header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+
+/* ── Year pills ─────────────────────────────────────────────────────────── */
+
+.pdm-a-year-pills {
+  display: flex;
+  gap: 4px;
+  background: rgba(255,255,255,.1);
+  border-radius: 8px;
+  padding: 3px;
+}
+
+.pdm-a-pill {
+  padding: 6px 14px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255,255,255,.6);
+  background: transparent;
+  cursor: pointer;
+  transition: all .15s;
+}
+.pdm-a-pill:hover { color: #fff; background: rgba(255,255,255,.1); }
+.pdm-a-pill--active {
+  color: #1a2332;
+  background: #fff;
+}
+
+/* ── Upload button ──────────────────────────────────────────────────────── */
+
+.pdm-a-btn--upload {
+  padding: 7px 16px;
+  border: 1px solid rgba(255,255,255,.25);
+  border-radius: 7px;
+  background: rgba(255,255,255,.1);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s;
+}
+.pdm-a-btn--upload:hover { background: rgba(255,255,255,.2); }
+
+/* ── KPI grid ───────────────────────────────────────────────────────────── */
+
+.pdm-a-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+}
+
+.pdm-a-kpi-card {
+  background: #f8f9fb;
+  border: 1px solid var(--pdm-border);
+  border-left: 4px solid transparent;
+  border-radius: 8px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pdm-a-kpi-value { font-size: 28px; font-weight: 800; line-height: 1.1; }
+.pdm-a-kpi-label { font-size: 12px; font-weight: 700; color: var(--pdm-text); margin-top: 4px; }
+.pdm-a-kpi-sub   { font-size: 11px; color: var(--pdm-muted); }
+
+/* ── Semáforo grid ──────────────────────────────────────────────────────── */
+
+.pdm-a-semaforo-grid {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.pdm-a-semaforo-grid .pdm-estado-card {
+  flex: 1;
+}
+
+/* ── Charts row ─────────────────────────────────────────────────────────── */
+
+.pdm-a-charts-row {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* Donut */
+.pdm-a-donut-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pdm-a-donut-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.pdm-a-donut-total { font-size: 26px; font-weight: 800; color: var(--pdm-text); }
+.pdm-a-donut-label { font-size: 11px; color: var(--pdm-muted); }
+
+.pdm-a-donut-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+}
+.pdm-a-donut-legend i {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  margin-right: 6px;
+}
+
+/* HBar chart */
+.pdm-a-hbar-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 200px;
+}
+
+.pdm-a-hbar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pdm-a-hbar-label {
+  width: 60px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--pdm-muted);
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.pdm-a-hbar-track {
+  flex: 1;
+  height: 18px;
+  background: #e9ecef;
+  border-radius: 4px;
+  overflow: hidden;
+  min-width: 100px;
+}
+
+.pdm-a-hbar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width .3s;
+}
+
+.pdm-a-hbar-value {
+  width: 32px;
+  font-size: 14px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+/* ── Budget row ─────────────────────────────────────────────────────────── */
+
+.pdm-a-budget-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+/* ── Semaforo chips inline ──────────────────────────────────────────────── */
+
+.pdm-a-semaforo-chips {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+}
+
+/* ── Dropzone ───────────────────────────────────────────────────────────── */
+
+.pdm-a-dropzone {
+  border: 2px dashed var(--pdm-border);
+  border-radius: 10px;
+  padding: 32px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+  background: #fafbfc;
+}
+.pdm-a-dropzone:hover { border-color: var(--pdm-blue); background: #f0f5ff; }
+
+.pdm-a-drop-hint { color: var(--pdm-muted); }
+.pdm-a-drop-hint span { font-size: 32px; display: block; margin-bottom: 8px; }
+.pdm-a-drop-hint p { margin: 0 0 4px; font-size: 14px; font-weight: 600; color: var(--pdm-text); }
+.pdm-a-drop-hint small { font-size: 12px; }
+
+.pdm-a-file-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+}
+.pdm-a-file-icon { font-size: 28px; }
+.pdm-a-file-name { font-size: 14px; font-weight: 700; color: var(--pdm-text); }
+.pdm-a-file-size { font-size: 12px; color: var(--pdm-muted); }
+
+/* ── Upload actions ─────────────────────────────────────────────────────── */
+
+.pdm-a-upload-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.pdm-a-btn {
+  padding: 8px 18px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all .15s;
+}
+
+.pdm-a-btn--cancel {
+  background: #f0f2f5;
+  color: var(--pdm-muted);
+  border-color: var(--pdm-border);
+}
+.pdm-a-btn--cancel:hover { background: #e2e8f0; }
+
+.pdm-a-btn--primary {
+  background: var(--pdm-blue);
+  color: #fff;
+}
+.pdm-a-btn--primary:hover { background: #1255a3; }
+.pdm-a-btn--primary:disabled { opacity: .5; cursor: not-allowed; }
+
+.pdm-a-upload-error {
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  border-radius: 7px;
+  color: var(--pdm-red);
+  font-size: 13px;
+}
+
+/* ── Upload result ──────────────────────────────────────────────────────── */
+
+.pdm-a-upload-result h3 {
+  margin: 0 0 14px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.pdm-a-result-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.pdm-a-result-card {
+  text-align: center;
+  padding: 14px;
+  background: #f8f9fb;
+  border-radius: 8px;
+  border-left: 4px solid transparent;
+  font-size: 12px;
+  color: var(--pdm-muted);
+}
+
+.pdm-a-result-num {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--pdm-text);
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
+
+.pdm-a-error-list {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.pdm-a-error-list h4 {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--pdm-red);
+}
+
+.pdm-a-error-row {
+  font-size: 12px;
+  color: var(--pdm-text);
+  padding: 4px 0;
+  border-bottom: 1px solid #fecaca;
+}
+.pdm-a-error-row:last-child { border-bottom: none; }
+
+/* ── Responsive ─────────────────────────────────────────────────────────── */
+
+@media (max-width: 1100px) {
+  .pdm-a-kpi-grid { grid-template-columns: repeat(3, 1fr); }
+  .pdm-a-budget-row { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+  .pdm-a-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .pdm-a-header-right { flex-wrap: wrap; }
+  .pdm-a-year-pills { order: 1; }
+  .pdm-a-semaforo-grid { flex-direction: column; }
+  .pdm-a-charts-row { flex-direction: column; align-items: center; }
+  .pdm-a-result-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 480px) {
+  .pdm-a-kpi-grid { grid-template-columns: 1fr; }
+}

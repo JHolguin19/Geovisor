@@ -76,6 +76,7 @@ export default function PdmPage() {
             <p>Santander de Quilichao · {overview?.global?.total_metas || '…'} metas de seguimiento</p>
           </div>
         </div>
+        <Link to="/pdm/anual" className="pdm-a-link-btn">Seguimiento por año →</Link>
       </header>
 
       <div className="pdm-tabs">

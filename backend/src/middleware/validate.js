@@ -75,6 +75,11 @@ export const schemas = {
     password:        z.string().min(6).optional(),
   }),
 
+  // PDM año
+  pdmYear: z.object({
+    year: z.string().regex(/^(2024|2025|2026|2027)$/, 'Año debe ser 2024, 2025, 2026 o 2027'),
+  }),
+
   // Geodata query params
   geodataQuery: z.object({
     bbox:         z.string().optional(),
