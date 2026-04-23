@@ -180,7 +180,7 @@ export default function PdmAnualPage() {
           {loading && <div className="pdm-loading-full">Cargando datos del año {year}…</div>}
 
           {!loading && tab === 'resumen' && (
-            <AnualOverviewTab data={overview} year={year} divergencia={divergencia} comparativo={comparativo} />
+            <AnualOverviewTab data={overview} year={year} divergencia={divergencia} comparativo={comparativo} onMetaClick={(id) => setModalId(id)} />
           )}
 
           {!loading && tab === 'secretarias' && (

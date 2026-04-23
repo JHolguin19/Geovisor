@@ -15,28 +15,6 @@ function fmtNum(val) {
   return n.toLocaleString('es-CO', { maximumFractionDigits: 1 });
 }
 
-function CompBar({ label, programado, realizado, unit = '' }) {
-  const p = parseFloat(programado) || 0;
-  const r = parseFloat(realizado) || 0;
-  const pct = p > 0 ? Math.min(Math.round(r / p * 100), 100) : 0;
-  const color = pct >= 80 ? 'var(--pdm-green)' : pct >= 50 ? 'var(--pdm-amber)' : 'var(--pdm-red)';
-  return (
-    <div className="pdm-compbar">
-      <div className="pdm-compbar-header">
-        <span className="pdm-compbar-label">{label}</span>
-        <span className="pdm-compbar-pct" style={{ color }}>{pct}%</span>
-      </div>
-      <div className="pdm-compbar-track">
-        <div className="pdm-compbar-fill" style={{ width: `${pct}%`, background: color }} />
-      </div>
-      <div className="pdm-compbar-vals">
-        <span>Programado: <strong>{fmtNum(programado)}{unit}</strong></span>
-        <span>Realizado: <strong>{fmtNum(realizado)}{unit}</strong></span>
-      </div>
-    </div>
-  );
-}
-
 function ComparativoChart({ comparativo, year }) {
   if (!comparativo || comparativo.length === 0) return null;
 
@@ -86,7 +64,7 @@ function ComparativoChart({ comparativo, year }) {
   );
 }
 
-export default function AnualOverviewTab({ data, year, divergencia, comparativo }) {
+export default function AnualOverviewTab({ data, year, divergencia, comparativo, onMetaClick }) {
   if (!data) return <div className="pdm-loading-full">Cargando datos del año {year}…</div>;
 
   const d = data;
@@ -101,49 +79,44 @@ export default function AnualOverviewTab({ data, year, divergencia, comparativo 
 
   const pctOf = (n) => total > 0 ? `${Math.round(n / total * 100)}%` : '—';
 
+  // eficiencia_promedio is already capped in the backend
+  const eficiencia_cap = d.eficiencia_promedio;
+
   return (
     <>
-      {/* KPI cards */}
+      {/* Section 1 — Métricas principales */}
       <section className="pdm-section">
-        <h2 className="pdm-section-h">Indicadores clave — {year}</h2>
-        <div className="pdm-a-kpi-grid">
-          {[
-            { label: 'Programadas', value: programadas, color: 'var(--pdm-blue)', sub: `de ${total} metas` },
-            { label: 'No Programadas', value: np, color: 'var(--pdm-gray)', sub: 'sin meta este año' },
-            { label: 'Con presupuesto', value: d.activas_con_presupuesto, color: 'var(--pdm-purple)', sub: 'programadas + recursos' },
-            { label: 'Sin ejecución', value: sinEjec, color: 'var(--pdm-red)', sub: 'programadas sin avance' },
-          ].map(kpi => (
-            <div key={kpi.label} className="pdm-a-kpi-card" style={{ borderLeftColor: kpi.color }}>
-              <div className="pdm-a-kpi-value" style={{ color: kpi.color }}>{kpi.value}</div>
-              <div className="pdm-a-kpi-label">{kpi.label}</div>
-              <div className="pdm-a-kpi-sub">{kpi.sub}</div>
-            </div>
-          ))}
-          <div className="pdm-a-kpi-card pdm-a-kpi-card--eff" style={{ borderLeftColor: colorPct(d.avance_fisico_pct) }}>
-            <div className="pdm-a-kpi-value" style={{ color: colorPct(d.avance_fisico_pct) }}>
-              {d.avance_fisico_pct != null ? `${d.avance_fisico_pct}%` : '—'}
-            </div>
-            <div className="pdm-a-kpi-label">Avance físico cuatrienio</div>
-            <div className="pdm-a-kpi-sub">progreso acumulado 4 años</div>
+        <h2 className="pdm-section-h">Métricas principales — {year}</h2>
+        <div className="pdm-a-main-metrics">
+          {/* Big KPI: Eficiencia year */}
+          <div className="pdm-main-kpi" style={{ borderColor: colorPct(eficiencia_cap) }}>
+            <div className="pdm-main-kpi-val" style={{ color: colorPct(eficiencia_cap) }}>{eficiencia_cap != null ? `${eficiencia_cap}%` : '—'}</div>
+            <div className="pdm-main-kpi-label">Eficiencia física {year}</div>
+            <div className="pdm-main-kpi-sub">Promedio meta_fisica / meta_pdm (máx. 100%)</div>
           </div>
-          <div className="pdm-a-kpi-card" style={{ borderLeftColor: colorPct(d.avg_ponderado_anio) }}>
-            <div className="pdm-a-kpi-value" style={{ color: colorPct(d.avg_ponderado_anio) }}>
-              {d.avg_ponderado_anio != null ? `${d.avg_ponderado_anio}%` : '—'}
-            </div>
-            <div className="pdm-a-kpi-label">Avance físico {year}</div>
-            <div className="pdm-a-kpi-sub">contribución de {year} al cuatrienio</div>
+          {/* Big KPI: Avance físico year */}
+          <div className="pdm-main-kpi" style={{ borderColor: colorPct(d.avance_fisico_anio_pct) }}>
+            <div className="pdm-main-kpi-val" style={{ color: colorPct(d.avance_fisico_anio_pct) }}>{d.avance_fisico_anio_pct != null ? `${d.avance_fisico_anio_pct}%` : '—'}</div>
+            <div className="pdm-main-kpi-label">Avance físico {year}</div>
+            <div className="pdm-main-kpi-sub">Contribución de {year} al cuatrienio (máx. 100%)</div>
           </div>
-          <div className="pdm-a-kpi-card" style={{ borderLeftColor: colorPct(d.eficiencia_promedio) }}>
-            <div className="pdm-a-kpi-value" style={{ color: colorPct(d.eficiencia_promedio) }}>
-              {d.eficiencia_promedio != null ? `${d.eficiencia_promedio}%` : '—'}
-            </div>
-            <div className="pdm-a-kpi-label">Eficiencia {year}</div>
-            <div className="pdm-a-kpi-sub">física / programada año</div>
+          {/* Big KPI: Avance cuatrienio */}
+          <div className="pdm-main-kpi" style={{ borderColor: colorPct(d.avance_fisico_pct) }}>
+            <div className="pdm-main-kpi-val" style={{ color: colorPct(d.avance_fisico_pct) }}>{d.avance_fisico_pct != null ? `${d.avance_fisico_pct}%` : '—'}</div>
+            <div className="pdm-main-kpi-label">Avance físico cuatrienio</div>
+            <div className="pdm-main-kpi-sub">Progreso acumulado 2024–2027</div>
           </div>
+        </div>
+        {/* Metas chips row */}
+        <div className="pdm-meta-chips">
+          <div className="pdm-meta-chip pdm-meta-chip--blue"><span>{programadas}</span> Programadas</div>
+          <div className="pdm-meta-chip pdm-meta-chip--gray"><span>{np}</span> No programadas</div>
+          <div className="pdm-meta-chip pdm-meta-chip--red"><span>{sinEjec}</span> Sin ejecución</div>
+          <div className="pdm-meta-chip pdm-meta-chip--purple"><span>{d.activas_con_presupuesto}</span> Con presupuesto</div>
         </div>
       </section>
 
-      {/* Semáforo */}
+      {/* Section 2 — Semáforo */}
       <section className="pdm-section">
         <h2 className="pdm-section-h">Semáforo de eficiencia</h2>
         <div className="pdm-a-semaforo-grid">
@@ -179,98 +152,50 @@ export default function AnualOverviewTab({ data, year, divergencia, comparativo 
         </div>
       </section>
 
-      {/* Avance físico del año — Ponderado + Unidades */}
+      {/* Section 3 — Avance por año */}
       <section className="pdm-section">
-        <h2 className="pdm-section-h">Avance físico {year} — Programado vs Realizado</h2>
-        <p className="pdm-section-sub">
-          <strong>Avance físico {year}:</strong> cuánto contribuyó cada meta al cuatrienio en {year}.
-          Programado = meta_pdm_{year} / meta_cuatrienio · Realizado = meta_fisica_{year} / meta_cuatrienio.
-        </p>
-        <div className="pdm-pond-kpis">
-          <div className="pdm-pond-kpi" style={{ borderLeftColor: 'var(--pdm-blue)' }}>
-            <div className="pdm-pond-kpi-val" style={{ color: 'var(--pdm-blue)' }}>
-              {d.pct_programado_del_cuatrienio != null ? `${d.pct_programado_del_cuatrienio}%` : '—'}
-            </div>
-            <div className="pdm-pond-kpi-label">% del cuatrienio programado {year}</div>
-            <div className="pdm-pond-kpi-sub">Σ meta_pdm_{year} / Σ meta_cuatrienio</div>
+        <h2 className="pdm-section-h">Esperado vs Realizado — todos los años</h2>
+        <div className="pdm-anio-kpis">
+          <div className="pdm-anio-kpi" style={{ borderLeftColor: 'var(--pdm-blue)' }}>
+            <div style={{ color: 'var(--pdm-blue)', fontSize: 22, fontWeight: 800 }}>{d.pct_programado_del_cuatrienio != null ? `${d.pct_programado_del_cuatrienio}%` : '—'}</div>
+            <div style={{ fontSize: 12, fontWeight: 600, marginTop: 4 }}>% cuatrienio programado en {year}</div>
           </div>
-          <div className="pdm-pond-kpi" style={{ borderLeftColor: colorPct(d.avg_ponderado_anio) }}>
-            <div className="pdm-pond-kpi-val" style={{ color: colorPct(d.avg_ponderado_anio) }}>
-              {d.avg_ponderado_anio != null ? `${d.avg_ponderado_anio}%` : '—'}
-            </div>
-            <div className="pdm-pond-kpi-label">Avance físico realizado {year}</div>
-            <div className="pdm-pond-kpi-sub">Promedio ponderado_avance_{year}</div>
+          <div className="pdm-anio-kpi" style={{ borderLeftColor: colorPct(d.avance_fisico_anio_pct) }}>
+            <div style={{ color: colorPct(d.avance_fisico_anio_pct), fontSize: 22, fontWeight: 800 }}>{d.avance_fisico_anio_pct != null ? `${d.avance_fisico_anio_pct}%` : '—'}</div>
+            <div style={{ fontSize: 12, fontWeight: 600, marginTop: 4 }}>Avance físico realizado en {year}</div>
           </div>
         </div>
-        <CompBar
-          label={`Unidades programadas vs ejecutadas — ${year}`}
-          programado={d.sum_meta_pdm}
-          realizado={d.sum_meta_fisica}
-          unit=" uds"
-        />
-      </section>
-
-      {/* Comparativo esperado vs realizado — todos los años */}
-      <section className="pdm-section">
-        <h2 className="pdm-section-h">
-          Esperado vs Realizado por año
-          <span className="pdm-section-badge" style={{ background: 'var(--pdm-blue)18', color: 'var(--pdm-blue)' }}>cuatrienio</span>
-        </h2>
-        <p className="pdm-section-sub">
-          Para cada año: <strong>Esperado</strong> = % del plan cuatrienal programado ese año ·
-          <strong> Realizado</strong> = avance físico real ese año (ponderado sobre el cuatrienio).
-          El porcentaje de cumplimiento compara lo realizado con lo esperado.
-        </p>
         <ComparativoChart comparativo={comparativo} year={year} />
       </section>
 
-      {/* Avance financiero vs programado — año */}
+      {/* Section 4 — Presupuesto */}
       <section className="pdm-section">
-        <h2 className="pdm-section-h">Avance financiero {year} — Total Apropiación vs Registro</h2>
-        <p className="pdm-section-sub">
-          Programado (Total Apropiación) vs ejecutado (Neto Registros y Obligado) en millones de pesos.
-        </p>
-        <CompBar
-          label="Total Apropiación vs Neto Registros"
-          programado={d.apropiacion_m}
-          realizado={d.comprometido_m}
-          unit=" M$"
-        />
-        <CompBar
-          label="Total Apropiación vs Obligado"
-          programado={d.apropiacion_m}
-          realizado={d.obligado_m}
-          unit=" M$"
-        />
-        <div className="pdm-a-budget-row" style={{ marginTop: '1rem' }}>
+        <h2 className="pdm-section-h">Presupuesto {year}</h2>
+        <div className="pdm-a-budget-row">
           {[
-            { label: 'Total Apropiación', value: d.apropiacion_m, color: '#1a2332', icon: '$' },
-            { label: 'Neto Registros', value: d.comprometido_m, color: 'var(--pdm-blue)', icon: '≡' },
-            { label: 'Obligado', value: d.obligado_m, color: 'var(--pdm-purple)', icon: '✓' },
-          ].map(b => {
-            const pctVal = parseFloat(d.apropiacion_m) > 0
-              ? Math.round(parseFloat(b.value) / parseFloat(d.apropiacion_m) * 100)
-              : 0;
-            return (
-              <div key={b.label} className="pdm-budget-card" style={{ borderLeftColor: b.color }}>
-                <div className="pdm-bc-icon">{b.icon}</div>
-                <div className="pdm-bc-body">
-                  <div className="pdm-bc-label">{b.label}</div>
-                  <div className="pdm-bc-value">{fmtM(b.value)}</div>
-                  {b.label !== 'Total Apropiación' && (
-                    <>
-                      <BarPct value={pctVal} color={b.color} height={6} />
-                      <div className="pdm-bc-pct" style={{ color: b.color }}>{pctVal}% de apropiación</div>
-                    </>
-                  )}
-                </div>
+            { label: 'Total Apropiación', sublabel: 'Presupuesto asignado', value: d.apropiacion_m, color: '#1a2332', icon: '$', pct: null },
+            { label: 'Total Registro', sublabel: 'Presupuesto comprometido', value: d.comprometido_m, color: 'var(--pdm-blue)', icon: '≡', pct: parseFloat(d.apropiacion_m) > 0 ? Math.round(parseFloat(d.comprometido_m) / parseFloat(d.apropiacion_m) * 100) : 0 },
+            { label: 'Total Obligado', sublabel: 'Dinero consignado', value: d.obligado_m, color: 'var(--pdm-purple)', icon: '✓', pct: parseFloat(d.apropiacion_m) > 0 ? Math.round(parseFloat(d.obligado_m) / parseFloat(d.apropiacion_m) * 100) : 0 },
+          ].map(b => (
+            <div key={b.label} className="pdm-budget-card" style={{ borderLeftColor: b.color }}>
+              <div className="pdm-bc-icon">{b.icon}</div>
+              <div className="pdm-bc-body">
+                <div className="pdm-bc-label">{b.label}</div>
+                <div className="pdm-bc-sublabel" style={{ fontSize: 11, color: 'var(--pdm-muted)' }}>{b.sublabel}</div>
+                <div className="pdm-bc-value">{fmtM(b.value)}</div>
+                {b.pct != null && (
+                  <>
+                    <BarPct value={b.pct} color={b.color} height={6} />
+                    <div className="pdm-bc-pct" style={{ color: b.color }}>{b.pct}% de apropiación</div>
+                  </>
+                )}
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* Alertas divergencia físico-financiero */}
+      {/* Section 5 — Alertas Divergencia */}
       {divergencia && divergencia.length > 0 && (
         <section className="pdm-section">
           <h2 className="pdm-section-h">
@@ -278,7 +203,7 @@ export default function AnualOverviewTab({ data, year, divergencia, comparativo 
             <span className="pdm-section-badge pdm-section-badge--warn">{divergencia.length}</span>
           </h2>
           <p className="pdm-section-sub">
-            Metas donde la ejecución financiera supera significativamente el avance físico — requieren justificación ante Contraloría.
+            Metas donde el presupuesto comprometido (Total Registro) supera significativamente el avance físico — requieren justificación ante Contraloría. Clic en una fila para ver detalle.
           </p>
           <div className="pdm-table-wrapper">
             <table className="pdm-table">
@@ -287,32 +212,38 @@ export default function AnualOverviewTab({ data, year, divergencia, comparativo 
                   <th>#</th>
                   <th>Secretaría</th>
                   <th>Descripción</th>
-                  <th className="th-c">Ef. Física</th>
-                  <th className="th-c">Ef. Financiera</th>
+                  <th className="th-c">Avance Físico</th>
+                  <th className="th-c">Total Registro %</th>
                   <th className="th-c" style={{ color: 'var(--pdm-red)' }}>Divergencia</th>
-                  <th className="th-r">Obligado M$</th>
+                  <th className="th-r">Comprometido M$</th>
                 </tr>
               </thead>
               <tbody>
                 {divergencia.map(r => (
-                  <tr key={r.meta_num} className="pdm-row">
+                  <tr
+                    key={r.meta_num}
+                    className="pdm-row pdm-row--clickable"
+                    onClick={() => onMetaClick && onMetaClick(r.id)}
+                    style={{ cursor: 'pointer' }}
+                    title="Clic para ver detalle"
+                  >
                     <td className="td-meta-num">{r.meta_num}</td>
                     <td style={{ fontSize: 12 }}>{r.secretaria}</td>
                     <td style={{ fontSize: 12, maxWidth: 260 }} title={r.descripcion_meta}>{r.descripcion_meta}</td>
                     <td className="th-c">
-                      <span className="tray-eff-chip" style={{ color: colorPct(parseFloat(r.eficiencia_pct)||0), background: colorPct(parseFloat(r.eficiencia_pct)||0)+'18' }}>
-                        {r.eficiencia_pct != null ? r.eficiencia_pct + '%' : '—'}
+                      <span className="tray-eff-chip" style={{ color: colorPct(parseFloat(r.avance_fisico_anio_pct) || 0), background: colorPct(parseFloat(r.avance_fisico_anio_pct) || 0) + '18' }}>
+                        {r.avance_fisico_anio_pct != null ? r.avance_fisico_anio_pct + '%' : '—'}
                       </span>
                     </td>
                     <td className="th-c">
                       <span className="tray-eff-chip" style={{ color: 'var(--pdm-blue)', background: 'var(--pdm-blue)18' }}>
-                        {r.ejec_financiera_pct != null ? r.ejec_financiera_pct + '%' : '—'}
+                        {r.ejec_comprometida_pct != null ? r.ejec_comprometida_pct + '%' : '—'}
                       </span>
                     </td>
                     <td className="th-c">
                       <span className="chip-baja">+{r.divergencia_pct}%</span>
                     </td>
-                    <td className="th-r td-money">${parseFloat(r.obligado_m).toFixed(2)} M</td>
+                    <td className="th-r td-money">${parseFloat(r.comprometido_m).toFixed(2)} M</td>
                   </tr>
                 ))}
               </tbody>

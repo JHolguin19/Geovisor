@@ -1,6 +1,19 @@
 import { BarPct } from '../pdm/PdmShared';
 import { pct, colorPct } from '../pdm/helpers';
 
+function fmtM(val) {
+  const n = parseFloat(val);
+  if (isNaN(n) || n === 0) return '$0 M';
+  if (n >= 1000) return `$${(n / 1000).toFixed(1)} mil M`;
+  return `$${parseInt(n).toLocaleString('es-CO')} M`;
+}
+
+function fmtNum(val) {
+  const n = parseFloat(val);
+  if (isNaN(n)) return '—';
+  return n.toLocaleString('es-CO', { maximumFractionDigits: 1 });
+}
+
 export default function AnualPilaresTab({ data, year }) {
   if (!data || !data.length) return <div className="pdm-loading-full">Sin datos de pilares para {year}</div>;
 
@@ -9,16 +22,19 @@ export default function AnualPilaresTab({ data, year }) {
       <h2 className="pdm-section-h">Pilares estratégicos — {year}</h2>
       <div className="pdm-pilares-grid">
         {data.map(p => {
+          const avFisico = parseFloat(p.avance_fisico_pct) || 0;
           const eff = parseFloat(p.eficiencia_promedio) || 0;
+          const pdm = parseFloat(p.sum_meta_pdm) || 0;
+          const fisica = parseFloat(p.sum_meta_fisica) || 0;
+          const pctFisico = pdm > 0 ? Math.min(Math.round(fisica / pdm * 100), 100) : 0;
+          const apropia = parseFloat(p.apropiacion_m) || 0;
+          const registro = parseFloat(p.comprometido_m) || 0;
+          const pctReg = apropia > 0 ? Math.round(registro / apropia * 100) : 0;
           return (
             <div key={p.num_pilar} className="pdm-pilar-card">
               <div className="pdm-pilar-head">
                 <span className="pdm-pilar-num">Pilar {p.num_pilar}</span>
-                <span className="pdm-pilar-presupuesto">
-                  {parseFloat(p.apropiacion_m) >= 1000
-                    ? `$${(p.apropiacion_m / 1000).toFixed(1)} mil M`
-                    : `$${parseInt(p.apropiacion_m).toLocaleString('es-CO')} M`}
-                </span>
+                <span className="pdm-pilar-presupuesto">{fmtM(p.apropiacion_m)}</span>
               </div>
               <div className="pdm-pilar-nom">{p.nom_pilar}</div>
               <div className="pdm-pilar-metas">
@@ -26,9 +42,30 @@ export default function AnualPilaresTab({ data, year }) {
               </div>
               <div className="pdm-pilar-bars">
                 <div className="pdm-pilar-bar-row">
-                  <span>Eficiencia</span>
+                  <span>Avance físico</span>
+                  <BarPct value={avFisico} height={10} />
+                  <b style={{ color: colorPct(avFisico) }}>{pct(avFisico)}</b>
+                </div>
+                <div className="pdm-pilar-bar-row">
+                  <span>Eficiencia {year}</span>
                   <BarPct value={eff} height={10} />
                   <b style={{ color: colorPct(eff) }}>{pct(eff)}</b>
+                </div>
+                <div className="pdm-pilar-bar-row">
+                  <span>Físico {year}</span>
+                  <BarPct value={pctFisico} height={10} />
+                  <b style={{ color: colorPct(pctFisico) }}>{pctFisico}%</b>
+                </div>
+                <div className="pdm-pilar-bar-row" style={{ fontSize: 11, color: 'var(--pdm-muted)', marginTop: 2 }}>
+                  <span style={{ flex: 1 }}>prog. <strong>{fmtNum(pdm)}</strong> / real. <strong style={{ color: colorPct(pctFisico) }}>{fmtNum(fisica)}</strong></span>
+                </div>
+                <div className="pdm-pilar-bar-row" style={{ marginTop: 6 }}>
+                  <span>Neto Reg. / Apropia.</span>
+                  <BarPct value={pctReg} height={10} color="var(--pdm-blue)" />
+                  <b style={{ color: 'var(--pdm-blue)' }}>{pctReg}%</b>
+                </div>
+                <div className="pdm-pilar-bar-row" style={{ fontSize: 11, color: 'var(--pdm-muted)', marginTop: 2 }}>
+                  <span style={{ flex: 1 }}>{fmtM(registro)} / {fmtM(apropia)}</span>
                 </div>
               </div>
               <div className="pdm-pilar-chips">
