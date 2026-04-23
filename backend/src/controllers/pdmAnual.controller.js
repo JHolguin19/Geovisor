@@ -39,6 +39,11 @@ export async function getTrayectoria(req, res) {
   res.json(data);
 }
 
+export async function getComparativo(req, res) {
+  const data = await pdmAnualService.getComparativoAnual();
+  res.json(data);
+}
+
 export async function getDivergencia(req, res) {
   const rows = await pdmAnualService.getDivergenciaFisFinan(req.params.year);
   res.json(rows);

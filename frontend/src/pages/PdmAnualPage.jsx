@@ -54,6 +54,7 @@ export default function PdmAnualPage() {
   // Trayectoria cuatrienal y divergencia
   const [trayectoria, setTrayectoria]     = useState(null);
   const [divergencia, setDivergencia]     = useState([]);
+  const [comparativo, setComparativo]     = useState([]);
   const [exportLoading, setExportLoading] = useState(false);
 
   // Load year data
@@ -81,9 +82,10 @@ export default function PdmAnualPage() {
     pdmService.getPilares().then(setPilaresLista);
   }, []);
 
-  // Load trayectoria once (cuatrienal, no depende del año)
+  // Load trayectoria + comparativo once (cuatrienal, no dependen del año)
   useEffect(() => {
     pdmAnualService.getTrayectoria().then(setTrayectoria).catch(console.error);
+    pdmAnualService.getComparativo().then(setComparativo).catch(console.error);
   }, []);
 
   // Load divergencia when year changes
@@ -178,7 +180,7 @@ export default function PdmAnualPage() {
           {loading && <div className="pdm-loading-full">Cargando datos del año {year}…</div>}
 
           {!loading && tab === 'resumen' && (
-            <AnualOverviewTab data={overview} year={year} divergencia={divergencia} />
+            <AnualOverviewTab data={overview} year={year} divergencia={divergencia} comparativo={comparativo} />
           )}
 
           {!loading && tab === 'secretarias' && (

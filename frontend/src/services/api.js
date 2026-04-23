@@ -205,6 +205,11 @@ export const pdmAnualService = {
     return response.data;
   },
 
+  getComparativo: async () => {
+    const response = await api.get('/pdm/anual/comparativo');
+    return response.data;
+  },
+
   getDivergencia: async (year) => {
     const response = await api.get(`/pdm/anual/${year}/divergencia`);
     return response.data;

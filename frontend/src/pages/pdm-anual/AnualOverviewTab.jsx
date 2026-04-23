@@ -9,7 +9,84 @@ function fmtM(val) {
   return `$${n.toLocaleString('es-CO')} M`;
 }
 
-export default function AnualOverviewTab({ data, year, divergencia }) {
+function fmtNum(val) {
+  const n = parseFloat(val);
+  if (isNaN(n)) return '—';
+  return n.toLocaleString('es-CO', { maximumFractionDigits: 1 });
+}
+
+function CompBar({ label, programado, realizado, unit = '' }) {
+  const p = parseFloat(programado) || 0;
+  const r = parseFloat(realizado) || 0;
+  const pct = p > 0 ? Math.min(Math.round(r / p * 100), 100) : 0;
+  const color = pct >= 80 ? 'var(--pdm-green)' : pct >= 50 ? 'var(--pdm-amber)' : 'var(--pdm-red)';
+  return (
+    <div className="pdm-compbar">
+      <div className="pdm-compbar-header">
+        <span className="pdm-compbar-label">{label}</span>
+        <span className="pdm-compbar-pct" style={{ color }}>{pct}%</span>
+      </div>
+      <div className="pdm-compbar-track">
+        <div className="pdm-compbar-fill" style={{ width: `${pct}%`, background: color }} />
+      </div>
+      <div className="pdm-compbar-vals">
+        <span>Programado: <strong>{fmtNum(programado)}{unit}</strong></span>
+        <span>Realizado: <strong>{fmtNum(realizado)}{unit}</strong></span>
+      </div>
+    </div>
+  );
+}
+
+function ComparativoChart({ comparativo, year }) {
+  if (!comparativo || comparativo.length === 0) return null;
+
+  const maxVal = Math.max(...comparativo.flatMap(d => [
+    parseFloat(d.pct_esperado) || 0,
+    parseFloat(d.pct_realizado) || 0,
+  ]), 1);
+
+  return (
+    <div className="pdm-comp-chart">
+      {comparativo.map(d => {
+        const esp = parseFloat(d.pct_esperado) || 0;
+        const real = parseFloat(d.pct_realizado) || 0;
+        const pctCumpl = esp > 0 ? Math.min(Math.round(real / esp * 100), 999) : 0;
+        const colReal = pctCumpl >= 80 ? 'var(--pdm-green)' : pctCumpl >= 50 ? 'var(--pdm-amber)' : 'var(--pdm-red)';
+        const isActive = d.year === year;
+
+        return (
+          <div key={d.year} className={`pdm-comp-row${isActive ? ' pdm-comp-row--active' : ''}`}>
+            <div className="pdm-comp-year">{d.year}{isActive && <span className="pdm-comp-year-badge">actual</span>}</div>
+            <div className="pdm-comp-bars">
+              <div className="pdm-comp-bar-wrap">
+                <div className="pdm-comp-bar-label">Esperado</div>
+                <div className="pdm-comp-track">
+                  <div className="pdm-comp-fill pdm-comp-fill--esp"
+                    style={{ width: `${(esp / maxVal) * 100}%` }} />
+                </div>
+                <div className="pdm-comp-val">{esp}%</div>
+              </div>
+              <div className="pdm-comp-bar-wrap">
+                <div className="pdm-comp-bar-label">Realizado</div>
+                <div className="pdm-comp-track">
+                  <div className="pdm-comp-fill"
+                    style={{ width: `${(real / maxVal) * 100}%`, background: colReal }} />
+                </div>
+                <div className="pdm-comp-val" style={{ color: colReal }}>{real}%</div>
+              </div>
+            </div>
+            <div className="pdm-comp-cumpl" style={{ color: colReal }}>
+              {esp > 0 ? `${pctCumpl}%` : '—'}
+              <span className="pdm-comp-cumpl-sub">cumplimiento</span>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+export default function AnualOverviewTab({ data, year, divergencia, comparativo }) {
   if (!data) return <div className="pdm-loading-full">Cargando datos del año {year}…</div>;
 
   const d = data;
@@ -42,12 +119,26 @@ export default function AnualOverviewTab({ data, year, divergencia }) {
               <div className="pdm-a-kpi-sub">{kpi.sub}</div>
             </div>
           ))}
-          <div className="pdm-a-kpi-card pdm-a-kpi-card--eff" style={{ borderLeftColor: colorPct(d.eficiencia_promedio) }}>
+          <div className="pdm-a-kpi-card pdm-a-kpi-card--eff" style={{ borderLeftColor: colorPct(d.avance_fisico_pct) }}>
+            <div className="pdm-a-kpi-value" style={{ color: colorPct(d.avance_fisico_pct) }}>
+              {d.avance_fisico_pct != null ? `${d.avance_fisico_pct}%` : '—'}
+            </div>
+            <div className="pdm-a-kpi-label">Avance físico cuatrienio</div>
+            <div className="pdm-a-kpi-sub">progreso acumulado 4 años</div>
+          </div>
+          <div className="pdm-a-kpi-card" style={{ borderLeftColor: colorPct(d.avg_ponderado_anio) }}>
+            <div className="pdm-a-kpi-value" style={{ color: colorPct(d.avg_ponderado_anio) }}>
+              {d.avg_ponderado_anio != null ? `${d.avg_ponderado_anio}%` : '—'}
+            </div>
+            <div className="pdm-a-kpi-label">Avance físico {year}</div>
+            <div className="pdm-a-kpi-sub">contribución de {year} al cuatrienio</div>
+          </div>
+          <div className="pdm-a-kpi-card" style={{ borderLeftColor: colorPct(d.eficiencia_promedio) }}>
             <div className="pdm-a-kpi-value" style={{ color: colorPct(d.eficiencia_promedio) }}>
               {d.eficiencia_promedio != null ? `${d.eficiencia_promedio}%` : '—'}
             </div>
-            <div className="pdm-a-kpi-label">Eficiencia promedio</div>
-            <div className="pdm-a-kpi-sub">realizado / programado</div>
+            <div className="pdm-a-kpi-label">Eficiencia {year}</div>
+            <div className="pdm-a-kpi-sub">física / programada año</div>
           </div>
         </div>
       </section>
@@ -88,13 +179,73 @@ export default function AnualOverviewTab({ data, year, divergencia }) {
         </div>
       </section>
 
-      {/* Presupuesto del año */}
+      {/* Avance físico del año — Ponderado + Unidades */}
       <section className="pdm-section">
-        <h2 className="pdm-section-h">Presupuesto {year}</h2>
-        <div className="pdm-a-budget-row">
+        <h2 className="pdm-section-h">Avance físico {year} — Programado vs Realizado</h2>
+        <p className="pdm-section-sub">
+          <strong>Avance físico {year}:</strong> cuánto contribuyó cada meta al cuatrienio en {year}.
+          Programado = meta_pdm_{year} / meta_cuatrienio · Realizado = meta_fisica_{year} / meta_cuatrienio.
+        </p>
+        <div className="pdm-pond-kpis">
+          <div className="pdm-pond-kpi" style={{ borderLeftColor: 'var(--pdm-blue)' }}>
+            <div className="pdm-pond-kpi-val" style={{ color: 'var(--pdm-blue)' }}>
+              {d.pct_programado_del_cuatrienio != null ? `${d.pct_programado_del_cuatrienio}%` : '—'}
+            </div>
+            <div className="pdm-pond-kpi-label">% del cuatrienio programado {year}</div>
+            <div className="pdm-pond-kpi-sub">Σ meta_pdm_{year} / Σ meta_cuatrienio</div>
+          </div>
+          <div className="pdm-pond-kpi" style={{ borderLeftColor: colorPct(d.avg_ponderado_anio) }}>
+            <div className="pdm-pond-kpi-val" style={{ color: colorPct(d.avg_ponderado_anio) }}>
+              {d.avg_ponderado_anio != null ? `${d.avg_ponderado_anio}%` : '—'}
+            </div>
+            <div className="pdm-pond-kpi-label">Avance físico realizado {year}</div>
+            <div className="pdm-pond-kpi-sub">Promedio ponderado_avance_{year}</div>
+          </div>
+        </div>
+        <CompBar
+          label={`Unidades programadas vs ejecutadas — ${year}`}
+          programado={d.sum_meta_pdm}
+          realizado={d.sum_meta_fisica}
+          unit=" uds"
+        />
+      </section>
+
+      {/* Comparativo esperado vs realizado — todos los años */}
+      <section className="pdm-section">
+        <h2 className="pdm-section-h">
+          Esperado vs Realizado por año
+          <span className="pdm-section-badge" style={{ background: 'var(--pdm-blue)18', color: 'var(--pdm-blue)' }}>cuatrienio</span>
+        </h2>
+        <p className="pdm-section-sub">
+          Para cada año: <strong>Esperado</strong> = % del plan cuatrienal programado ese año ·
+          <strong> Realizado</strong> = avance físico real ese año (ponderado sobre el cuatrienio).
+          El porcentaje de cumplimiento compara lo realizado con lo esperado.
+        </p>
+        <ComparativoChart comparativo={comparativo} year={year} />
+      </section>
+
+      {/* Avance financiero vs programado — año */}
+      <section className="pdm-section">
+        <h2 className="pdm-section-h">Avance financiero {year} — Total Apropiación vs Registro</h2>
+        <p className="pdm-section-sub">
+          Programado (Total Apropiación) vs ejecutado (Neto Registros y Obligado) en millones de pesos.
+        </p>
+        <CompBar
+          label="Total Apropiación vs Neto Registros"
+          programado={d.apropiacion_m}
+          realizado={d.comprometido_m}
+          unit=" M$"
+        />
+        <CompBar
+          label="Total Apropiación vs Obligado"
+          programado={d.apropiacion_m}
+          realizado={d.obligado_m}
+          unit=" M$"
+        />
+        <div className="pdm-a-budget-row" style={{ marginTop: '1rem' }}>
           {[
-            { label: 'Apropiación', value: d.apropiacion_m, color: '#1a2332', icon: '$' },
-            { label: 'Comprometido', value: d.comprometido_m, color: 'var(--pdm-blue)', icon: '≡' },
+            { label: 'Total Apropiación', value: d.apropiacion_m, color: '#1a2332', icon: '$' },
+            { label: 'Neto Registros', value: d.comprometido_m, color: 'var(--pdm-blue)', icon: '≡' },
             { label: 'Obligado', value: d.obligado_m, color: 'var(--pdm-purple)', icon: '✓' },
           ].map(b => {
             const pctVal = parseFloat(d.apropiacion_m) > 0
@@ -106,7 +257,7 @@ export default function AnualOverviewTab({ data, year, divergencia }) {
                 <div className="pdm-bc-body">
                   <div className="pdm-bc-label">{b.label}</div>
                   <div className="pdm-bc-value">{fmtM(b.value)}</div>
-                  {b.label !== 'Apropiación' && (
+                  {b.label !== 'Total Apropiación' && (
                     <>
                       <BarPct value={pctVal} color={b.color} height={6} />
                       <div className="pdm-bc-pct" style={{ color: b.color }}>{pctVal}% de apropiación</div>

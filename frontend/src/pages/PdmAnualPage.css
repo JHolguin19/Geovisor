@@ -76,7 +76,7 @@
 
 .pdm-a-kpi-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 12px;
 }
 
@@ -344,7 +344,7 @@
 
 /* ── Responsive ─────────────────────────────────────────────────────────── */
 
-@media (max-width: 1100px) {
+@media (max-width: 1200px) {
   .pdm-a-kpi-grid { grid-template-columns: repeat(3, 1fr); }
   .pdm-a-budget-row { grid-template-columns: 1fr; }
 }
@@ -533,6 +533,71 @@
 /* ── Sección header con .pdm-section-h sin margin-bottom duplicado ───── */
 .tray-header .pdm-section-h { margin-bottom: 0; }
 
+/* ── Ponderado KPIs (R__Pond. Avance añoN) ───────────────────────────── */
+.pdm-pond-kpis {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.pdm-pond-kpi {
+  flex: 1;
+  background: #f8f9fb;
+  border: 1px solid var(--pdm-border);
+  border-left: 4px solid transparent;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+.pdm-pond-kpi-val  { font-size: 28px; font-weight: 800; line-height: 1.1; }
+.pdm-pond-kpi-label { font-size: 12px; font-weight: 700; color: var(--pdm-text); margin-top: 4px; }
+.pdm-pond-kpi-sub  { font-size: 11px; color: var(--pdm-muted); margin-top: 2px; }
+
+/* ── CompBar — barra comparación programado vs realizado ─────────────── */
+.pdm-compbar {
+  background: #f8f9fb;
+  border: 1px solid var(--pdm-border);
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin-bottom: 10px;
+}
+.pdm-compbar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.pdm-compbar-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--pdm-text);
+}
+.pdm-compbar-pct {
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1;
+}
+.pdm-compbar-track {
+  height: 10px;
+  background: var(--pdm-border);
+  border-radius: 5px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+.pdm-compbar-fill {
+  height: 100%;
+  border-radius: 5px;
+  transition: width 0.4s ease;
+}
+.pdm-compbar-vals {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--pdm-muted);
+}
+.pdm-compbar-vals strong {
+  color: var(--pdm-text);
+  font-weight: 700;
+}
+
 /* ── Responsive ─────────────────────────────────────────────────────────── */
 @media (max-width: 900px) {
   .tray-pilares-grid { grid-template-columns: repeat(2, 1fr); }
@@ -541,4 +606,96 @@
   .tray-pilares-grid { grid-template-columns: 1fr; }
   .tray-year-chips-row { flex-direction: column; }
   .tray-global-legend { gap: 8px; }
+}
+
+/* ── Comparativo esperado vs realizado ─────────────────────────────────── */
+.pdm-comp-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+.pdm-comp-row {
+  display: grid;
+  grid-template-columns: 80px 1fr 90px;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--pdm-card);
+  border: 1px solid var(--pdm-border);
+  border-radius: 8px;
+  transition: box-shadow 0.2s;
+}
+.pdm-comp-row--active {
+  border-left: 3px solid var(--pdm-blue);
+  box-shadow: 0 2px 12px rgba(0,114,255,0.08);
+}
+.pdm-comp-year {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--pdm-text);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+.pdm-comp-year-badge {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--pdm-blue);
+  background: rgba(0,114,255,0.1);
+  padding: 1px 6px;
+  border-radius: 10px;
+  text-transform: uppercase;
+}
+.pdm-comp-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.pdm-comp-bar-wrap {
+  display: grid;
+  grid-template-columns: 70px 1fr 46px;
+  align-items: center;
+  gap: 8px;
+}
+.pdm-comp-bar-label {
+  font-size: 11px;
+  color: var(--pdm-muted);
+  font-weight: 500;
+}
+.pdm-comp-track {
+  height: 8px;
+  background: var(--pdm-border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.pdm-comp-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+.pdm-comp-fill--esp {
+  background: rgba(0,114,255,0.35);
+}
+.pdm-comp-val {
+  font-size: 12px;
+  font-weight: 700;
+  text-align: right;
+}
+.pdm-comp-cumpl {
+  font-size: 22px;
+  font-weight: 800;
+  text-align: center;
+  line-height: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.pdm-comp-cumpl-sub {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--pdm-muted);
+  text-transform: uppercase;
 }
