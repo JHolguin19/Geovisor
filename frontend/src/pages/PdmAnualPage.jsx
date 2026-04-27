@@ -211,6 +211,10 @@ export default function PdmAnualPage() {
             />
           )}
 
+          {tab === 'informe' && (
+            <AnualInformeTab year={year} />
+          )}
+
           {tab === 'metas' && (
             <AnualMetasTab
               metas={metas} total={total} loading={tblLoading} year={year}
