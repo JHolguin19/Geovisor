@@ -5,11 +5,16 @@
 import pool from '../db/pool.js';
 import OpenAI from 'openai';
 import PDFDocument from 'pdfkit';
+import { AppError } from '../middleware/errorHandler.js';
 
-// Instanciación lazy para evitar crash al arrancar si la key no está configurada
+// Instanciación lazy — lanza AppError (operacional) para que el mensaje llegue al cliente
 function getOpenAI() {
   if (!process.env.OPENAI_API_KEY) {
-    throw new Error('OPENAI_API_KEY no configurada en las variables de entorno del servidor.');
+    throw new AppError(
+      'OPENAI_API_KEY no está configurada en las variables de entorno del servidor. ' +
+      'Agrégala en el panel de Render → Environment.',
+      503,
+    );
   }
   return new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 }
@@ -147,12 +152,19 @@ INSTRUCCIONES:
 - Indica el corte de información (año ${year})
 - El informe debe tener entre 1500-2500 palabras`;
 
-  const completion = await getOpenAI().chat.completions.create({
-    model: 'gpt-4o',
-    messages: [{ role: 'user', content: prompt }],
-    temperature: 0.3,
-    max_tokens: 4000,
-  });
+  let completion;
+  try {
+    completion = await getOpenAI().chat.completions.create({
+      model: 'gpt-4o',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.3,
+      max_tokens: 4000,
+    });
+  } catch (err) {
+    // Convierte errores del SDK de OpenAI en AppError para que lleguen al frontend
+    const msg = err?.message || String(err);
+    throw new AppError(`Error al contactar OpenAI: ${msg}`, 502);
+  }
 
   const texto = completion.choices[0].message.content;
   return { texto, datos };
