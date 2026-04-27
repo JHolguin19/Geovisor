@@ -6,7 +6,13 @@ import pool from '../db/pool.js';
 import OpenAI from 'openai';
 import PDFDocument from 'pdfkit';
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+// Instanciación lazy para evitar crash al arrancar si la key no está configurada
+function getOpenAI() {
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error('OPENAI_API_KEY no configurada en las variables de entorno del servidor.');
+  }
+  return new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+}
 
 // ── Recopilar datos para el informe ─────────────────────────────────────────
 
@@ -141,7 +147,7 @@ INSTRUCCIONES:
 - Indica el corte de información (año ${year})
 - El informe debe tener entre 1500-2500 palabras`;
 
-  const completion = await openai.chat.completions.create({
+  const completion = await getOpenAI().chat.completions.create({
     model: 'gpt-4o',
     messages: [{ role: 'user', content: prompt }],
     temperature: 0.3,
