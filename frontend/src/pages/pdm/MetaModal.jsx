@@ -31,19 +31,21 @@ export default function MetaModal({ id, onClose }) {
 
           <div className="pdm-modal-kpis">
             {[
-              { label: 'Avance Físico',       val: meta.avance_fisico,           color: null },
-              { label: 'Cumplimiento 4 años', val: meta.cumplimiento_cuatrienio, color: 'var(--pdm-purple)' },
-              { label: 'Eficiencia 2025',     val: meta.eficiencia_2025,         color: 'var(--pdm-amber)' },
-            ].map(({ label, val, color }) => {
+              { label: 'Avance Físico',       val: meta.avance_fisico,           color: null,                scale: 1   },
+              { label: 'Cumplimiento 4 años', val: meta.cumplimiento_cuatrienio, color: 'var(--pdm-purple)', scale: 100 },
+              { label: 'Eficiencia 2025',     val: meta.eficiencia_2025,         color: 'var(--pdm-amber)',  scale: 1   },
+            ].map(({ label, val, color, scale }) => {
               const n = parseFloat(val);
-              const w = isNaN(n) ? 0 : Math.round(n * 100);
+              // scale=1: valor 0–1, multiplicar ×100. scale=100: ya en 0–100, usar directo.
+              const w = isNaN(n) ? 0 : Math.min(Math.round(scale === 100 ? n : n * 100), 100);
+              const display = isNaN(n) ? '—' : scale === 100 ? `${n.toFixed(1)}%` : pct01(val);
               return (
                 <div key={label} className="pdm-modal-kpi">
                   <span>{label}</span>
                   <div className="pdm-bar-track" style={{ height: 10 }}>
                     <div className="pdm-bar-fill" style={{ width: `${w}%`, background: color || colorPct(w) }} />
                   </div>
-                  <strong style={{ color: color || colorPct(w) }}>{val !== null ? pct01(val) : '—'}</strong>
+                  <strong style={{ color: color || colorPct(w) }}>{val !== null ? display : '—'}</strong>
                 </div>
               );
             })}

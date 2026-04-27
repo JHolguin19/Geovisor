@@ -810,3 +810,136 @@
   color: var(--pdm-muted);
   text-transform: uppercase;
 }
+
+/* ============================================================
+   Análisis Financiero — AnualFinancieroTab
+   ============================================================ */
+
+/* KPI grid */
+.fin-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.fin-kpi {
+  background: var(--pdm-card);
+  border: 1px solid var(--pdm-border);
+  border-left: 4px solid var(--pdm-blue);
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.fin-kpi--dark { border-left-color: #1a2332; }
+.fin-kpi--saldo { border-left-color: #94a3b8; }
+
+.fin-kpi-icon {
+  font-size: 20px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--pdm-bg);
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.fin-kpi-body { flex: 1; min-width: 0; }
+.fin-kpi-label { font-size: 11px; font-weight: 600; color: var(--pdm-muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px; }
+.fin-kpi-val { font-size: 20px; font-weight: 800; color: var(--pdm-text); margin-bottom: 6px; }
+.fin-kpi-val--saldo { color: #94a3b8; }
+.fin-kpi-pct { font-size: 12px; font-weight: 700; margin-top: 4px; }
+.fin-kpi-sub { font-size: 11px; color: var(--pdm-muted); margin-top: 4px; }
+
+/* Divergencia banner */
+.fin-divergencia-banner {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: var(--pdm-bg);
+  border: 1px solid var(--pdm-border);
+  border-radius: 10px;
+  padding: 14px 20px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.fin-div-item { display: flex; flex-direction: column; gap: 2px; }
+.fin-div-label { font-size: 11px; color: var(--pdm-muted); font-weight: 600; }
+.fin-div-val { font-size: 22px; font-weight: 800; }
+.fin-div-sep { font-size: 16px; font-weight: 600; color: var(--pdm-muted); padding: 0 4px; }
+.fin-div-alert {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 600;
+  color: #d97706;
+  background: #fef3c7;
+  border-radius: 6px;
+  padding: 6px 12px;
+}
+
+/* Comparativo chart */
+.fin-chart { display: flex; flex-direction: column; gap: 12px; }
+
+.fin-row {
+  display: grid;
+  grid-template-columns: 70px 1fr 90px;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--pdm-card);
+  border: 1px solid var(--pdm-border);
+  transition: border-color 0.2s;
+}
+
+.fin-row--active {
+  border-color: var(--pdm-blue);
+  box-shadow: 0 0 0 2px rgba(59,130,246,.12);
+}
+
+.fin-year {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--pdm-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.fin-year-badge {
+  font-size: 9px;
+  font-weight: 600;
+  background: var(--pdm-blue);
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.fin-bars { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 0; }
+
+.fin-bar-wrap { display: grid; grid-template-columns: 90px 1fr 130px; align-items: center; gap: 8px; }
+.fin-bar-label { font-size: 11px; color: var(--pdm-muted); font-weight: 500; white-space: nowrap; }
+.fin-track { height: 10px; background: var(--pdm-border); border-radius: 5px; overflow: hidden; }
+.fin-fill { height: 100%; border-radius: 5px; transition: width 0.5s; }
+.fin-fill--aprop { background: #1a2332; }
+.fin-val { font-size: 12px; font-weight: 700; white-space: nowrap; }
+.fin-val--aprop { color: #1a2332; }
+.fin-pct { font-size: 11px; font-weight: 500; opacity: 0.8; }
+
+.fin-fisico-col { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.fin-fisico-label { font-size: 10px; color: var(--pdm-muted); font-weight: 500; text-align: center; }
+.fin-fisico-val { font-size: 16px; font-weight: 800; }
+
+@media (max-width: 768px) {
+  .fin-row { grid-template-columns: 1fr; gap: 8px; }
+  .fin-bar-wrap { grid-template-columns: 80px 1fr 100px; }
+  .fin-kpi-grid { grid-template-columns: 1fr 1fr; }
+}

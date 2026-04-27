@@ -7,6 +7,7 @@ import AnualSecretariasTab from './pdm-anual/AnualSecretariasTab';
 import AnualPilaresTab from './pdm-anual/AnualPilaresTab';
 import AnualMetasTab from './pdm-anual/AnualMetasTab';
 import AnualTrayectoriaTab from './pdm-anual/AnualTrayectoriaTab';
+import AnualFinancieroTab from './pdm-anual/AnualFinancieroTab';
 import AnualInformeTab from './pdm-anual/AnualInformeTab';
 import PdmUploadModal from './pdm-anual/PdmUploadModal';
 import InformeModal from './pdm-anual/InformeModal';
@@ -16,6 +17,7 @@ import './PdmAnualPage.css';
 const YEARS = [2024, 2025, 2026, 2027];
 const TABS = [
   { id: 'resumen',      label: 'Resumen anual' },
+  { id: 'financiero',   label: 'Análisis financiero' },
   { id: 'secretarias',  label: 'Por secretaría' },
   { id: 'pilares',      label: 'Por pilar' },
   { id: 'metas',        label: 'Detalle metas' },
@@ -56,10 +58,11 @@ export default function PdmAnualPage() {
   const [pilaresLista, setPilaresLista] = useState([]);
 
   // Trayectoria cuatrienal y divergencia
-  const [trayectoria, setTrayectoria]     = useState(null);
-  const [divergencia, setDivergencia]     = useState([]);
-  const [comparativo, setComparativo]     = useState([]);
-  const [exportLoading, setExportLoading] = useState(false);
+  const [trayectoria, setTrayectoria]             = useState(null);
+  const [divergencia, setDivergencia]             = useState([]);
+  const [comparativo, setComparativo]             = useState([]);
+  const [comparativoFinanciero, setComparativoFinanciero] = useState(null);
+  const [exportLoading, setExportLoading]         = useState(false);
 
   // Load year data
   useEffect(() => {
@@ -86,10 +89,11 @@ export default function PdmAnualPage() {
     pdmService.getPilares().then(setPilaresLista);
   }, []);
 
-  // Load trayectoria + comparativo once (cuatrienal, no dependen del año)
+  // Load trayectoria + comparativos once (cuatrienal, no dependen del año)
   useEffect(() => {
     pdmAnualService.getTrayectoria().then(setTrayectoria).catch(console.error);
     pdmAnualService.getComparativo().then(setComparativo).catch(console.error);
+    pdmAnualService.getComparativoFinanciero().then(setComparativoFinanciero).catch(console.error);
   }, []);
 
   // Load divergencia when year changes
@@ -185,6 +189,10 @@ export default function PdmAnualPage() {
 
           {!loading && tab === 'resumen' && (
             <AnualOverviewTab data={overview} year={year} divergencia={divergencia} comparativo={comparativo} onMetaClick={(id) => setModalId(id)} />
+          )}
+
+          {!loading && tab === 'financiero' && (
+            <AnualFinancieroTab data={comparativoFinanciero} year={year} />
           )}
 
           {!loading && tab === 'secretarias' && (

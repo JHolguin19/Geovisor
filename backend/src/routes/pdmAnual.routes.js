@@ -22,9 +22,10 @@ const upload = multer({
   },
 });
 
-// Trayectoria cuatrienal y comparativo (sin parámetro de año)
-router.get('/trayectoria',  authMiddleware, asyncHandler(ctrl.getTrayectoria));
-router.get('/comparativo',  authMiddleware, asyncHandler(ctrl.getComparativo));
+// Trayectoria cuatrienal y comparativos (sin parámetro de año)
+router.get('/trayectoria',           authMiddleware, asyncHandler(ctrl.getTrayectoria));
+router.get('/comparativo',           authMiddleware, asyncHandler(ctrl.getComparativo));
+router.get('/comparativo-financiero', authMiddleware, asyncHandler(ctrl.getComparativoFinanciero));
 
 // Lectura — autenticado
 router.get('/:year/overview',     authMiddleware, validate(schemas.pdmYear, 'params'), asyncHandler(ctrl.getYearOverview));

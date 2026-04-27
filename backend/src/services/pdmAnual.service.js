@@ -779,6 +779,180 @@ export async function getDivergenciaFisFinan(year) {
   return rows;
 }
 
+// ── Comparativo financiero (todos los años) ────────────────────────────────
+
+export async function getComparativoFinanciero() {
+  // Retorna presupuesto agregado por año (4 filas: 2024–2027)
+  // + desglose por secretaría para cada año
+  const [porAnio, porSecretaria] = await Promise.all([
+    pool.query(`
+      SELECT
+        yr.year,
+        ROUND(SUM(CASE yr.year
+          WHEN 2024 THEN COALESCE((m.presupuesto_2024->>'total_apropiacion')::numeric, 0)
+          WHEN 2025 THEN COALESCE((m.presupuesto_2025->>'total_apropiacion')::numeric, 0)
+          WHEN 2026 THEN COALESCE((m.presupuesto_2026->>'total_apropiacion')::numeric, 0)
+          WHEN 2027 THEN COALESCE((m.presupuesto_2027->>'total_apropiacion')::numeric, 0)
+        END) / 1000000, 0) AS apropiacion_m,
+
+        ROUND(SUM(CASE yr.year
+          WHEN 2024 THEN COALESCE((m.presupuesto_2024->>'neto_registros')::numeric, 0)
+          WHEN 2025 THEN COALESCE((m.presupuesto_2025->>'neto_registros')::numeric, 0)
+          WHEN 2026 THEN COALESCE((m.presupuesto_2026->>'neto_registros')::numeric, 0)
+          WHEN 2027 THEN COALESCE((m.presupuesto_2027->>'neto_registros')::numeric, 0)
+        END) / 1000000, 0) AS comprometido_m,
+
+        ROUND(SUM(CASE yr.year
+          WHEN 2024 THEN COALESCE((m.presupuesto_2024->>'total_obligacion')::numeric, 0)
+          WHEN 2025 THEN COALESCE((m.presupuesto_2025->>'total_obligacion')::numeric, 0)
+          WHEN 2026 THEN COALESCE((m.presupuesto_2026->>'total_obligacion')::numeric, 0)
+          WHEN 2027 THEN COALESCE((m.presupuesto_2027->>'total_obligacion')::numeric, 0)
+        END) / 1000000, 0) AS obligado_m,
+
+        -- % ejecución comprometido (neto_registros / total_apropiacion)
+        ROUND(
+          SUM(CASE yr.year
+            WHEN 2024 THEN COALESCE((m.presupuesto_2024->>'neto_registros')::numeric, 0)
+            WHEN 2025 THEN COALESCE((m.presupuesto_2025->>'neto_registros')::numeric, 0)
+            WHEN 2026 THEN COALESCE((m.presupuesto_2026->>'neto_registros')::numeric, 0)
+            WHEN 2027 THEN COALESCE((m.presupuesto_2027->>'neto_registros')::numeric, 0)
+          END) /
+          NULLIF(SUM(CASE yr.year
+            WHEN 2024 THEN COALESCE((m.presupuesto_2024->>'total_apropiacion')::numeric, 0)
+            WHEN 2025 THEN COALESCE((m.presupuesto_2025->>'total_apropiacion')::numeric, 0)
+            WHEN 2026 THEN COALESCE((m.presupuesto_2026->>'total_apropiacion')::numeric, 0)
+            WHEN 2027 THEN COALESCE((m.presupuesto_2027->>'total_apropiacion')::numeric, 0)
+          END), 0) * 100, 1
+        ) AS pct_comprometido,
+
+        -- % ejecución obligado
+        ROUND(
+          SUM(CASE yr.year
+            WHEN 2024 THEN COALESCE((m.presupuesto_2024->>'total_obligacion')::numeric, 0)
+            WHEN 2025 THEN COALESCE((m.presupuesto_2025->>'total_obligacion')::numeric, 0)
+            WHEN 2026 THEN COALESCE((m.presupuesto_2026->>'total_obligacion')::numeric, 0)
+            WHEN 2027 THEN COALESCE((m.presupuesto_2027->>'total_obligacion')::numeric, 0)
+          END) /
+          NULLIF(SUM(CASE yr.year
+            WHEN 2024 THEN COALESCE((m.presupuesto_2024->>'total_apropiacion')::numeric, 0)
+            WHEN 2025 THEN COALESCE((m.presupuesto_2025->>'total_apropiacion')::numeric, 0)
+            WHEN 2026 THEN COALESCE((m.presupuesto_2026->>'total_apropiacion')::numeric, 0)
+            WHEN 2027 THEN COALESCE((m.presupuesto_2027->>'total_apropiacion')::numeric, 0)
+          END), 0) * 100, 1
+        ) AS pct_obligado,
+
+        -- Saldo por ejecutar
+        ROUND((
+          SUM(CASE yr.year
+            WHEN 2024 THEN COALESCE((m.presupuesto_2024->>'total_apropiacion')::numeric, 0)
+            WHEN 2025 THEN COALESCE((m.presupuesto_2025->>'total_apropiacion')::numeric, 0)
+            WHEN 2026 THEN COALESCE((m.presupuesto_2026->>'total_apropiacion')::numeric, 0)
+            WHEN 2027 THEN COALESCE((m.presupuesto_2027->>'total_apropiacion')::numeric, 0)
+          END) -
+          SUM(CASE yr.year
+            WHEN 2024 THEN COALESCE((m.presupuesto_2024->>'neto_registros')::numeric, 0)
+            WHEN 2025 THEN COALESCE((m.presupuesto_2025->>'neto_registros')::numeric, 0)
+            WHEN 2026 THEN COALESCE((m.presupuesto_2026->>'neto_registros')::numeric, 0)
+            WHEN 2027 THEN COALESCE((m.presupuesto_2027->>'neto_registros')::numeric, 0)
+          END)
+        ) / 1000000, 0) AS saldo_m,
+
+        -- Metas con presupuesto ese año
+        COUNT(*) FILTER (WHERE CASE yr.year
+          WHEN 2024 THEN (m.presupuesto_2024->>'total_apropiacion')::numeric
+          WHEN 2025 THEN (m.presupuesto_2025->>'total_apropiacion')::numeric
+          WHEN 2026 THEN (m.presupuesto_2026->>'total_apropiacion')::numeric
+          WHEN 2027 THEN (m.presupuesto_2027->>'total_apropiacion')::numeric
+        END > 0) AS con_presupuesto,
+
+        -- Avance físico promedio ese año (para comparar con ejecución financiera)
+        ROUND(AVG(LEAST(CASE yr.year
+          WHEN 2024 THEN m.ponderado_avance_2024
+          WHEN 2025 THEN m.ponderado_avance_2025
+          WHEN 2026 THEN m.ponderado_avance_2026
+          WHEN 2027 THEN m.ponderado_avance_2027
+        END, COALESCE(CASE yr.year
+          WHEN 2024 THEN m.meta_pdm_2024::numeric / NULLIF(m.meta_cuatrienio::numeric, 0)
+          WHEN 2025 THEN m.meta_pdm_2025::numeric / NULLIF(m.meta_cuatrienio::numeric, 0)
+          WHEN 2026 THEN m.meta_pdm_2026::numeric / NULLIF(m.meta_cuatrienio::numeric, 0)
+          WHEN 2027 THEN m.meta_pdm_2027::numeric / NULLIF(m.meta_cuatrienio::numeric, 0)
+        END, CASE yr.year
+          WHEN 2024 THEN m.ponderado_avance_2024
+          WHEN 2025 THEN m.ponderado_avance_2025
+          WHEN 2026 THEN m.ponderado_avance_2026
+          WHEN 2027 THEN m.ponderado_avance_2027
+        END))) FILTER (WHERE CASE yr.year
+          WHEN 2024 THEN m.ponderado_avance_2024
+          WHEN 2025 THEN m.ponderado_avance_2025
+          WHEN 2026 THEN m.ponderado_avance_2026
+          WHEN 2027 THEN m.ponderado_avance_2027
+        END IS NOT NULL AND CASE yr.year
+          WHEN 2024 THEN m.meta_pdm_2024
+          WHEN 2025 THEN m.meta_pdm_2025
+          WHEN 2026 THEN m.meta_pdm_2026
+          WHEN 2027 THEN m.meta_pdm_2027
+        END IS NOT NULL) * 100, 1) AS avance_fisico_pct
+
+      FROM pdm_metas m
+      CROSS JOIN (VALUES (2024),(2025),(2026),(2027)) AS yr(year)
+      GROUP BY yr.year
+      ORDER BY yr.year
+    `),
+    pool.query(`
+      SELECT
+        yr.year,
+        m.secretaria,
+        ROUND(SUM(CASE yr.year
+          WHEN 2024 THEN COALESCE((m.presupuesto_2024->>'total_apropiacion')::numeric, 0)
+          WHEN 2025 THEN COALESCE((m.presupuesto_2025->>'total_apropiacion')::numeric, 0)
+          WHEN 2026 THEN COALESCE((m.presupuesto_2026->>'total_apropiacion')::numeric, 0)
+          WHEN 2027 THEN COALESCE((m.presupuesto_2027->>'total_apropiacion')::numeric, 0)
+        END) / 1000000, 0) AS apropiacion_m,
+        ROUND(SUM(CASE yr.year
+          WHEN 2024 THEN COALESCE((m.presupuesto_2024->>'neto_registros')::numeric, 0)
+          WHEN 2025 THEN COALESCE((m.presupuesto_2025->>'neto_registros')::numeric, 0)
+          WHEN 2026 THEN COALESCE((m.presupuesto_2026->>'neto_registros')::numeric, 0)
+          WHEN 2027 THEN COALESCE((m.presupuesto_2027->>'neto_registros')::numeric, 0)
+        END) / 1000000, 0) AS comprometido_m,
+        ROUND(SUM(CASE yr.year
+          WHEN 2024 THEN COALESCE((m.presupuesto_2024->>'total_obligacion')::numeric, 0)
+          WHEN 2025 THEN COALESCE((m.presupuesto_2025->>'total_obligacion')::numeric, 0)
+          WHEN 2026 THEN COALESCE((m.presupuesto_2026->>'total_obligacion')::numeric, 0)
+          WHEN 2027 THEN COALESCE((m.presupuesto_2027->>'total_obligacion')::numeric, 0)
+        END) / 1000000, 0) AS obligado_m,
+        ROUND(
+          SUM(CASE yr.year
+            WHEN 2024 THEN COALESCE((m.presupuesto_2024->>'neto_registros')::numeric, 0)
+            WHEN 2025 THEN COALESCE((m.presupuesto_2025->>'neto_registros')::numeric, 0)
+            WHEN 2026 THEN COALESCE((m.presupuesto_2026->>'neto_registros')::numeric, 0)
+            WHEN 2027 THEN COALESCE((m.presupuesto_2027->>'neto_registros')::numeric, 0)
+          END) /
+          NULLIF(SUM(CASE yr.year
+            WHEN 2024 THEN COALESCE((m.presupuesto_2024->>'total_apropiacion')::numeric, 0)
+            WHEN 2025 THEN COALESCE((m.presupuesto_2025->>'total_apropiacion')::numeric, 0)
+            WHEN 2026 THEN COALESCE((m.presupuesto_2026->>'total_apropiacion')::numeric, 0)
+            WHEN 2027 THEN COALESCE((m.presupuesto_2027->>'total_apropiacion')::numeric, 0)
+          END), 0) * 100, 1
+        ) AS pct_comprometido
+      FROM pdm_metas m
+      CROSS JOIN (VALUES (2024),(2025),(2026),(2027)) AS yr(year)
+      WHERE CASE yr.year
+        WHEN 2024 THEN (m.presupuesto_2024->>'total_apropiacion')::numeric
+        WHEN 2025 THEN (m.presupuesto_2025->>'total_apropiacion')::numeric
+        WHEN 2026 THEN (m.presupuesto_2026->>'total_apropiacion')::numeric
+        WHEN 2027 THEN (m.presupuesto_2027->>'total_apropiacion')::numeric
+      END > 0
+      GROUP BY yr.year, m.secretaria
+      ORDER BY yr.year, apropiacion_m DESC NULLS LAST
+    `),
+  ]);
+
+  return {
+    porAnio: porAnio.rows,
+    porSecretaria: porSecretaria.rows,
+  };
+}
+
 // ── Export Excel ───────────────────────────────────────────────────────────
 
 export async function exportYearExcel(year) {

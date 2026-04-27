@@ -49,6 +49,11 @@ export async function getDivergencia(req, res) {
   res.json(rows);
 }
 
+export async function getComparativoFinanciero(req, res) {
+  const data = await pdmAnualService.getComparativoFinanciero();
+  res.json(data);
+}
+
 export async function exportYear(req, res) {
   const y = req.params.year;
   const buffer = await pdmAnualService.exportYearExcel(y);
