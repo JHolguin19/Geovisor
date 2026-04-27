@@ -106,6 +106,18 @@ export default function AnualOverviewTab({ data, year, divergencia, comparativo,
             <div className="pdm-main-kpi-label">Avance físico cuatrienio</div>
             <div className="pdm-main-kpi-sub">Progreso acumulado 2024–2027</div>
           </div>
+          {/* Big KPI: Avance financiero comprometido */}
+          <div className="pdm-main-kpi" style={{ borderColor: colorPct(d.avance_financiero_comprometido_pct) }}>
+            <div className="pdm-main-kpi-val" style={{ color: colorPct(d.avance_financiero_comprometido_pct) }}>{d.avance_financiero_comprometido_pct != null ? `${d.avance_financiero_comprometido_pct}%` : '—'}</div>
+            <div className="pdm-main-kpi-label">Avance financiero {year}</div>
+            <div className="pdm-main-kpi-sub">Comprometido / Apropiación</div>
+          </div>
+          {/* Big KPI: Avance financiero obligado */}
+          <div className="pdm-main-kpi" style={{ borderColor: colorPct(d.avance_financiero_obligado_pct) }}>
+            <div className="pdm-main-kpi-val" style={{ color: colorPct(d.avance_financiero_obligado_pct) }}>{d.avance_financiero_obligado_pct != null ? `${d.avance_financiero_obligado_pct}%` : '—'}</div>
+            <div className="pdm-main-kpi-label">Ejecución obligado {year}</div>
+            <div className="pdm-main-kpi-sub">Obligado / Apropiación</div>
+          </div>
         </div>
         {/* Metas chips row */}
         <div className="pdm-meta-chips">

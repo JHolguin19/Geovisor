@@ -4,12 +4,24 @@ import ExcelJS from 'exceljs';
 
 /**
  * Parsea un archivo CSV y retorna array de objetos (una fila = un objeto).
+ * Detecta automáticamente el delimitador (; o ,).
  */
 export async function parseCSV(filePath) {
+  // Read first line to detect delimiter
+  const firstChunk = await new Promise((resolve, reject) => {
+    const chunks = [];
+    const stream = createReadStream(filePath, { encoding: 'utf-8', end: 4096 });
+    stream.on('data', c => { chunks.push(c); stream.destroy(); });
+    stream.on('close', () => resolve(chunks.join('')));
+    stream.on('error', reject);
+  });
+  const firstLine = firstChunk.split('\n')[0];
+  const delimiter = firstLine.split(';').length > firstLine.split(',').length ? ';' : ',';
+
   return new Promise((resolve, reject) => {
     const rows = [];
     createReadStream(filePath)
-      .pipe(csvParse({ columns: true, skip_empty_lines: true, trim: true }))
+      .pipe(csvParse({ columns: true, skip_empty_lines: true, trim: true, delimiter, bom: true }))
       .on('data', row => rows.push(row))
       .on('end', () => resolve(rows))
       .on('error', reject);

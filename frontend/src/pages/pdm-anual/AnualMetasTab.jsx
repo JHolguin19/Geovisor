@@ -1,6 +1,12 @@
 import { BarPct } from '../pdm/PdmShared';
 import { colorPct } from '../pdm/helpers';
 
+function fmtNum(val) {
+  const n = parseFloat(val);
+  if (isNaN(n)) return '—';
+  return n.toLocaleString('es-CO', { maximumFractionDigits: 2 });
+}
+
 export default function AnualMetasTab({
   metas, total, loading, year,
   secretarias, pilares,
@@ -90,8 +96,8 @@ export default function AnualMetasTab({
                     <td className="th-c td-num">{m.meta_num}</td>
                     <td><span className="pdm-sec-chip">{m.secretaria}</span></td>
                     <td className="td-desc" title={m.descripcion_meta}>{m.descripcion_meta ?? '—'}</td>
-                    <td className="th-c">{m.meta_pdm ?? <span className="np-tag">NP</span>}</td>
-                    <td className="th-c">{m.meta_fisica ?? '—'}</td>
+                    <td className="th-c">{m.meta_pdm != null ? fmtNum(m.meta_pdm) : <span className="np-tag">NP</span>}</td>
+                    <td className="th-c">{m.meta_fisica != null ? fmtNum(m.meta_fisica) : '—'}</td>
                     <td>
                       {eff != null ? (
                         <>

@@ -229,6 +229,31 @@ export const pdmAnualService = {
     a.click();
     URL.revokeObjectURL(url);
   },
+
+  generarInforme: async (year, comentarios = '') => {
+    const response = await api.post(`/pdm/anual/${year}/informe/generar`, { comentarios }, { timeout: 120000 });
+    return response.data;
+  },
+
+  descargarInformePDF: async (year, texto, comentarios = '') => {
+    const token = localStorage.getItem('token');
+    const resp = await fetch(`/api/pdm/anual/${year}/informe/pdf`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ texto, comentarios }),
+    });
+    if (!resp.ok) throw new Error('Error al generar PDF');
+    const blob = await resp.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Informe_PDM_${year}.pdf`;
+    a.click();
+    URL.revokeObjectURL(url);
+  },
 };
 
 // ============================

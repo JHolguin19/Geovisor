@@ -1,0 +1,1562 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Documentación API — GeoVisor Alcaldía Santander de Quilichao</title>
+  <style>
+    /* ── RESET & BASE ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary:   #1E3A5F;
+      --accent:    #1565C0;
+      --green:     #065F46;
+      --purple:    #6D28D9;
+      --orange:    #B45309;
+      --red:       #9B1C1C;
+      --gray:      #374151;
+      --bg:        #F8FAFC;
+      --border:    #E2E8F0;
+      --text:      #0F172A;
+      --muted:     #64748B;
+      --font:      'Segoe UI', system-ui, -apple-system, sans-serif;
+      --mono:      'Consolas', 'Courier New', monospace;
+    }
+
+    body {
+      font-family: var(--font);
+      font-size: 10pt;
+      color: var(--text);
+      background: white;
+      line-height: 1.55;
+    }
+
+    /* ── PORTADA ── */
+    .cover {
+      page-break-after: always;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, #1E3A5F 0%, #1565C0 60%, #0D47A1 100%);
+      color: white;
+      text-align: center;
+      padding: 4rem 3rem;
+    }
+    .cover-logo {
+      width: 80px; height: 80px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 2rem;
+      font-size: 2.5rem;
+    }
+    .cover-title {
+      font-size: 28pt;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 0.5rem;
+    }
+    .cover-subtitle {
+      font-size: 14pt;
+      font-weight: 300;
+      opacity: 0.85;
+      margin-bottom: 2.5rem;
+    }
+    .cover-meta {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 12px;
+      padding: 1.5rem 2.5rem;
+      display: inline-block;
+      text-align: left;
+    }
+    .cover-meta-row {
+      display: flex; gap: 1rem;
+      font-size: 9.5pt;
+      margin-bottom: 0.4rem;
+    }
+    .cover-meta-row span:first-child {
+      opacity: 0.7; min-width: 90px;
+    }
+    .cover-meta-row span:last-child { font-weight: 600; }
+    .cover-badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 20px;
+      padding: 0.3rem 1rem;
+      font-size: 8.5pt;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 2rem;
+    }
+
+    /* ── TABLA DE CONTENIDOS ── */
+    .toc {
+      page-break-after: always;
+      padding: 3rem;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .toc h2 { font-size: 18pt; color: var(--primary); margin-bottom: 1.5rem; }
+    .toc-section { margin-bottom: 0.2rem; }
+    .toc-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 0.3rem 0;
+      border-bottom: 1px dotted #CBD5E1;
+      font-size: 9.5pt;
+    }
+    .toc-item .toc-title { font-weight: 500; }
+    .toc-item .toc-num { color: var(--muted); font-size: 8.5pt; }
+    .toc-group { font-size: 8pt; color: var(--muted); padding: 0.15rem 0 0.15rem 1rem; }
+    .toc-section-title {
+      font-weight: 700;
+      color: var(--primary);
+      font-size: 10pt;
+      margin-top: 1rem;
+      padding-bottom: 0.3rem;
+      border-bottom: 2px solid var(--primary);
+      margin-bottom: 0.3rem;
+    }
+
+    /* ── LAYOUT GENERAL ── */
+    .page {
+      padding: 2.5rem 3rem;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    /* ── SECCIONES ── */
+    .section {
+      page-break-inside: avoid;
+      margin-bottom: 2.5rem;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.2rem;
+      padding-bottom: 0.6rem;
+      border-bottom: 2px solid var(--primary);
+    }
+    .section-num {
+      background: var(--primary);
+      color: white;
+      font-size: 8pt;
+      font-weight: 700;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      min-width: 28px;
+      text-align: center;
+    }
+    .section-title {
+      font-size: 14pt;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    .section-base {
+      font-size: 8pt;
+      background: #EFF6FF;
+      color: var(--accent);
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      font-family: var(--mono);
+      border: 1px solid #BFDBFE;
+      margin-left: auto;
+    }
+    .section-desc {
+      color: var(--muted);
+      font-size: 9pt;
+      margin-bottom: 1rem;
+      padding: 0.6rem 1rem;
+      border-left: 3px solid #BFDBFE;
+      background: #F8FAFC;
+    }
+
+    /* ── ENDPOINTS ── */
+    .endpoint {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      overflow: hidden;
+      page-break-inside: avoid;
+    }
+    .endpoint-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.65rem 1rem;
+      background: #F8FAFC;
+      border-bottom: 1px solid var(--border);
+    }
+    .method {
+      font-size: 7.5pt;
+      font-weight: 700;
+      padding: 0.2rem 0.55rem;
+      border-radius: 4px;
+      font-family: var(--mono);
+      min-width: 44px;
+      text-align: center;
+      letter-spacing: 0.5px;
+    }
+    .method--get    { background: #D1FAE5; color: #065F46; border: 1px solid #6EE7B7; }
+    .method--post   { background: #DBEAFE; color: #1E40AF; border: 1px solid #93C5FD; }
+    .method--put    { background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D; }
+    .method--patch  { background: #E0E7FF; color: #3730A3; border: 1px solid #A5B4FC; }
+    .method--delete { background: #FEE2E2; color: #991B1B; border: 1px solid #FCA5A5; }
+
+    .endpoint-path {
+      font-family: var(--mono);
+      font-size: 9pt;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .endpoint-desc {
+      font-size: 8.5pt;
+      color: var(--muted);
+      margin-left: auto;
+    }
+    .auth-badge {
+      font-size: 7pt;
+      padding: 0.15rem 0.5rem;
+      border-radius: 10px;
+      background: #FEF9C3;
+      color: #713F12;
+      border: 1px solid #FDE68A;
+      white-space: nowrap;
+    }
+    .auth-badge--admin {
+      background: #FEE2E2;
+      color: #991B1B;
+      border-color: #FCA5A5;
+    }
+    .auth-badge--public {
+      background: #F0FDF4;
+      color: #166534;
+      border-color: #86EFAC;
+    }
+
+    .endpoint-body { padding: 0.75rem 1rem; }
+
+    /* ── PARAMS TABLE ── */
+    .params-title {
+      font-size: 7.5pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--muted);
+      margin-bottom: 0.4rem;
+      margin-top: 0.6rem;
+    }
+    .params-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 8pt;
+      margin-bottom: 0.5rem;
+    }
+    .params-table th {
+      text-align: left;
+      padding: 0.3rem 0.6rem;
+      background: #F1F5F9;
+      color: var(--gray);
+      font-size: 7.5pt;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border: 1px solid var(--border);
+    }
+    .params-table td {
+      padding: 0.3rem 0.6rem;
+      border: 1px solid var(--border);
+      vertical-align: top;
+    }
+    .params-table tr:nth-child(even) td { background: #FAFAFA; }
+    .param-name {
+      font-family: var(--mono);
+      font-size: 7.5pt;
+      color: #0369A1;
+      font-weight: 600;
+    }
+    .param-required {
+      display: inline-block;
+      font-size: 6.5pt;
+      padding: 0.1rem 0.35rem;
+      border-radius: 3px;
+      background: #FEE2E2;
+      color: #991B1B;
+      font-weight: 700;
+      margin-left: 3px;
+      vertical-align: middle;
+    }
+    .param-optional {
+      display: inline-block;
+      font-size: 6.5pt;
+      padding: 0.1rem 0.35rem;
+      border-radius: 3px;
+      background: #F1F5F9;
+      color: var(--muted);
+      font-weight: 600;
+      margin-left: 3px;
+      vertical-align: middle;
+    }
+    .param-type {
+      font-family: var(--mono);
+      font-size: 7pt;
+      color: #6D28D9;
+      background: #F5F3FF;
+      padding: 0.1rem 0.35rem;
+      border-radius: 3px;
+    }
+    .param-default {
+      font-family: var(--mono);
+      font-size: 7pt;
+      color: #065F46;
+      background: #ECFDF5;
+      padding: 0.1rem 0.35rem;
+      border-radius: 3px;
+    }
+
+    /* ── RESPONSE BOX ── */
+    .response-box {
+      background: #0F172A;
+      border-radius: 6px;
+      padding: 0.7rem 1rem;
+      font-family: var(--mono);
+      font-size: 7.5pt;
+      color: #94A3B8;
+      margin-top: 0.5rem;
+      overflow: hidden;
+    }
+    .response-box .key   { color: #7DD3FC; }
+    .response-box .str   { color: #86EFAC; }
+    .response-box .num   { color: #FCA5A5; }
+    .response-box .bool  { color: #FDBA74; }
+    .response-box .type  { color: #C4B5FD; font-style: italic; }
+
+    /* ── SCHEMA TABLES ── */
+    .schema-title {
+      font-size: 9pt;
+      font-weight: 700;
+      color: var(--primary);
+      margin: 1rem 0 0.4rem;
+    }
+
+    /* ── ARCHITECTURE DIAGRAM ── */
+    .arch-box {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      background: #F8FAFC;
+      margin: 1rem 0;
+    }
+    .arch-flow {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+    .arch-step {
+      background: white;
+      border: 2px solid;
+      border-radius: 6px;
+      padding: 0.4rem 0.8rem;
+      font-size: 8.5pt;
+      font-weight: 600;
+      text-align: center;
+    }
+    .arch-arrow { color: var(--muted); font-size: 12pt; }
+    .arch-step--raw     { border-color: #7C3AED; color: #7C3AED; }
+    .arch-step--staging { border-color: #D97706; color: #D97706; }
+    .arch-step--prod    { border-color: #059669; color: #059669; }
+    .arch-step--client  { border-color: #1565C0; color: #1565C0; }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+    .info-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+    .info-card h4 {
+      font-size: 9pt;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+      font-weight: 700;
+    }
+    .info-card ul {
+      list-style: none;
+      font-size: 8.5pt;
+      color: var(--text);
+    }
+    .info-card li { padding: 0.15rem 0; }
+    .info-card li::before { content: "• "; color: var(--accent); }
+
+    /* ── ROLES TABLE ── */
+    .roles-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 8.5pt;
+      margin: 0.75rem 0;
+    }
+    .roles-table th {
+      background: var(--primary);
+      color: white;
+      padding: 0.4rem 0.75rem;
+      text-align: left;
+      font-size: 8pt;
+    }
+    .roles-table td {
+      padding: 0.4rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .roles-table tr:hover td { background: #F8FAFC; }
+    .role-badge {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      border-radius: 10px;
+      font-size: 7.5pt;
+      font-weight: 600;
+      font-family: var(--mono);
+    }
+    .role-admin   { background: #FEE2E2; color: #991B1B; }
+    .role-editor  { background: #DBEAFE; color: #1E40AF; }
+    .role-sec     { background: #FEF9C3; color: #713F12; }
+    .role-lector  { background: #F0FDF4; color: #166534; }
+
+    /* ── DIVIDER ── */
+    .divider {
+      border: none;
+      border-top: 2px solid var(--border);
+      margin: 2rem 0;
+    }
+
+    /* ── FOOTER ── */
+    .footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 8pt;
+      padding: 2rem 0 1rem;
+      border-top: 1px solid var(--border);
+      margin-top: 3rem;
+    }
+
+    .tag {
+      display: inline-block;
+      background: #EFF6FF;
+      color: #1565C0;
+      border: 1px solid #BFDBFE;
+      border-radius: 4px;
+      padding: 0.1rem 0.45rem;
+      font-size: 7.5pt;
+      font-family: var(--mono);
+    }
+
+    .highlight-box {
+      background: #EFF6FF;
+      border: 1px solid #BFDBFE;
+      border-left: 4px solid var(--accent);
+      border-radius: 0 6px 6px 0;
+      padding: 0.75rem 1rem;
+      font-size: 8.5pt;
+      margin: 0.75rem 0;
+    }
+    .warning-box {
+      background: #FFFBEB;
+      border: 1px solid #FDE68A;
+      border-left: 4px solid #D97706;
+      border-radius: 0 6px 6px 0;
+      padding: 0.75rem 1rem;
+      font-size: 8.5pt;
+      margin: 0.75rem 0;
+    }
+
+    /* ── PRINT ── */
+    @media print {
+      body { font-size: 9pt; }
+      .cover { min-height: 100vh; }
+      .section { page-break-inside: avoid; }
+      .endpoint { page-break-inside: avoid; }
+      a { text-decoration: none; color: inherit; }
+    }
+
+    @page {
+      size: A4;
+      margin: 1.5cm 2cm;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════
+     PORTADA
+═══════════════════════════════════════════════════════════ -->
+<div class="cover">
+  <div class="cover-badge">Documentación Técnica</div>
+  <div class="cover-logo">🗺️</div>
+  <div class="cover-title">GeoVisor Municipal</div>
+  <div class="cover-subtitle">Alcaldía de Santander de Quilichao</div>
+
+  <div class="cover-meta">
+    <div class="cover-meta-row">
+      <span>Proyecto</span>
+      <span>Alcaldia GeoVisor API v1.0</span>
+    </div>
+    <div class="cover-meta-row">
+      <span>Versión</span>
+      <span>1.0.0</span>
+    </div>
+    <div class="cover-meta-row">
+      <span>Base URL</span>
+      <span>/api</span>
+    </div>
+    <div class="cover-meta-row">
+      <span>Autenticación</span>
+      <span>JWT Bearer Token</span>
+    </div>
+    <div class="cover-meta-row">
+      <span>Base de datos</span>
+      <span>PostgreSQL + PostGIS (Supabase)</span>
+    </div>
+    <div class="cover-meta-row">
+      <span>Fecha</span>
+      <span>Abril 2026</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     TABLA DE CONTENIDOS
+═══════════════════════════════════════════════════════════ -->
+<div class="toc">
+  <h2>Tabla de Contenidos</h2>
+
+  <div class="toc-section-title">Introducción</div>
+  <div class="toc-section">
+    <div class="toc-item"><span class="toc-title">Arquitectura general del sistema</span><span class="toc-num">§ 0</span></div>
+    <div class="toc-item"><span class="toc-title">Autenticación y roles de usuario</span><span class="toc-num">§ 0</span></div>
+    <div class="toc-item"><span class="toc-title">Flujo de gestión de datos (Upload → Pipeline)</span><span class="toc-num">§ 0</span></div>
+  </div>
+
+  <div class="toc-section-title">Servicios API</div>
+  <div class="toc-section">
+    <div class="toc-item"><span class="toc-title">1. Autenticación</span><span class="toc-num">§ 1</span></div>
+    <div class="toc-item"><span class="toc-title">2. Carga de Archivos (Uploads)</span><span class="toc-num">§ 2</span></div>
+    <div class="toc-item"><span class="toc-title">3. Pipeline ETL</span><span class="toc-num">§ 3</span></div>
+    <div class="toc-item"><span class="toc-title">4. GeoData (Datos Geoespaciales)</span><span class="toc-num">§ 4</span></div>
+    <div class="toc-item"><span class="toc-title">5. Gestión de Tablas (Schemas)</span><span class="toc-num">§ 5</span></div>
+    <div class="toc-item"><span class="toc-title">6. Capas del Mapa</span><span class="toc-num">§ 6</span></div>
+    <div class="toc-item"><span class="toc-title">7. Usuarios (Administración)</span><span class="toc-num">§ 7</span></div>
+    <div class="toc-item"><span class="toc-title">8. Plan de Desarrollo Municipal (PDM)</span><span class="toc-num">§ 8</span></div>
+    <div class="toc-item"><span class="toc-title">9. SISBEN</span><span class="toc-num">§ 9</span></div>
+    <div class="toc-item"><span class="toc-title">10. Estadísticas Territoriales</span><span class="toc-num">§ 10</span></div>
+    <div class="toc-item"><span class="toc-title">11. Alumbrado Público</span><span class="toc-num">§ 11</span></div>
+    <div class="toc-item"><span class="toc-title">12. Capas de Referencia</span><span class="toc-num">§ 12</span></div>
+  </div>
+
+  <div class="toc-section-title">Referencia de Esquemas</div>
+  <div class="toc-section">
+    <div class="toc-item"><span class="toc-title">Esquemas de validación (Zod)</span><span class="toc-num">§ R</span></div>
+    <div class="toc-item"><span class="toc-title">Estructura de la base de datos</span><span class="toc-num">§ R</span></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     INTRODUCCIÓN — ARQUITECTURA
+═══════════════════════════════════════════════════════════ -->
+<div class="page">
+
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">§ 0</span>
+      <span class="section-title">Arquitectura General del Sistema</span>
+    </div>
+
+    <div class="arch-box">
+      <div style="font-size:9pt; font-weight:700; margin-bottom:1rem; color:var(--primary);">Stack tecnológico</div>
+      <div class="info-grid">
+        <div class="info-card">
+          <h4>🖥️ Frontend</h4>
+          <ul>
+            <li>React 18 + Vite</li>
+            <li>React Router v6</li>
+            <li>Leaflet (mapas)</li>
+            <li>Desplegado en Vercel</li>
+            <li>Autenticación JWT en localStorage</li>
+          </ul>
+        </div>
+        <div class="info-card">
+          <h4>⚙️ Backend</h4>
+          <ul>
+            <li>Node.js + Express 4.18</li>
+            <li>Puerto 3001 (configurable)</li>
+            <li>Helmet + CORS + Rate limiting</li>
+            <li>Validación con Zod</li>
+            <li>Multer (archivos, máx. 50 MB)</li>
+          </ul>
+        </div>
+        <div class="info-card">
+          <h4>🗄️ Base de datos</h4>
+          <ul>
+            <li>PostgreSQL 13+ con PostGIS</li>
+            <li>Supabase (cloud)</li>
+            <li>Schemas: raw / staging / public</li>
+            <li>Pool de conexiones (máx. 10)</li>
+            <li>ExcelJS para exportaciones</li>
+          </ul>
+        </div>
+        <div class="info-card">
+          <h4>🔐 Seguridad</h4>
+          <ul>
+            <li>JWT Access Token (24h)</li>
+            <li>Refresh Token (7 días)</li>
+            <li>bcrypt para contraseñas</li>
+            <li>Rate limit: 100 req/15 min</li>
+            <li>Rate limit auth: 5 intentos/15 min</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:1.5rem;">
+      <div style="font-size:9pt; font-weight:700; margin-bottom:0.75rem; color:var(--primary);">Flujo de gestión de datos</div>
+      <div class="arch-box">
+        <div style="font-size:8.5pt; color:var(--muted); margin-bottom:0.75rem;">
+          Cada archivo subido puede seguir el flujo legacy (inmediato) o el pipeline ETL completo (con control de calidad):
+        </div>
+        <div class="arch-flow">
+          <div class="arch-step arch-step--client">📁 Archivo<br/>.csv/.xlsx/.geojson</div>
+          <span class="arch-arrow">→</span>
+          <div class="arch-step arch-step--client">POST /api/uploads<br/>Registro + análisis</div>
+          <span class="arch-arrow">→</span>
+          <div class="arch-step arch-step--raw">raw.upload_{id}<br/>JSONB sin tipo</div>
+          <span class="arch-arrow">→</span>
+          <div class="arch-step arch-step--staging">staging.stg_{jobId}<br/>Tipado + georref</div>
+          <span class="arch-arrow">→</span>
+          <div class="arch-step arch-step--prod">public.{tabla}<br/>Producción + mapa</div>
+        </div>
+        <div style="font-size:7.5pt; color:var(--muted); margin-top:0.5rem;">
+          <strong>Schema raw:</strong> datos originales sin transformar &nbsp;|&nbsp;
+          <strong>Schema staging:</strong> transformados, georreferenciados y validados &nbsp;|&nbsp;
+          <strong>Schema public:</strong> producción, visibles en el mapa
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:1.5rem;">
+      <div style="font-size:9pt; font-weight:700; margin-bottom:0.75rem; color:var(--primary);">Roles y permisos</div>
+      <table class="roles-table">
+        <thead>
+          <tr>
+            <th>Rol</th>
+            <th>Código</th>
+            <th>Descripción</th>
+            <th>Permisos clave</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="role-badge role-admin">admin</span></td>
+            <td><span class="tag">admin</span></td>
+            <td>Administrador del sistema</td>
+            <td>Acceso total: usuarios, capas, todas las secretarías, gestión de schemas</td>
+          </tr>
+          <tr>
+            <td><span class="role-badge role-editor">editor_geo</span></td>
+            <td><span class="tag">editor_geo</span></td>
+            <td>Editor Geoespacial</td>
+            <td>Lectura/escritura global, gestión de capas, pipeline ETL de todas las secretarías</td>
+          </tr>
+          <tr>
+            <td><span class="role-badge role-sec">secretaria</span></td>
+            <td><span class="tag">secretaria</span></td>
+            <td>Jefe de secretaría</td>
+            <td>Lectura/escritura solo de su secretaría asignada</td>
+          </tr>
+          <tr>
+            <td><span class="role-badge role-lector">lector</span></td>
+            <td><span class="tag">lector</span></td>
+            <td>Personal de apoyo</td>
+            <td>Solo lectura de su secretaría asignada</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- ═══════════════════════════════════════════════════════
+       SECCIÓN 1 — AUTENTICACIÓN
+  ═══════════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">§ 1</span>
+      <span class="section-title">Autenticación</span>
+      <span class="section-base">/api/auth</span>
+    </div>
+    <div class="section-desc">
+      Gestión de sesiones mediante JWT. El access token tiene vigencia de <strong>24 horas</strong> y el refresh token de <strong>7 días</strong>. Se recomienda almacenar el token en <code>localStorage</code> y enviarlo en cada petición como <code>Authorization: Bearer &lt;token&gt;</code>.
+    </div>
+
+    <!-- POST /login -->
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method method--post">POST</span>
+        <span class="endpoint-path">/api/auth/login</span>
+        <span class="auth-badge auth-badge--public">Público</span>
+        <span class="endpoint-desc">Iniciar sesión y obtener tokens</span>
+      </div>
+      <div class="endpoint-body">
+        <div class="params-title">Body (JSON)</div>
+        <table class="params-table">
+          <thead><tr><th>Campo</th><th>Tipo</th><th>Requerido</th><th>Descripción</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><span class="param-name">username</span></td>
+              <td><span class="param-type">string</span></td>
+              <td><span class="param-required">Sí</span></td>
+              <td>Nombre de usuario (mín. 2 caracteres)</td>
+            </tr>
+            <tr>
+              <td><span class="param-name">password</span></td>
+              <td><span class="param-type">string</span></td>
+              <td><span class="param-required">Sí</span></td>
+              <td>Contraseña (mín. 4 caracteres)</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="params-title">Respuesta exitosa</div>
+        <div class="response-box">
+{&nbsp;<span class="key">"token"</span>: <span class="str">"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."</span>,<br>
+&nbsp;&nbsp;<span class="key">"refreshToken"</span>: <span class="str">"..."</span>,<br>
+&nbsp;&nbsp;<span class="key">"user"</span>: {&nbsp;<span class="key">"id"</span>: <span class="num">1</span>, <span class="key">"username"</span>: <span class="str">"admin"</span>, <span class="key">"role"</span>: <span class="str">"admin"</span>, <span class="key">"secretaria"</span>: <span class="str">null</span>&nbsp;}&nbsp;}
+        </div>
+        <div class="warning-box">⚠️ <strong>Rate limit:</strong> máximo 5 intentos fallidos por IP cada 15 minutos.</div>
+      </div>
+    </div>
+
+    <!-- GET /me -->
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method method--get">GET</span>
+        <span class="endpoint-path">/api/auth/me</span>
+        <span class="auth-badge">JWT requerido</span>
+        <span class="endpoint-desc">Obtener perfil del usuario activo</span>
+      </div>
+      <div class="endpoint-body">
+        <div class="response-box">
+{&nbsp;<span class="key">"id"</span>: <span class="num">1</span>, <span class="key">"username"</span>: <span class="str">"admin"</span>, <span class="key">"nombre_completo"</span>: <span class="str">"Administrador"</span>,<br>
+&nbsp;&nbsp;<span class="key">"rol"</span>: <span class="str">"admin"</span>, <span class="key">"secretaria_id"</span>: <span class="str">null</span>, <span class="key">"email"</span>: <span class="str">"..."</span>&nbsp;}
+        </div>
+      </div>
+    </div>
+
+    <!-- POST /refresh -->
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method method--post">POST</span>
+        <span class="endpoint-path">/api/auth/refresh</span>
+        <span class="auth-badge auth-badge--public">Público</span>
+        <span class="endpoint-desc">Renovar access token</span>
+      </div>
+      <div class="endpoint-body">
+        <div class="params-title">Body (JSON)</div>
+        <table class="params-table">
+          <thead><tr><th>Campo</th><th>Tipo</th><th>Descripción</th></tr></thead>
+          <tbody>
+            <tr><td><span class="param-name">refreshToken</span></td><td><span class="param-type">string</span></td><td>Token de refresco obtenido al hacer login</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- POST /logout -->
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method method--post">POST</span>
+        <span class="endpoint-path">/api/auth/logout</span>
+        <span class="auth-badge">JWT requerido</span>
+        <span class="endpoint-desc">Cerrar sesión e invalidar tokens</span>
+      </div>
+      <div class="endpoint-body">
+        <div class="response-box">{&nbsp;<span class="key">"message"</span>: <span class="str">"Sesión cerrada exitosamente"</span>&nbsp;}</div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- ═══════════════════════════════════════════════════════
+       SECCIÓN 2 — UPLOADS
+  ═══════════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">§ 2</span>
+      <span class="section-title">Carga de Archivos (Uploads)</span>
+      <span class="section-base">/api/uploads</span>
+    </div>
+    <div class="section-desc">
+      Gestión de archivos de datos geoespaciales. Soporta CSV, Excel (.xlsx/.xls) y GeoJSON. Tamaño máximo: <strong>50 MB</strong>. Tras cada subida exitosa, el archivo se procesa y se registra en la base de datos. El sistema extrae automáticamente los datos al schema <code>raw</code> para permitir procesamiento ETL posterior.
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method method--post">POST</span>
+        <span class="endpoint-path">/api/uploads/analyze</span>
+        <span class="auth-badge">JWT requerido</span>
+        <span class="endpoint-desc">Analizar archivo sin guardarlo</span>
+      </div>
+      <div class="endpoint-body">
+        <div class="params-title">Form-data</div>
+        <table class="params-table">
+          <thead><tr><th>Campo</th><th>Tipo</th><th>Descripción</th></tr></thead>
+          <tbody>
+            <tr><td><span class="param-name">archivo</span></td><td><span class="param-type">file</span></td><td>Archivo CSV, Excel o GeoJSON (máx. 50 MB)</td></tr>
+          </tbody>
+        </table>
+        <div class="params-title">Respuesta</div>
+        <div class="response-box">
+{&nbsp;<span class="key">"columns"</span>: [<span class="str">"nombre"</span>, <span class="str">"latitud"</span>, <span class="str">"longitud"</span>],<br>
+&nbsp;&nbsp;<span class="key">"preview"</span>: [ {<span class="key">"nombre"</span>: <span class="str">"Punto A"</span>, ...} ],<br>
+&nbsp;&nbsp;<span class="key">"detected_lat"</span>: <span class="str">"latitud"</span>, <span class="key">"detected_lon"</span>: <span class="str">"longitud"</span>,<br>
+&nbsp;&nbsp;<span class="key">"has_coords"</span>: <span class="bool">true</span>, <span class="key">"total_rows"</span>: <span class="num">1543</span>&nbsp;}
+        </div>
+      </div>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method method--post">POST</span>
+        <span class="endpoint-path">/api/uploads</span>
+        <span class="auth-badge">JWT requerido</span>
+        <span class="endpoint-desc">Subir y procesar archivo</span>
+      </div>
+      <div class="endpoint-body">
+        <div class="params-title">Form-data</div>
+        <table class="params-table">
+          <thead><tr><th>Campo</th><th>Tipo</th><th>Req.</th><th>Descripción</th></tr></thead>
+          <tbody>
+            <tr><td><span class="param-name">archivo</span></td><td><span class="param-type">file</span></td><td><span class="param-required">Sí</span></td><td>CSV, Excel o GeoJSON</td></tr>
+            <tr><td><span class="param-name">secretaria_id</span></td><td><span class="param-type">string</span></td><td><span class="param-optional">No</span></td><td>ID de la secretaría (ej. <code>planeacion</code>, <code>obras</code>)</td></tr>
+            <tr><td><span class="param-name">nombre_tabla</span></td><td><span class="param-type">string</span></td><td><span class="param-optional">No</span></td><td>Nombre base de la tabla destino (máx. 60 chars)</td></tr>
+            <tr><td><span class="param-name">geo_mode</span></td><td><span class="param-type">enum</span></td><td><span class="param-optional">No</span></td><td><code>coords</code> | <code>join</code> | <code>none</code></td></tr>
+            <tr><td><span class="param-name">lat_col</span></td><td><span class="param-type">string</span></td><td><span class="param-optional">No</span></td><td>Columna de latitud (modo coords)</td></tr>
+            <tr><td><span class="param-name">lon_col</span></td><td><span class="param-type">string</span></td><td><span class="param-optional">No</span></td><td>Columna de longitud (modo coords)</td></tr>
+            <tr><td><span class="param-name">join_layer</span></td><td><span class="param-type">string</span></td><td><span class="param-optional">No</span></td><td>Tabla base para cruce espacial (modo join)</td></tr>
+            <tr><td><span class="param-name">join_field_excel</span></td><td><span class="param-type">string</span></td><td><span class="param-optional">No</span></td><td>Campo del archivo para el cruce</td></tr>
+            <tr><td><span class="param-name">join_field_layer</span></td><td><span class="param-type">string</span></td><td><span class="param-optional">No</span></td><td>Campo de la capa base para el cruce</td></tr>
+            <tr><td><span class="param-name">join_geom_type</span></td><td><span class="param-type">enum</span></td><td><span class="param-optional">No</span></td><td><code>centroid</code> | <code>polygon</code></td></tr>
+          </tbody>
+        </table>
+        <div class="params-title">Respuesta</div>
+        <div class="response-box">
+{&nbsp;<span class="key">"upload_id"</span>: <span class="num">42</span>, <span class="key">"tabla"</span>: <span class="str">"datos_campo_1712345678"</span>,<br>
+&nbsp;&nbsp;<span class="key">"filas_procesadas"</span>: <span class="num">1540</span>, <span class="key">"filas_error"</span>: <span class="num">3</span>, <span class="key">"tiene_geometria"</span>: <span class="bool">true</span>&nbsp;}
+        </div>
+      </div>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method method--get">GET</span>
+        <span class="endpoint-path">/api/uploads</span>
+        <span class="auth-badge">JWT requerido</span>
+        <span class="endpoint-desc">Historial de cargas</span>
+      </div>
+      <div class="endpoint-body">
+        <div class="params-title">Query params</div>
+        <table class="params-table">
+          <thead><tr><th>Param</th><th>Tipo</th><th>Descripción</th></tr></thead>
+          <tbody>
+            <tr><td><span class="param-name">secretaria_id</span></td><td><span class="param-type">string</span></td><td>Filtrar por secretaría (solo admin/editor_geo)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method method--delete">DELETE</span>
+        <span class="endpoint-path">/api/uploads/:id</span>
+        <span class="auth-badge">JWT requerido</span>
+        <span class="endpoint-desc">Eliminar upload y tabla PostGIS</span>
+      </div>
+      <div class="endpoint-body">
+        <div class="highlight-box">Esta acción elimina el registro en la tabla <code>uploads</code>, la entrada en <code>geo_tablas</code> y hace DROP de la tabla PostGIS en el schema <code>public</code>. Es irreversible.</div>
+      </div>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method method--get">GET</span>
+        <span class="endpoint-path">/api/uploads/base-layers</span>
+        <span class="auth-badge">JWT requerido</span>
+        <span class="endpoint-desc">Capas base disponibles para cruce</span>
+      </div>
+      <div class="endpoint-body">
+        <div class="response-box">{&nbsp;<span class="key">"layers"</span>: [{&nbsp;<span class="key">"table_name"</span>: <span class="str">"barriosurbanos"</span>, <span class="key">"label"</span>: <span class="str">"Barrios Urbanos"</span>, <span class="key">"tipo"</span>: <span class="str">"polygon"</span>&nbsp;}]&nbsp;}</div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- ═══════════════════════════════════════════════════════
+       SECCIÓN 3 — ETL PIPELINE
+  ═══════════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">§ 3</span>
+      <span class="section-title">Pipeline ETL</span>
+      <span class="section-base">/api/etl</span>
+    </div>
+    <div class="section-desc">
+      El pipeline ETL controla el procesamiento de datos en 5 etapas: Extracción (raw), Transformación (tipado de columnas), Georreferenciación (creación de geometrías PostGIS), Validación (reglas de calidad) y Promoción (publicación en producción). Todos los endpoints requieren autenticación.
+    </div>
+
+    <div class="highlight-box">
+      <strong>Estados del pipeline:</strong>
+      <code>legacy</code> → subida directa |
+      <code>raw</code> → extraído |
+      <code>processing</code> → en proceso |
+      <code>staging</code> → en revisión |
+      <code>validated</code> → validado |
+      <code>production</code> → publicado |
+      <code>error</code> → error
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method method--post">POST</span>
+        <span class="endpoint-path">/api/etl/process</span>
+        <span class="auth-badge">JWT requerido</span>
+        <span class="endpoint-desc">Iniciar procesamiento (raw → staging)</span>
+      </div>
+      <div class="endpoint-body">
+        <div class="params-title">Body (JSON)</div>
+        <table class="params-table">
+          <thead><tr><th>Campo</th><th>Tipo</th><th>Req.</th><th>Descripción</th></tr></thead>
+          <tbody>
+            <tr><td><span class="param-name">upload_id</span></td><td><span class="param-type">integer</span></td><td><span class="param-required">Sí</span></td><td>ID del upload a procesar (debe estar en estado <code>raw</code>)</td></tr>
+            <tr><td><span class="param-name">geo_mode</span></td><td><span class="param-type">enum</span></td><td><span class="param-optional">No</span></td><td><code>coords</code> | <code>join</code> | <code>spatial</code> | <code>none</code> (default: <code>none</code>)</td></tr>
+            <tr><td><span class="param-name">geo_config</span></td><td><span class="param-type">object</span></td><td><span class="param-optional">No</span></td><td>Config de georreferenciación según el modo elegido</td></tr>
+            <tr><td><span class="param-name">column_mapping</span></td><td><span class="param-type">array</span></td><td><span class="param-required">Sí</span></td><td>Mapeo de columnas: <code>[{source, target, type}]</code> (mín. 1)</td></tr>
+            <tr><td><span class="param-name">validation_rules</span></td><td><span class="param-type">array</span></td><td><span class="param-optional">No</span></td><td>Reglas de validación: <code>[{field, rule, params, severity}]</code></td></tr>
+          </tbody>
+        </table>
+
+        <div class="params-title">Objeto column_mapping</div>
+        <table class="params-table">
+          <thead><tr><th>Campo</th><th>Tipo</th><th>Descripción</th></tr></thead>
+          <tbody>
+            <tr><td><span class="param-name">source</span></td><td><span class="param-type">string</span></td><td>Nombre original de la columna en el archivo</td></tr>
+            <tr><td><span class="param-name">target</span></td><td><span class="param-type">string</span></td><td>Nombre destino en staging (formato snake_case)</td></tr>
+            <tr><td><span class="param-name">type</span></td><td><span class="param-type">enum</span></td><td><code>TEXT</code> | <code>INTEGER</code> | <code>NUMERIC</code> | <code>BIGINT</code> | <code>DATE</code> | <code>BOOLEAN</code></td></tr>
+          </tbody>
+        </table>
+
+        <div class="params-title">Objeto validation_rules</div>
+        <table class="params-table">
+          <thead><tr><th>Campo</th><th>Valores</th><th>Descripción</th></tr></thead>
+          <tbody>
+            <tr><td><span class="param-name">rule</span></td><td><span class="param-type">enum</span></td><td><code>required</code> | <code>min</code> | <code>max</code> | <code>min_length</code> | <code>max_length</code> | <code>regex</code> | <code>lat_range</code> | <code>lon_range</code></td></tr>
+            <tr><td><span class="param-name">severity</span></td><td><span class="param-type">enum</span></td><td><code>warning</code> (default) | <code>error</code></td></tr>
+            <tr><td><span class="param-name">lat_range/lon_range</span></td><td><span class="param-type">Colombia</span></td><td>Lat: -4.5 a 13.5 &nbsp;|&nbsp; Lon: -82 a -65</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method method--get">GET</span>
+        <span class="endpoint-path">/api/etl/history</span>
+        <span class="auth-badge">JWT requerido</span>
+        <span class="endpoint-desc">Historial del pipeline (Kanban)</span>
+      </div>
+      <div class="endpoint-body">
+        <div class="params-title">Query params</div>
+        <table class="params-table">
+          <thead><tr><th>Param</th><th>Tipo</th><th>Default</th><th>Descripción</th></tr></thead>
+          <tbody>
+            <tr><td><span class="param-name">page</span></td><td><span class="param-type">integer</span></td><td><span class="param-default">1</span></td><td>Página de resultados</td></tr>
+            <tr><td><span class="param-name">limit</span></td><td><span class="param-type">integer</span></td><td><span class="param-default">50</span></td><td>Items por página (máx. 200)</td></tr>
+            <tr><td><span class="param-name">secretaria</span></td><td><span class="param-type">string</span></td><td>—</td><td>Filtrar por secretaría</td></tr>
+            <tr><td><span class="param-name">status</span></td><td><span class="param-type">string</span></td><td>—</td><td>Filtrar por estado ETL</td></tr>
+          </tbody>
+        </table>
+        <div class="params-title">Respuesta</div>
+        <div class="response-box">
+{&nbsp;<span class="key">"ok"</span>: <span class="bool">true</span>, <span class="key">"data"</span>: {<br>
+&nbsp;&nbsp;<span class="key">"items"</span>: [{&nbsp;<span class="key">"upload_id"</span>: <span class="num">42</span>, <span class="key">"nombre_archivo"</span>: <span class="str">"datos.xlsx"</span>, <span class="key">"etl_status"</span>: <span class="str">"production"</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="key">"secretaria_nombre"</span>: <span class="str">"Secretaría de Planeación"</span>, <span class="key">"secretaria_color"</span>: <span class="str">"#1565C0"</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="key">"job_id"</span>: <span class="num">7</span>, <span class="key">"job_stats"</span>: {&nbsp;<span class="key">"total"</span>: <span class="num">1540</span>, <span class="key">"quality_pct"</span>: <span class="num">98.5</span>&nbsp;}&nbsp;}],<br>
+&nbsp;&nbsp;<span class="key">"total"</span>: <span class="num">12</span>, <span class="key">"page"</span>: <span class="num">1</span>, <span class="key">"pages"</span>: <span class="num">1</span>&nbsp;}&nbsp;}
+        </div>
+      </div>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method method--get">GET</span>
+        <span class="endpoint-path">/api/etl/stats</span>
+        <span class="auth-badge">JWT requerido</span>
+        <span class="endpoint-desc">Contadores por estado para el Kanban</span>
+      </div>
+      <div class="endpoint-body">
+        <div class="response-box">
+{&nbsp;<span class="key">"ok"</span>: <span class="bool">true</span>, <span class="key">"data"</span>: {&nbsp;<span class="key">"legacy"</span>: <span class="num">0</span>, <span class="key">"raw"</span>: <span class="num">2</span>, <span class="key">"processing"</span>: <span class="num">0</span>, <span class="key">"staging"</span>: <span class="num">1</span>, <span class="key">"validated"</span>: <span class="num">0</span>, <span class="key">"production"</span>: <span class="num">8</span>, <span class="key">"error"</span>: <span class="num">0</span>, <span class="key">"total"</span>: <span class="num">11</span>&nbsp;}&nbsp;}
+        </div>
+      </div>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method method--get">GET</span>
+        <span class="endpoint-path">/api/etl/:jobId/preview</span>
+        <span class="auth-badge">JWT requerido</span>
+        <span class="endpoint-desc">Preview paginado de datos en staging</span>
+      </div>
+      <div class="endpoint-body">
+        <div class="params-title">Query params</div>
+        <table class="params-table">
+          <thead><tr><th>Param</th><th>Default</th><th>Descripción</th></tr></thead>
+          <tbody>
+            <tr><td><span class="param-name">page</span></td><td><span class="param-default">1</span></td><td>Número de página</td></tr>
+            <tr><td><span class="param-name">limit</span></td><td><span class="param-default">50</span></td><td>Registros por página (máx. 200)</td></tr>
+            <tr><td><span class="param-name">status</span></td><td>—</td><td>Filtrar por estado de fila: <code>ok</code> | <code>warning</code> | <code>error</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method method--get">GET</span>
+        <span class="endpoint-path">/api/etl/:jobId/geojson</span>
+        <span class="auth-badge">JWT requerido</span>
+        <span class="endpoint-desc">GeoJSON de geometrías en staging (mini-mapa)</span>
+      </div>
+      <div class="endpoint-body">
+        <div class="params-title">Query params</div>
+        <table class="params-table">
+          <thead><tr><th>Param</th><th>Default</th><th>Límite</th></tr></thead>
+          <tbody>
+            <tr><td><span class="param-name">limit</span></td><td><span class="param-default">2000</span></td><td>5000</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method method--post">POST</span>
+        <span class="endpoint-path">/api/etl/:jobId/promote</span>
+        <span class="auth-badge">JWT requerido</span>
+        <span class="endpoint-desc">Promover staging → public (publicar)</span>
+      </div>
+      <div class="endpoint-body">
+        <div class="params-title">Body (JSON) — todos opcionales</div>
+        <table class="params-table">
+          <thead><tr><th>Campo</th><th>Tipo</th><th>Default</th><th>Descripción</th></tr></thead>
+          <tbody>
+            <tr><td><span class="param-name">table_name</span></td><td><span class="param-type">string</span></td><td>—</td><td>Nombre personalizado de la tabla en producción (snake_case)</td></tr>
+            <tr><td><span class="param-name">include_errors</span></td><td><span class="param-type">boolean</span></td><td><span class="param-default">false</span></td><td>Incluir filas con errores en producción</td></tr>
+            <tr><td><span class="param-name">create_layer</span></td><td><span class="param-type">boolean</span></td><td><span class="param-default">false</span></td><td>Crear entrada en tabla <code>capas</code> automáticamente</td></tr>
+            <tr><td><span class="param-name">layer_name</span></td><td><span class="param-type">string</span></td><td>—</td><td>Nombre de la capa en el mapa</td></tr>
+            <tr><td><span class="param-name">layer_color</span></td><td><span class="param-type">string</span></td><td><span class="param-default">#3B82F6</span></td><td>Color hex de la capa</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method method--post">POST</span>
+        <span class="endpoint-path">/api/etl/:jobId/reject</span>
+        <span class="auth-badge">JWT requerido</span>
+        <span class="endpoint-desc">Rechazar job de staging</span>
+      </div>
+      <div class="endpoint-body">
+        <table class="params-table">
+          <thead><tr><th>Campo</th><th>Tipo</th><th>Default</th></tr></thead>
+          <tbody>
+            <tr><td><span class="param-name">reason</span></td><td><span class="param-type">string</span></td><td><span class="param-default">Sin motivo especificado</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method method--post">POST</span>
+        <span class="endpoint-path">/api/etl/:jobId/reprocess</span>
+        <span class="auth-badge">JWT requerido</span>
+        <span class="endpoint-desc">Re-procesar con nueva configuración</span>
+      </div>
+      <div class="endpoint-body">
+        <div class="section-desc">Rechaza el job actual y crea uno nuevo con la configuración actualizada. Acepta los mismos parámetros que <code>/api/etl/process</code>.</div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- ═══════════════════════════════════════════════════════
+       SECCIÓN 4 — GEODATA
+  ═══════════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">§ 4</span>
+      <span class="section-title">GeoData — Datos Geoespaciales</span>
+      <span class="section-base">/api/geodata</span>
+    </div>
+    <div class="section-desc">
+      Acceso a datos de tablas PostGIS en producción. Solo tablas registradas en <code>geo_tablas</code> son accesibles (whitelist con caché de 5 minutos). Retorna GeoJSON estándar. Rate limit elevado: <strong>1000 req/15 min</strong>.
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method method--get">GET</span>
+        <span class="endpoint-path">/api/geodata/:tableName</span>
+        <span class="auth-badge">JWT requerido</span>
+        <span class="endpoint-desc">Obtener datos en formato GeoJSON</span>
+      </div>
+      <div class="endpoint-body">
+        <div class="params-title">Query params</div>
+        <table class="params-table">
+          <thead><tr><th>Param</th><th>Tipo</th><th>Descripción</th></tr></thead>
+          <tbody>
+            <tr><td><span class="param-name">bbox</span></td><td><span class="param-type">string</span></td><td>Bounding box: <code>minLon,minLat,maxLon,maxLat</code> — filtra con ST_Intersects</td></tr>
+            <tr><td><span class="param-name">q</span></td><td><span class="param-type">string</span></td><td>Búsqueda de texto libre (máx. 200 chars)</td></tr>
+            <tr><td><span class="param-name">searchFields</span></td><td><span class="param-type">string</span></td><td>Columnas para búsqueda separadas por coma</td></tr>
+            <tr><td><span class="param-name">simplify</span></td><td><span class="param-type">number</span></td><td>Tolerancia de simplificación de geometría (ST_SimplifyPreserveTopology)</td></tr>
+            <tr><td><span class="param-name">cols</span></td><td><span class="param-type">string</span></td><td>Columnas a retornar separadas por coma</td></tr>
+            <tr><td><span class="param-name">limit</span></td><td><span class="param-type">integer</span></td><td>Límite de features (default según modo, máx. 50.000)</td></tr>
+          </tbody>
+        </table>
+        <div class="params-title">Respuesta — GeoJSON FeatureCollection</div>
+        <div class="response-box">
+{&nbsp;<span class="key">"type"</span>: <span class="str">"FeatureCollection"</span>,<br>
+&nbsp;&nbsp;<span class="key">"features"</span>: [{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="key">"type"</span>: <span class="str">"Feature"</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="key">"geometry"</span>: {&nbsp;<span class="key">"type"</span>: <span class="str">"Point"</span>, <span class="key">"coordinates"</span>: [<span class="num">-76.512</span>, <span class="num">3.014</span>]&nbsp;},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="key">"properties"</span>: {&nbsp;<span class="key">"nombre"</span>: <span class="str">"Luminaria LED 001"</span>, <span class="key">"barrio"</span>: <span class="str">"Centro"</span>&nbsp;}&nbsp;}]&nbsp;}
+        </div>
+      </div>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method method--get">GET</span>
+        <span class="endpoint-path">/api/geodata/:tableName/export</span>
+        <span class="auth-badge">JWT requerido</span>
+        <span class="endpoint-desc">Descargar tabla completa como Excel (.xlsx)</span>
+      </div>
+      <div class="endpoint-body">
+        <div class="highlight-box">
+          Genera y descarga un archivo Excel con todos los datos de la tabla (sin columna de geometría). Límite: <strong>100.000 filas</strong>. Incluye encabezados estilizados y filas alternas. El nombre del archivo es <code>{tableName}.xlsx</code>.
+        </div>
+        <div class="params-title">Headers de respuesta</div>
+        <div class="response-box">
+Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet<br>
+Content-Disposition: attachment; filename="nombre_tabla.xlsx"<br>
+X-Row-Count: 1540
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- ═══════════════════════════════════════════════════════
+       SECCIÓN 5 — TABLAS / SCHEMAS
+  ═══════════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">§ 5</span>
+      <span class="section-title">Gestión de Tablas y Schemas</span>
+      <span class="section-base">/api/tables</span>
+    </div>
+    <div class="section-desc">
+      Gestión administrativa de las tablas en los tres schemas de la base de datos (raw, staging, public). Las operaciones de escritura (mover, renombrar, eliminar) requieren rol <strong>admin</strong> o <strong>editor_geo</strong>.
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method method--get">GET</span>
+        <span class="endpoint-path">/api/tables/schemas</span>
+        <span class="auth-badge">JWT requerido</span>
+        <span class="endpoint-desc">Listar todas las tablas por schema</span>
+      </div>
+      <div class="endpoint-body">
+        <div class="response-box">
+{&nbsp;<span class="key">"schemas"</span>: {<br>
+&nbsp;&nbsp;<span class="key">"raw"</span>: [{&nbsp;<span class="key">"tableName"</span>: <span class="str">"upload_42"</span>, <span class="key">"approxRows"</span>: <span class="num">1543</span>, <span class="key">"columnCount"</span>: <span class="num">8</span>, <span class="key">"sizePretty"</span>: <span class="str">"240 kB"</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="key">"upload"</span>: {&nbsp;<span class="key">"nombre_archivo"</span>: <span class="str">"datos.xlsx"</span>, <span class="key">"etl_status"</span>: <span class="str">"raw"</span>&nbsp;}&nbsp;}],<br>
+&nbsp;&nbsp;<span class="key">"staging"</span>: [...],<br>
+&nbsp;&nbsp;<span class="key">"public"</span>: [...]&nbsp;}&nbsp;}
+        </div>
+      </div>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method method--get">GET</span>
+        <span class="endpoint-path">/api/tables/:schema/:table/info</span>
+        <span class="auth-badge">JWT requerido</span>
+        <span class="endpoint-desc">Estructura de columnas de una tabla</span>
+      </div>
+      <div class="endpoint-body">
+        <div class="response-box">
+{&nbsp;<span class="key">"columns"</span>: [{&nbsp;<span class="key">"column_name"</span>: <span class="str">"nombre"</span>, <span class="key">"data_type"</span>: <span class="str">"character varying"</span>, <span class="key">"is_nullable"</span>: <span class="str">"YES"</span>&nbsp;}],<br>
+&nbsp;&nbsp;<span class="key">"rowCount"</span>: <span class="num">1543</span>&nbsp;}
+        </div>
+      </div>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method method--post">POST</span>
+        <span class="endpoint-path">/api/tables/move</span>
+        <span class="auth-badge auth-badge--admin">Admin / editor_geo</span>
+        <span class="endpoint-desc">Mover tabla entre schemas</span>
+      </div>
+      <div class="endpoint-body">
+        <table class="params-table">
+          <thead><tr><th>Campo</th><th>Tipo</th><th>Req.</th><th>Descripción</th></tr></thead>
+          <tbody>
+            <tr><td><span class="param-name">fromSchema</span></td><td><span class="param-type">string</span></td><td><span class="param-required">Sí</span></td><td>Schema origen: <code>raw</code> | <code>staging</code> | <code>public</code></td></tr>
+            <tr><td><span class="param-name">fromTable</span></td><td><span class="param-type">string</span></td><td><span class="param-required">Sí</span></td><td>Nombre de la tabla</td></tr>
+            <tr><td><span class="param-name">toSchema</span></td><td><span class="param-type">string</span></td><td><span class="param-required">Sí</span></td><td>Schema destino</td></tr>
+            <tr><td><span class="param-name">toName</span></td><td><span class="param-type">string</span></td><td><span class="param-optional">No</span></td><td>Nuevo nombre de la tabla (opcional)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method method--post">POST</span>
+        <span class="endpoint-path">/api/tables/rename</span>
+        <span class="auth-badge auth-badge--admin">Admin / editor_geo</span>
+        <span class="endpoint-desc">Renombrar tabla</span>
+      </div>
+      <div class="endpoint-body">
+        <table class="params-table">
+          <thead><tr><th>Campo</th><th>Descripción</th></tr></thead>
+          <tbody>
+            <tr><td><span class="param-name">schema</span></td><td>Schema donde está la tabla</td></tr>
+            <tr><td><span class="param-name">oldName</span></td><td>Nombre actual</td></tr>
+            <tr><td><span class="param-name">newName</span></td><td>Nombre nuevo</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method method--delete">DELETE</span>
+        <span class="endpoint-path">/api/tables/:schema/:table</span>
+        <span class="auth-badge auth-badge--admin">Admin / editor_geo</span>
+        <span class="endpoint-desc">Eliminar tabla (DROP TABLE)</span>
+      </div>
+      <div class="endpoint-body">
+        <div class="warning-box">⚠️ Operación destructiva. Elimina permanentemente la tabla del schema especificado.</div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- ═══════════════════════════════════════════════════════
+       SECCIÓN 6 — CAPAS
+  ═══════════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">§ 6</span>
+      <span class="section-title">Capas del Mapa</span>
+      <span class="section-base">/api/capas</span>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method method--get">GET</span>
+        <span class="endpoint-path">/api/capas</span>
+        <span class="auth-badge">JWT requerido</span>
+        <span class="endpoint-desc">Listar todas las capas</span>
+      </div>
+      <div class="endpoint-body">
+        <div class="response-box">[{&nbsp;<span class="key">"id"</span>: <span class="str">"luminarias_led"</span>, <span class="key">"nombre"</span>: <span class="str">"Luminarias LED"</span>, <span class="key">"secretaria_id"</span>: <span class="str">"obras"</span>, <span class="key">"tabla_postgis"</span>: <span class="str">"luminariasled_alumbradopublico"</span>, <span class="key">"color"</span>: <span class="str">"#F59E0B"</span>, <span class="key">"tipo_geometria"</span>: <span class="str">"point"</span>, <span class="key">"activa"</span>: <span class="bool">true</span>&nbsp;}]</div>
+      </div>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method method--post">POST</span>
+        <span class="endpoint-path">/api/capas</span>
+        <span class="auth-badge">JWT requerido</span>
+        <span class="endpoint-desc">Crear nueva capa</span>
+      </div>
+      <div class="endpoint-body">
+        <table class="params-table">
+          <thead><tr><th>Campo</th><th>Tipo</th><th>Req.</th><th>Descripción</th></tr></thead>
+          <tbody>
+            <tr><td><span class="param-name">id</span></td><td><span class="param-type">string</span></td><td><span class="param-required">Sí</span></td><td>Identificador único de la capa</td></tr>
+            <tr><td><span class="param-name">nombre</span></td><td><span class="param-type">string</span></td><td><span class="param-required">Sí</span></td><td>Nombre visible en el mapa</td></tr>
+            <tr><td><span class="param-name">secretaria_id</span></td><td><span class="param-type">string</span></td><td><span class="param-required">Sí</span></td><td>ID de la secretaría propietaria</td></tr>
+            <tr><td><span class="param-name">tabla_postgis</span></td><td><span class="param-type">string</span></td><td><span class="param-required">Sí</span></td><td>Nombre de la tabla PostGIS en el schema public</td></tr>
+            <tr><td><span class="param-name">color</span></td><td><span class="param-type">hex</span></td><td><span class="param-optional">No</span></td><td>Color de la capa (default: <code>#3388ff</code>)</td></tr>
+            <tr><td><span class="param-name">tipo_geometria</span></td><td><span class="param-type">enum</span></td><td><span class="param-optional">No</span></td><td><code>point</code> | <code>polygon</code> | <code>line</code></td></tr>
+            <tr><td><span class="param-name">popup_fields</span></td><td><span class="param-type">array</span></td><td><span class="param-optional">No</span></td><td>Campos del popup: <code>[{campo, etiqueta, formato}]</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method method--put">PUT</span>
+        <span class="endpoint-path">/api/capas/:id</span>
+        <span class="auth-badge">JWT requerido</span>
+        <span class="endpoint-desc">Actualizar capa existente</span>
+      </div>
+      <div class="endpoint-body">
+        <div class="section-desc">Acepta los mismos campos que POST, todos opcionales.</div>
+      </div>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method method--delete">DELETE</span>
+        <span class="endpoint-path">/api/capas/:id</span>
+        <span class="auth-badge">JWT requerido</span>
+        <span class="endpoint-desc">Eliminar capa</span>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- ═══════════════════════════════════════════════════════
+       SECCIÓN 7 — USUARIOS
+  ═══════════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">§ 7</span>
+      <span class="section-title">Usuarios — Administración</span>
+      <span class="section-base">/api/usuarios</span>
+    </div>
+    <div class="section-desc">Todos los endpoints de este módulo requieren rol <strong>admin</strong>.</div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method method--get">GET</span>
+        <span class="endpoint-path">/api/usuarios</span>
+        <span class="auth-badge auth-badge--admin">Solo admin</span>
+        <span class="endpoint-desc">Listar todos los usuarios</span>
+      </div>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method method--post">POST</span>
+        <span class="endpoint-path">/api/usuarios</span>
+        <span class="auth-badge auth-badge--admin">Solo admin</span>
+        <span class="endpoint-desc">Crear usuario</span>
+      </div>
+      <div class="endpoint-body">
+        <table class="params-table">
+          <thead><tr><th>Campo</th><th>Tipo</th><th>Req.</th><th>Descripción</th></tr></thead>
+          <tbody>
+            <tr><td><span class="param-name">username</span></td><td><span class="param-type">string</span></td><td><span class="param-required">Sí</span></td><td>Nombre de usuario (3–100 chars)</td></tr>
+            <tr><td><span class="param-name">password</span></td><td><span class="param-type">string</span></td><td><span class="param-required">Sí</span></td><td>Contraseña (mín. 6 chars)</td></tr>
+            <tr><td><span class="param-name">nombre_completo</span></td><td><span class="param-type">string</span></td><td><span class="param-optional">No</span></td><td>Nombre completo del usuario</td></tr>
+            <tr><td><span class="param-name">email</span></td><td><span class="param-type">email</span></td><td><span class="param-optional">No</span></td><td>Correo electrónico</td></tr>
+            <tr><td><span class="param-name">rol</span></td><td><span class="param-type">enum</span></td><td><span class="param-optional">No</span></td><td><code>admin</code> | <code>editor_geo</code> | <code>secretaria</code> | <code>lector</code> (default: <code>lector</code>)</td></tr>
+            <tr><td><span class="param-name">secretaria_id</span></td><td><span class="param-type">string</span></td><td><span class="param-optional">No</span></td><td>ID de la secretaría asignada</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method method--put">PUT</span>
+        <span class="endpoint-path">/api/usuarios/:id</span>
+        <span class="auth-badge auth-badge--admin">Solo admin</span>
+        <span class="endpoint-desc">Actualizar usuario</span>
+      </div>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method method--patch">PATCH</span>
+        <span class="endpoint-path">/api/usuarios/:id/toggle</span>
+        <span class="auth-badge auth-badge--admin">Solo admin</span>
+        <span class="endpoint-desc">Activar / desactivar usuario</span>
+      </div>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method method--delete">DELETE</span>
+        <span class="endpoint-path">/api/usuarios/:id</span>
+        <span class="auth-badge auth-badge--admin">Solo admin</span>
+        <span class="endpoint-desc">Eliminar usuario</span>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- ═══════════════════════════════════════════════════════
+       SECCIONES 8–12 — PDM, SISBEN, STATS, ALUMBRADO, LAYERS
+  ═══════════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">§ 8</span>
+      <span class="section-title">Plan de Desarrollo Municipal (PDM)</span>
+      <span class="section-base">/api/pdm</span>
+    </div>
+    <div class="section-desc">Seguimiento de metas del Plan de Desarrollo. Endpoints de solo lectura, sin autenticación requerida.</div>
+    <table class="params-table">
+      <thead><tr><th>Método</th><th>Ruta</th><th>Descripción</th></tr></thead>
+      <tbody>
+        <tr><td><span class="method method--get" style="display:inline-block;font-size:7pt;padding:2px 6px;">GET</span></td><td><span class="param-name">/api/pdm/overview</span></td><td>Resumen general del PDM (% avance global, pilares)</td></tr>
+        <tr><td><span class="method method--get" style="display:inline-block;font-size:7pt;padding:2px 6px;">GET</span></td><td><span class="param-name">/api/pdm/secretarias</span></td><td>Avance por secretaría</td></tr>
+        <tr><td><span class="method method--get" style="display:inline-block;font-size:7pt;padding:2px 6px;">GET</span></td><td><span class="param-name">/api/pdm/pilares</span></td><td>Pilares del plan</td></tr>
+        <tr><td><span class="method method--get" style="display:inline-block;font-size:7pt;padding:2px 6px;">GET</span></td><td><span class="param-name">/api/pdm/resumen</span></td><td>Resumen filtrable (query: secretaria, pilar)</td></tr>
+        <tr><td><span class="method method--get" style="display:inline-block;font-size:7pt;padding:2px 6px;">GET</span></td><td><span class="param-name">/api/pdm/:id</span></td><td>Meta específica por ID</td></tr>
+        <tr><td><span class="method method--get" style="display:inline-block;font-size:7pt;padding:2px 6px;">GET</span></td><td><span class="param-name">/api/pdm</span></td><td>Listado de todas las metas</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section" style="margin-top:1.5rem;">
+    <div class="section-header">
+      <span class="section-num">§ 9</span>
+      <span class="section-title">SISBEN</span>
+      <span class="section-base">/api/sisben</span>
+    </div>
+    <table class="params-table">
+      <thead><tr><th>Método</th><th>Ruta</th><th>Descripción</th></tr></thead>
+      <tbody>
+        <tr><td><span class="method method--get" style="display:inline-block;font-size:7pt;padding:2px 6px;">GET</span></td><td><span class="param-name">/api/sisben/uba/:ubaId</span></td><td>Estadísticas SISBEN de una UBA (uba1–uba5, ubac)</td></tr>
+        <tr><td><span class="method method--get" style="display:inline-block;font-size:7pt;padding:2px 6px;">GET</span></td><td><span class="param-name">/api/sisben/uba/:ubaId/geojson</span></td><td>GeoJSON de la UBA especificada</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section" style="margin-top:1.5rem;">
+    <div class="section-header">
+      <span class="section-num">§ 10</span>
+      <span class="section-title">Estadísticas Territoriales</span>
+      <span class="section-base">/api/stats</span>
+    </div>
+    <table class="params-table">
+      <thead><tr><th>Método</th><th>Ruta</th><th>Respuesta</th></tr></thead>
+      <tbody>
+        <tr><td><span class="method method--get" style="display:inline-block;font-size:7pt;padding:2px 6px;">GET</span></td><td><span class="param-name">/api/stats/uba/:ubaId</span></td><td><code>{ predios, area, poblacion }</code> — UBAs: uba1–uba5, ubac</td></tr>
+        <tr><td><span class="method method--get" style="display:inline-block;font-size:7pt;padding:2px 6px;">GET</span></td><td><span class="param-name">/api/stats/uso-suelo</span></td><td><code>[{ nombre, cantidad }]</code> — conteo por tipo de uso</td></tr>
+        <tr><td><span class="method method--get" style="display:inline-block;font-size:7pt;padding:2px 6px;">GET</span></td><td><span class="param-name">/api/stats/general</span></td><td><code>{ totalPredios, totalArea, totalPoblacion, ubas, usosSuelo }</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section" style="margin-top:1.5rem;">
+    <div class="section-header">
+      <span class="section-num">§ 11</span>
+      <span class="section-title">Alumbrado Público</span>
+      <span class="section-base">/api/alumbrado</span>
+    </div>
+    <table class="params-table">
+      <thead><tr><th>Método</th><th>Ruta</th><th>Descripción</th></tr></thead>
+      <tbody>
+        <tr><td><span class="method method--get" style="display:inline-block;font-size:7pt;padding:2px 6px;">GET</span></td><td><span class="param-name">/api/alumbrado/stats</span></td><td>Estadísticas de luminarias, transformadores y apoyos</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section" style="margin-top:1.5rem;">
+    <div class="section-header">
+      <span class="section-num">§ 12</span>
+      <span class="section-title">Capas de Referencia por Secretaría</span>
+      <span class="section-base">/api/layers</span>
+    </div>
+    <div class="section-desc">Devuelve la configuración de capas según el rol del usuario. Admin/editor_geo ven todas; los demás solo su secretaría.</div>
+    <table class="params-table">
+      <thead><tr><th>Método</th><th>Ruta</th><th>Descripción</th></tr></thead>
+      <tbody>
+        <tr><td><span class="method method--get" style="display:inline-block;font-size:7pt;padding:2px 6px;">GET</span></td><td><span class="param-name">/api/layers</span></td><td>Todas las capas accesibles por el usuario</td></tr>
+        <tr><td><span class="method method--get" style="display:inline-block;font-size:7pt;padding:2px 6px;">GET</span></td><td><span class="param-name">/api/layers/secretaria/:id</span></td><td>Capas de una secretaría específica</td></tr>
+        <tr><td><span class="method method--get" style="display:inline-block;font-size:7pt;padding:2px 6px;">GET</span></td><td><span class="param-name">/api/layers/:layerId</span></td><td>Información de una capa específica</td></tr>
+      </tbody>
+    </table>
+
+    <div style="margin-top:0.75rem; font-size:8.5pt; color: var(--muted);">
+      <strong>Capas disponibles por secretaría:</strong><br>
+      <strong>planeacion:</strong> Predios Urbanos, Nomenclatura Vial, Barrios, UBA 1-5 y C, Uso de Suelo (Estancos, Discotecas, Droguerías, Ferreterías, IPS, Restaurantes) &nbsp;|&nbsp;
+      <strong>obras:</strong> Luminarias LED/Tradicionales, Apoyos, Subestaciones, Rutas, Obras de Pavimentación &nbsp;|&nbsp;
+      <strong>sisben:</strong> Sisben Barrios, Sisben UBA 2 y 4 &nbsp;|&nbsp;
+      <strong>educacion:</strong> Predios Educativos &nbsp;|&nbsp;
+      <strong>gobierno:</strong> Equipo Institucional, Iglesias &nbsp;|&nbsp;
+      <strong>ambiente:</strong> Zonas Verdes, Gimnasios Biosaludables
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- ═══════════════════════════════════════════════════════
+       HEALTH CHECK
+  ═══════════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">♥</span>
+      <span class="section-title">Health Check</span>
+      <span class="section-base">/api/health</span>
+    </div>
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method method--get">GET</span>
+        <span class="endpoint-path">/api/health</span>
+        <span class="auth-badge auth-badge--public">Público</span>
+        <span class="endpoint-desc">Verificar disponibilidad del servidor</span>
+      </div>
+      <div class="endpoint-body">
+        <div class="response-box">{&nbsp;<span class="key">"status"</span>: <span class="str">"ok"</span>, <span class="key">"timestamp"</span>: <span class="str">"2026-04-16T14:30:00.000Z"</span>&nbsp;}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       FOOTER
+  ═══════════════════════════════════════════════════════ -->
+  <div class="footer">
+    <strong>GeoVisor Alcaldía — Santander de Quilichao</strong><br>
+    Documentación generada automáticamente · Versión 1.0.0 · Abril 2026<br>
+    Backend: Node.js + Express · Base de datos: PostgreSQL + PostGIS (Supabase) · Frontend: React + Vite
+  </div>
+
+</div>
+
+<script>
+  // Auto-print al abrir si viene con ?print en la URL
+  if (window.location.search.includes('print')) {
+    window.addEventListener('load', () => window.print());
+  }
+</script>
+
+</body>
+</html>

@@ -11,7 +11,7 @@ export default function PdmUploadModal({ year, onClose, onSuccess }) {
   const handleDrop = (e) => {
     e.preventDefault();
     const f = e.dataTransfer?.files?.[0];
-    if (f && /\.xlsx?$/i.test(f.name)) setFile(f);
+    if (f && /\.(xlsx?|csv)$/i.test(f.name)) setFile(f);
   };
 
   const handleUpload = async () => {
@@ -36,7 +36,7 @@ export default function PdmUploadModal({ year, onClose, onSuccess }) {
 
         <div className="pdm-modal-header">
           <div className="pdm-modal-meta-num">ACTUALIZAR DATOS</div>
-          <h2 className="pdm-modal-title">Cargar Excel PDM — Año {year}</h2>
+          <h2 className="pdm-modal-title">Cargar datos PDM — Año {year}</h2>
         </div>
 
         <div style={{ padding: '20px 22px' }}>
@@ -51,7 +51,7 @@ export default function PdmUploadModal({ year, onClose, onSuccess }) {
                 <input
                   ref={inputRef}
                   type="file"
-                  accept=".xlsx,.xls"
+                  accept=".xlsx,.xls,.csv"
                   style={{ display: 'none' }}
                   onChange={e => setFile(e.target.files?.[0] || null)}
                 />
@@ -65,7 +65,7 @@ export default function PdmUploadModal({ year, onClose, onSuccess }) {
                   <div className="pdm-a-drop-hint">
                     <span>📁</span>
                     <p>Arrastra un archivo Excel o haz clic para seleccionar</p>
-                    <small>.xlsx — Misma estructura que la tabla pdm_metas</small>
+                    <small>.xlsx / .csv — Se aplica limpieza automática de $, % y formatos</small>
                   </div>
                 )}
               </div>

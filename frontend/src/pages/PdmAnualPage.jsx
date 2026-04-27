@@ -7,7 +7,9 @@ import AnualSecretariasTab from './pdm-anual/AnualSecretariasTab';
 import AnualPilaresTab from './pdm-anual/AnualPilaresTab';
 import AnualMetasTab from './pdm-anual/AnualMetasTab';
 import AnualTrayectoriaTab from './pdm-anual/AnualTrayectoriaTab';
+import AnualInformeTab from './pdm-anual/AnualInformeTab';
 import PdmUploadModal from './pdm-anual/PdmUploadModal';
+import InformeModal from './pdm-anual/InformeModal';
 import MetaModal from './pdm/MetaModal';
 import './PdmAnualPage.css';
 
@@ -18,6 +20,7 @@ const TABS = [
   { id: 'pilares',      label: 'Por pilar' },
   { id: 'metas',        label: 'Detalle metas' },
   { id: 'seguimiento',  label: 'Seguimiento cuatrienal' },
+  { id: 'informe',      label: 'Generar informe', adminOnly: true },
 ];
 const LIMIT = 50;
 
@@ -47,6 +50,7 @@ export default function PdmAnualPage() {
   // Modals
   const [modalId, setModalId]         = useState(null);
   const [showUpload, setShowUpload]   = useState(false);
+  const [showInforme, setShowInforme] = useState(false);
 
   // Pilares list for filter (from cuatrienio)
   const [pilaresLista, setPilaresLista] = useState([]);
@@ -166,9 +170,9 @@ export default function PdmAnualPage() {
       </header>
 
       <div className="pdm-tabs">
-        {TABS.map(t => (
+        {TABS.filter(t => !t.adminOnly || canUpload).map(t => (
           <button key={t.id}
-            className={`pdm-tab${tab === t.id ? ' pdm-tab--active' : ''}`}
+            className={`pdm-tab${tab === t.id ? ' pdm-tab--active' : ''}${t.id === 'informe' ? ' pdm-tab--informe' : ''}`}
             onClick={() => setTab(t.id)}>
             {t.label}
           </button>
@@ -218,6 +222,8 @@ export default function PdmAnualPage() {
           )}
         </main>
       </div>
+
+      {showInforme && <InformeModal year={year} onClose={() => setShowInforme(false)} />}
 
       {modalId && <MetaModal id={modalId} onClose={() => setModalId(null)} />}
 
