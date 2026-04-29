@@ -69,7 +69,7 @@ export const QUERY_PRIORITY = [
   { id: 'territorios_salud', props: (p) =>
       `<strong>🗺️ Territorio:</strong> ${p.Codigo || '—'}<br><strong>🏠 Hogares:</strong> ${p.Num_hogar ?? '—'}` },
   { id: 'veredas_salud', props: (p) =>
-      `<strong>🌿 Vereda:</strong> ${p.nombre || '—'}<br><strong>👥 Población:</strong> ${p.poblacion || '—'}<br><strong>📐 Área:</strong> ${p.area_hecta ? Number(p.area_hecta).toFixed(1) + ' ha' : '—'}<br><strong>⚠️ Delito:</strong> ${p.delito || '—'}` },
+      `<strong>🌿 Vereda:</strong> ${p.nombre || '—'}<br><strong>📐 Área:</strong> ${p.area_hecta ? Number(p.area_hecta).toFixed(1) + ' ha' : '—'}` },
   { id: 'zona_influencia_salud', props: (p) =>
       `<strong>📍 Zona de Influencia:</strong> ${p.NOMBRE_GEO || 'IPS'}<br><strong>📏 Radio:</strong> ${p.BUFF_DIST ?? 30} m` },
   // 7. UBAs
