@@ -394,7 +394,7 @@ export const LAYERS_BY_SECRETARIA = {
     layers: [
       createWfsLayer({
         id: 'cuadrantes_salud',
-        name: 'Cuadrantes de Salud',
+        name: 'Cuadrantes Policía',
         tableName: 'Cuadrantes_salud',
         visible: false,
         queryable: true,

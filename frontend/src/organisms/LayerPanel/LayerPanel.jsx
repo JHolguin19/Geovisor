@@ -118,7 +118,7 @@ const LAYER_GROUPS = [
     allowedSecretarias: ['sig', 'salud'],
     layers: [
       { id: 'ips_salud',              label: 'IPS',                   dot: '#0EA5E9' },
-      { id: 'cuadrantes_salud',       label: 'Cuadrantes de Salud',   dot: '#E11D48' },
+      { id: 'cuadrantes_salud',       label: 'Cuadrantes Policía',    dot: '#E11D48' },
       { id: 'territorios_salud',      label: 'Territorios de Salud',  dot: '#8B5CF6' },
       { id: 'microterritorios_salud', label: 'Microterritorios',      dot: '#F59E0B' },
       { id: 'veredas_salud',          label: 'Veredas',               dot: '#16A34A' },
