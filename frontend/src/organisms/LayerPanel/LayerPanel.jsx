@@ -112,6 +112,22 @@ const LAYER_GROUPS = [
   },
 
   {
+    id: 'salud',
+    label: 'Secretaría de Salud',
+    accent: '#E11D48',
+    allowedSecretarias: ['sig', 'salud'],
+    layers: [
+      { id: 'ips_salud',              label: 'IPS',                   dot: '#0EA5E9' },
+      { id: 'cuadrantes_salud',       label: 'Cuadrantes de Salud',   dot: '#E11D48' },
+      { id: 'territorios_salud',      label: 'Territorios de Salud',  dot: '#8B5CF6' },
+      { id: 'microterritorios_salud', label: 'Microterritorios',      dot: '#F59E0B' },
+      { id: 'veredas_salud',          label: 'Veredas',               dot: '#16A34A' },
+      { id: 'zona_influencia_salud',  label: 'Zona de Influencia 30m',dot: '#06B6D4' },
+    ],
+    subcategories: []
+  },
+
+  {
     id: 'infraestructura',
     label: 'Secretaría de Infraestructura',
     accent: '#F59E0B',
