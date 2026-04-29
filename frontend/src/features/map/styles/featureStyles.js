@@ -61,10 +61,39 @@ export function makePointStyle(layerConfig) {
   });
 }
 
+// Paleta YlOrRd de 10 rangos para IPM (0=verde claro, 9=rojo muy oscuro)
+const IPM_COLORS = [
+  '#ffffcc', // 0–10
+  '#ffeda0', // 10–20
+  '#fed976', // 20–30
+  '#feb24c', // 30–40
+  '#fd8d3c', // 40–50
+  '#fc4e2a', // 50–60
+  '#e31a1c', // 60–70
+  '#bd0026', // 70–80
+  '#800026', // 80–90
+  '#4d0013', // 90–100
+];
+
+// Estilo coroplético para IPM — 10 rangos de 0-100
+export function makeIpmStyle(feature) {
+  const ipm = Number(feature.get('ipm') ?? 0);
+  const rangeIdx = Math.min(Math.floor(ipm / 10), 9);
+  const hex = IPM_COLORS[rangeIdx];
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return new Style({
+    fill: new Fill({ color: `rgba(${r},${g},${b},0.80)` }),
+    stroke: new Stroke({ color: 'rgba(80,0,20,0.55)', width: 0.8 })
+  });
+}
+
 // Resolución de estilo por configuración de capa
 export function resolveStyleForConfig(layerConfig) {
   if (layerConfig.id === 'predios_urbanos') return makePrediosStyle();
   if (layerConfig.id === 'obras_pavimentacion' || layerConfig.id === 'pavimentacion2') return makePavimentacionStyle();
+  if (layerConfig.id === 'ipm_santander') return makeIpmStyle;
   if (layerConfig.geometryType === 'line') return makeLineStyle(layerConfig);
   // Para WFS de puntos usamos point style
   if (layerConfig.type === 'wfs' || layerConfig.type === 'geojson') {

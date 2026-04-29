@@ -60,6 +60,16 @@ export const QUERY_PRIORITY = [
       <strong>✅ Estado:</strong> ${f7 || '—'}`;
   }},
   // 6. Capas de Salud
+  { id: 'ipm_santander', props: (p) => {
+    const ipm = p.ipm != null ? Number(p.ipm).toFixed(1) : '—';
+    const rango = p.ipm != null ? Math.min(Math.floor(Number(p.ipm) / 10) + 1, 10) : '—';
+    return `<strong>📊 IPM — Pobreza Multidimensional</strong><br>
+      <strong>🏷️ Vulnerabilidad:</strong> ${p.LABEL || '—'}<br>
+      <strong>📈 IPM:</strong> ${ipm}%<br>
+      <strong>🔢 Rango:</strong> ${rango} / 10<br>
+      <strong>🤰 Embarazo Temprano:</strong> ${p.embarazo_a || '—'}<br>
+      <strong>🆔 Código DANE:</strong> ${p.COD_DANE || '—'}`;
+  }},
   { id: 'ips_salud', props: (p) =>
       `<strong>🏥 IPS:</strong> ${p.Instituci || '—'}` },
   { id: 'cuadrantes_salud', props: (p) =>

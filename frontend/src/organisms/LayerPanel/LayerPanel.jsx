@@ -117,6 +117,7 @@ const LAYER_GROUPS = [
     accent: '#E11D48',
     allowedSecretarias: ['sig', 'salud'],
     layers: [
+      { id: 'ipm_santander',          label: 'IPM — Pobreza Multidimensional', dot: '#e31a1c' },
       { id: 'ips_salud',              label: 'IPS',                   dot: '#0EA5E9' },
       { id: 'cuadrantes_salud',       label: 'Cuadrantes Policía',    dot: '#E11D48' },
       { id: 'territorios_salud',      label: 'Territorios de Salud',  dot: '#8B5CF6' },

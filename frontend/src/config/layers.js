@@ -466,6 +466,21 @@ export const LAYERS_BY_SECRETARIA = {
         ]
       }),
       createWfsLayer({
+        id: 'ipm_santander',
+        name: 'IPM — Pobreza Multidimensional',
+        tableName: 'ipmsantander',
+        visible: false,
+        queryable: true,
+        geometryType: 'polygon',
+        description: 'Índice de Pobreza Multidimensional y embarazo a temprana edad (10 rangos)',
+        popupFields: [
+          { field: 'LABEL',      label: 'Vulnerabilidad IPM' },
+          { field: 'ipm',        label: 'IPM (%)' },
+          { field: 'embarazo_a', label: 'Embarazo Temprano' },
+          { field: 'COD_DANE',   label: 'Código DANE' }
+        ]
+      }),
+      createWfsLayer({
         id: 'zona_influencia_salud',
         name: 'Zona de Influencia 30m',
         tableName: 'zonainfluenciario30m_salud',
