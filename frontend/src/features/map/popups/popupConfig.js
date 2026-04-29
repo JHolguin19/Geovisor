@@ -59,7 +59,20 @@ export const QUERY_PRIORITY = [
       <strong>💰 Presupuesto:</strong> ${presupuesto}<br>
       <strong>✅ Estado:</strong> ${f7 || '—'}`;
   }},
-  // 6. UBAs
+  // 6. Capas de Salud
+  { id: 'ips_salud', props: (p) =>
+      `<strong>🏥 IPS:</strong> ${p.Instituci || '—'}` },
+  { id: 'cuadrantes_salud', props: (p) =>
+      `<strong>🚔 Cuadrante Policía:</strong> ${p.Nombre || '—'}` },
+  { id: 'microterritorios_salud', props: (p) =>
+      `<strong>🗺️ Microterritorio:</strong> ${p.CODIGO || '—'}<br><strong>🏠 Hogares:</strong> ${p.num_hogare ?? '—'}` },
+  { id: 'territorios_salud', props: (p) =>
+      `<strong>🗺️ Territorio:</strong> ${p.Codigo || '—'}<br><strong>🏠 Hogares:</strong> ${p.Num_hogar ?? '—'}` },
+  { id: 'veredas_salud', props: (p) =>
+      `<strong>🌿 Vereda:</strong> ${p.nombre || '—'}<br><strong>👥 Población:</strong> ${p.poblacion || '—'}<br><strong>📐 Área:</strong> ${p.area_hecta ? Number(p.area_hecta).toFixed(1) + ' ha' : '—'}<br><strong>⚠️ Delito:</strong> ${p.delito || '—'}` },
+  { id: 'zona_influencia_salud', props: (p) =>
+      `<strong>📍 Zona de Influencia:</strong> ${p.NOMBRE_GEO || 'IPS'}<br><strong>📏 Radio:</strong> ${p.BUFF_DIST ?? 30} m` },
+  // 7. UBAs
   { id: 'uba1', props: (p) => `<strong>🏘️ Barrio:</strong> ${p.nombre || ''}<br><strong>🏢 UBA:</strong> 1` },
   { id: 'uba2', props: (p) => `<strong>🏘️ Barrio:</strong> ${p.nombre || ''}<br><strong>🏢 UBA:</strong> 2` },
   { id: 'uba3', props: (p) => `<strong>🏘️ Barrio:</strong> ${p.nombre || ''}<br><strong>🏢 UBA:</strong> 3` },
