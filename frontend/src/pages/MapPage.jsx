@@ -11,6 +11,7 @@ import SisbenPanel from '../organisms/SisbenPanel';
 import SisbenHeatmapPanel from '../organisms/SisbenHeatmapPanel';
 import SisbenUbaPanel from '../organisms/SisbenUbaPanel';
 import AlumbradoPanel from '../organisms/AlumbradoPanel/AlumbradoPanel';
+import IpmLegendPanel from '../organisms/IpmLegendPanel/IpmLegendPanel';
 import MapContext from '../context/MapContext';
 import { getSecretariaById } from '../config/secretarias';
 import { useLayerPrefetch } from '../features/map/hooks/useLayerPrefetch';
@@ -58,6 +59,7 @@ function MapPageInner() {
           <SisbenHeatmapPanel />
           <SisbenUbaPanel />
           <AlumbradoPanel />
+          <IpmLegendPanel />
           <SelectionResults results={selectionResults} onClose={handleCloseSelection} />
         </main>
       </div>
