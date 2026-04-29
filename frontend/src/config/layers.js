@@ -387,6 +387,101 @@ export const LAYERS_BY_SECRETARIA = {
     ]
   },
 
+  salud: {
+    name: 'Secretaría de Salud',
+    icon: '🏥',
+    color: '#e11d48',
+    layers: [
+      createWfsLayer({
+        id: 'cuadrantes_salud',
+        name: 'Cuadrantes de Salud',
+        tableName: 'Cuadrantes_salud',
+        visible: false,
+        queryable: true,
+        geometryType: 'polygon',
+        color: '#e11d48',
+        description: 'División en cuadrantes del sistema de salud municipal',
+        popupFields: [
+          { field: 'Nombre', label: 'Cuadrante' }
+        ]
+      }),
+      createWfsLayer({
+        id: 'ips_salud',
+        name: 'IPS',
+        tableName: 'IPS_salud',
+        visible: false,
+        queryable: true,
+        geometryType: 'point',
+        color: '#0ea5e9',
+        description: 'Instituciones Prestadoras de Salud',
+        popupFields: [
+          { field: 'Instituci', label: 'Institución' },
+          { field: 'Field5',    label: 'Dirección' },
+          { field: 'Field6',    label: 'Teléfono' },
+          { field: 'Field7',    label: 'Tipo' }
+        ]
+      }),
+      createWfsLayer({
+        id: 'microterritorios_salud',
+        name: 'Microterritorios',
+        tableName: 'MICROTERRITORIOS_salud',
+        visible: false,
+        queryable: true,
+        geometryType: 'polygon',
+        color: '#f59e0b',
+        description: 'Microterritorios del sistema de salud',
+        popupFields: [
+          { field: 'CODIGO',     label: 'Código' },
+          { field: 'num_hogare', label: 'Número de Hogares' }
+        ]
+      }),
+      createWfsLayer({
+        id: 'territorios_salud',
+        name: 'Territorios de Salud',
+        tableName: 'Territorios_salud',
+        visible: false,
+        queryable: true,
+        geometryType: 'polygon',
+        color: '#8b5cf6',
+        description: 'Territorios de atención en salud',
+        popupFields: [
+          { field: 'Codigo',    label: 'Código' },
+          { field: 'Num_hogar', label: 'Número de Hogares' }
+        ]
+      }),
+      createWfsLayer({
+        id: 'veredas_salud',
+        name: 'Veredas',
+        tableName: 'veredas_salud',
+        visible: false,
+        queryable: true,
+        geometryType: 'polygon',
+        color: '#16a34a',
+        description: 'Veredas del municipio con datos de salud',
+        popupFields: [
+          { field: 'nombre',      label: 'Vereda' },
+          { field: 'poblacion',   label: 'Población' },
+          { field: 'area_hecta',  label: 'Área (ha)' },
+          { field: 'delito',      label: 'Delito' }
+        ]
+      }),
+      createWfsLayer({
+        id: 'zona_influencia_salud',
+        name: 'Zona de Influencia 30m',
+        tableName: 'zonainfluenciario30m_salud',
+        visible: false,
+        queryable: true,
+        geometryType: 'polygon',
+        color: '#06b6d4',
+        description: 'Zona de influencia de 30m de instituciones de salud',
+        popupFields: [
+          { field: 'NOMBRE_GEO', label: 'Institución' },
+          { field: 'BUFF_DIST',  label: 'Distancia (m)' }
+        ]
+      })
+    ]
+  },
+
   servicios_publicos: {
     name: 'Secretaría de Infraestructura',
     icon: '💡',
