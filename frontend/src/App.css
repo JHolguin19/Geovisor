@@ -1,4 +1,33 @@
 /* =============================================
+   GLOBAL UTILITIES
+   ============================================= */
+
+/* Logout button — used in every page header */
+.btn-logout {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 13px;
+  border-radius: 6px;
+  border: 1px solid rgba(239,68,68,.4);
+  background: rgba(239,68,68,.08);
+  color: #dc2626;
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, color .15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.btn-logout:hover {
+  background: rgba(239,68,68,.18);
+  border-color: rgba(239,68,68,.7);
+  color: #b91c1c;
+}
+.btn-logout svg { flex-shrink: 0; }
+
+/* =============================================
    RESET & BASE
    ============================================= */
 *, *::before, *::after {

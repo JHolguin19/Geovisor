@@ -5,8 +5,9 @@
  * con acciones para mover, renombrar y eliminar.
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
+import AuthContext from '../context/AuthContext';
 import { tablesService } from '../services/api.js';
 import './SchemaManagerPage.css';
 
@@ -218,6 +219,7 @@ function SchemaColumn({ schemaKey, tables, loading, onMove, onRename, onDrop }) 
 
 export default function SchemaManagerPage() {
   const navigate = useNavigate();
+  const { logout } = useContext(AuthContext);
   const [schemas,  setSchemas]  = useState({ raw: [], staging: [], public: [] });
   const [loading,  setLoading]  = useState(true);
   const [error,    setError]    = useState(null);
@@ -300,6 +302,14 @@ export default function SchemaManagerPage() {
             <polyline points="23 4 23 10 17 10"/>
             <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/>
           </svg>
+        </button>
+        <button className="btn-logout" onClick={logout}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          Cerrar sesión
         </button>
       </div>
 

@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useContext } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
+import AuthContext from '../context/AuthContext';
 import { pdmService } from '../services/api';
 import PdmOverviewTab from './pdm/PdmOverviewTab';
 import PdmSecretariasTab from './pdm/PdmSecretariasTab';
@@ -16,6 +17,7 @@ const TABS = [
 const LIMIT = 50;
 
 export default function PdmPage() {
+  const { logout } = useContext(AuthContext);
   const [searchParams] = useSearchParams();
   const [tab, setTab]  = useState('overview');
 
@@ -76,7 +78,17 @@ export default function PdmPage() {
             <p>Santander de Quilichao · {overview?.global?.total_metas || '…'} metas de seguimiento</p>
           </div>
         </div>
-        <Link to="/pdm/anual" className="pdm-a-link-btn">Seguimiento por año →</Link>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <Link to="/pdm/anual" className="pdm-a-link-btn">Seguimiento por año →</Link>
+          <button className="btn-logout" onClick={logout}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            Cerrar sesión
+          </button>
+        </div>
       </header>
 
       <div className="pdm-tabs">

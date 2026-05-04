@@ -6,7 +6,6 @@ import AnualOverviewTab from './pdm-anual/AnualOverviewTab';
 import AnualSecretariasTab from './pdm-anual/AnualSecretariasTab';
 import AnualPilaresTab from './pdm-anual/AnualPilaresTab';
 import AnualMetasTab from './pdm-anual/AnualMetasTab';
-import AnualTrayectoriaTab from './pdm-anual/AnualTrayectoriaTab';
 import AnualFinancieroTab from './pdm-anual/AnualFinancieroTab';
 import AnualInformeTab from './pdm-anual/AnualInformeTab';
 import PdmUploadModal from './pdm-anual/PdmUploadModal';
@@ -21,13 +20,12 @@ const TABS = [
   { id: 'secretarias',  label: 'Por secretaría' },
   { id: 'pilares',      label: 'Por pilar' },
   { id: 'metas',        label: 'Detalle metas' },
-  { id: 'seguimiento',  label: 'Seguimiento cuatrienal' },
   { id: 'informe',      label: 'Generar informe', adminOnly: true },
 ];
 const LIMIT = 50;
 
 export default function PdmAnualPage() {
-  const { user } = useContext(AuthContext);
+  const { user, logout } = useContext(AuthContext);
   const canUpload = user && (user.role === 'admin' || user.role === 'editor_geo');
 
   const [year, setYear] = useState(2026);
@@ -57,12 +55,10 @@ export default function PdmAnualPage() {
   // Pilares list for filter (from cuatrienio)
   const [pilaresLista, setPilaresLista] = useState([]);
 
-  // Trayectoria cuatrienal y divergencia
-  const [trayectoria, setTrayectoria]             = useState(null);
+  // Comparativos cuatrienales
   const [divergencia, setDivergencia]             = useState([]);
   const [comparativo, setComparativo]             = useState([]);
   const [comparativoFinanciero, setComparativoFinanciero] = useState(null);
-  const [exportLoading, setExportLoading]         = useState(false);
 
   // Load year data
   useEffect(() => {
@@ -89,9 +85,8 @@ export default function PdmAnualPage() {
     pdmService.getPilares().then(setPilaresLista);
   }, []);
 
-  // Load trayectoria + comparativos once (cuatrienal, no dependen del año)
+  // Load comparativos once (cuatrienal, no dependen del año)
   useEffect(() => {
-    pdmAnualService.getTrayectoria().then(setTrayectoria).catch(console.error);
     pdmAnualService.getComparativo().then(setComparativo).catch(console.error);
     pdmAnualService.getComparativoFinanciero().then(setComparativoFinanciero).catch(console.error);
   }, []);
@@ -100,13 +95,6 @@ export default function PdmAnualPage() {
   useEffect(() => {
     pdmAnualService.getDivergencia(year).then(setDivergencia).catch(() => setDivergencia([]));
   }, [year]);
-
-  const handleExport = async () => {
-    setExportLoading(true);
-    try { await pdmAnualService.exportYear(year); }
-    catch (e) { console.error('Export failed', e); }
-    finally { setExportLoading(false); }
-  };
 
   // Load metas
   const cargarMetas = useCallback(async () => {
@@ -170,6 +158,14 @@ export default function PdmAnualPage() {
               Actualizar datos
             </button>
           )}
+          <button className="btn-logout" onClick={logout}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            Cerrar sesión
+          </button>
         </div>
       </header>
 
@@ -201,14 +197,6 @@ export default function PdmAnualPage() {
 
           {!loading && tab === 'pilares' && (
             <AnualPilaresTab data={pilares} year={year} />
-          )}
-
-          {!loading && tab === 'seguimiento' && (
-            <AnualTrayectoriaTab
-              data={trayectoria}
-              onExport={handleExport}
-              exportLoading={exportLoading}
-            />
           )}
 
           {tab === 'informe' && (

@@ -11,7 +11,9 @@ const LAYER_GROUPS = [
     label: 'Secretaría de Planeación',
     accent: '#1A5F9B',
     allowedSecretarias: ['sig', 'planeacion'],
-    layers: [],
+    layers: [
+      { id: 'veredas_salud', label: 'Veredas', dot: '#16A34A' },
+    ],
     subcategories: [
       {
         label: 'Catastro',
@@ -122,7 +124,6 @@ const LAYER_GROUPS = [
       { id: 'cuadrantes_salud',       label: 'Cuadrantes Policía',    dot: '#E11D48' },
       { id: 'territorios_salud',      label: 'Territorios de Salud',  dot: '#8B5CF6' },
       { id: 'microterritorios_salud', label: 'Microterritorios',      dot: '#F59E0B' },
-      { id: 'veredas_salud',          label: 'Veredas',               dot: '#16A34A' },
       { id: 'zona_influencia_salud',  label: 'Zona de Influencia 30m',dot: '#06B6D4' },
     ],
     subcategories: []
