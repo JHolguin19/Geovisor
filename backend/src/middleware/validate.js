@@ -61,18 +61,18 @@ export const schemas = {
   createUsuario: z.object({
     username:        z.string().min(3, 'Usuario mín. 3 caracteres').max(100),
     password:        z.string().min(6, 'Contraseña mín. 6 caracteres'),
-    nombre_completo: z.string().max(200).optional().nullable(),
-    email:           z.string().email('Email inválido').optional().nullable(),
+    nombre_completo: z.preprocess(v => v === '' ? null : v, z.string().max(200).optional().nullable()),
+    email:           z.preprocess(v => v === '' ? null : v, z.string().email('Email inválido').optional().nullable()),
     rol:             z.enum(['admin', 'editor_geo', 'secretaria', 'lector']).default('lector'),
-    secretaria_id:   z.string().optional().nullable(),
+    secretaria_id:   z.preprocess(v => v === '' ? null : v, z.string().optional().nullable()),
   }),
 
   updateUsuario: z.object({
-    nombre_completo: z.string().max(200).optional().nullable(),
-    email:           z.string().email('Email inválido').optional().nullable(),
+    nombre_completo: z.preprocess(v => v === '' ? null : v, z.string().max(200).optional().nullable()),
+    email:           z.preprocess(v => v === '' ? null : v, z.string().email('Email inválido').optional().nullable()),
     rol:             z.enum(['admin', 'editor_geo', 'secretaria', 'lector']).optional(),
-    secretaria_id:   z.string().optional().nullable(),
-    password:        z.string().min(6).optional(),
+    secretaria_id:   z.preprocess(v => v === '' ? null : v, z.string().optional().nullable()),
+    password:        z.preprocess(v => v === '' ? undefined : v, z.string().min(6).optional()),
   }),
 
   // PDM año

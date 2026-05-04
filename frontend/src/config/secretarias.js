@@ -86,7 +86,7 @@ export const SECRETARIAS = [
     color: '#B71C1C',
     description: 'Infraestructura de salud, IPS y cobertura de servicios médicos.',
     layersKey: null,
-    hasMapa: false,
+    hasMapa: true,
     orden: 8
   },
   {
@@ -97,7 +97,7 @@ export const SECRETARIAS = [
     color: '#1B5E20',
     description: 'Avalúos catastrales, predios tributarios y cartografía fiscal.',
     layersKey: null,
-    hasMapa: false,
+    hasMapa: true,
     orden: 9
   },
   {
@@ -108,7 +108,7 @@ export const SECRETARIAS = [
     color: '#00838F',
     description: 'Escenarios deportivos, parques y equipamiento recreativo.',
     layersKey: null,
-    hasMapa: false,
+    hasMapa: true,
     orden: 10
   },
   {
@@ -119,7 +119,7 @@ export const SECRETARIAS = [
     color: '#E64A19',
     description: 'Vías, semáforos, señalización y movilidad urbana.',
     layersKey: null,
-    hasMapa: false,
+    hasMapa: true,
     orden: 11
   },
   {
@@ -130,7 +130,7 @@ export const SECRETARIAS = [
     color: '#37474F',
     description: 'Prevención, atención y recuperación ante desastres y emergencias.',
     layersKey: null,
-    hasMapa: false,
+    hasMapa: true,
     orden: 12
   },
   {
@@ -141,7 +141,7 @@ export const SECRETARIAS = [
     color: '#5D4037',
     description: 'Desarrollo institucional, talento humano y gestión administrativa.',
     layersKey: null,
-    hasMapa: false,
+    hasMapa: true,
     orden: 13
   },
   {
@@ -152,7 +152,7 @@ export const SECRETARIAS = [
     color: '#F57F17',
     description: 'Plaza de mercado y gestión de comercio municipal.',
     layersKey: null,
-    hasMapa: false,
+    hasMapa: true,
     orden: 14
   }
 ];
