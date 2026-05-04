@@ -47,7 +47,9 @@ export function createLayerForConfig(layerConfig, callbacks = {}, sisbenHeatmapR
 function createGenericLayer(layerConfig) {
   const source = new VectorSource();
 
-  loadFeatures(source, getGeoJsonApiUrl(layerConfig), {
+  const url = layerConfig.apiUrl || getGeoJsonApiUrl(layerConfig);
+
+  loadFeatures(source, url, {
     layerId: layerConfig.id,
   });
 

@@ -499,6 +499,83 @@ export const LAYERS_BY_SECRETARIA = {
     ]
   },
 
+  gobierno: {
+    name: 'Secretaría de Gobierno',
+    icon: '🛡️',
+    color: '#DC2626',
+    layers: [
+      createWfsLayer({
+        id: 'delitos_barrios_2024',
+        name: 'Delitos por barrio 2024',
+        tableName: '_delitos_barrios_',
+        apiUrl: '/api/delitos/geojson?anio=2024',
+        visible: false,
+        queryable: true,
+        geometryType: 'polygon',
+        color: '#DC2626',
+        description: 'Mapa de calor de delitos por barrio urbano — 2024',
+        popupFields: [
+          { field: 'nombre',       label: 'Barrio' },
+          { field: 'total_delitos', label: 'Total delitos' },
+          { field: 'homicidios',   label: 'Homicidios' },
+          { field: 'hurto_personas', label: 'Hurto a personas' },
+          { field: 'lesiones',     label: 'Lesiones personales' },
+          { field: 'violencia_intrafamiliar', label: 'Violencia intrafamiliar' },
+          { field: 'hurto_motos',  label: 'Hurto motocicletas' },
+          { field: 'extorsion',    label: 'Extorsión' },
+        ]
+      }),
+      createWfsLayer({
+        id: 'delitos_barrios_2025',
+        name: 'Delitos por barrio 2025',
+        tableName: '_delitos_barrios_',
+        apiUrl: '/api/delitos/geojson?anio=2025',
+        visible: false,
+        queryable: true,
+        geometryType: 'polygon',
+        color: '#991B1B',
+        description: 'Mapa de calor de delitos por barrio urbano — 2025',
+        popupFields: [
+          { field: 'nombre',       label: 'Barrio' },
+          { field: 'total_delitos', label: 'Total delitos' },
+          { field: 'homicidios',   label: 'Homicidios' },
+          { field: 'hurto_personas', label: 'Hurto a personas' },
+          { field: 'lesiones',     label: 'Lesiones personales' },
+          { field: 'violencia_intrafamiliar', label: 'Violencia intrafamiliar' },
+          { field: 'hurto_motos',  label: 'Hurto motocicletas' },
+          { field: 'extorsion',    label: 'Extorsión' },
+        ]
+      }),
+      createWfsLayer({
+        id: 'delitos_homicidios',
+        name: 'Homicidios por barrio (todos)',
+        tableName: '_delitos_barrios_',
+        apiUrl: '/api/delitos/geojson?tipo_delito=HOMICIDIO',
+        visible: false,
+        queryable: true,
+        geometryType: 'polygon',
+        color: '#7F1D1D',
+        description: 'Homicidios por barrio urbano — todos los años',
+        popupFields: [
+          { field: 'nombre',       label: 'Barrio' },
+          { field: 'total_delitos', label: 'Total homicidios' },
+        ]
+      }),
+      createWfsLayer({
+        id: 'barrios_urbanos_gobierno',
+        name: 'Barrios Urbanos',
+        tableName: 'barriosurbanos',
+        visible: false,
+        queryable: true,
+        geometryType: 'polygon',
+        description: 'División barrial del área urbana',
+        popupFields: [
+          { field: 'nombre', label: 'Barrio' },
+        ]
+      }),
+    ]
+  },
+
   servicios_publicos: {
     name: 'Secretaría de Infraestructura',
     icon: '💡',

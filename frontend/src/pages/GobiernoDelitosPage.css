@@ -1,0 +1,550 @@
+/* ============================================================
+   GobiernoDelitosPage.css — Observatorio de Seguridad
+   Aesthetic: Institutional forensic — dark header, crisp data
+   ============================================================ */
+
+:root {
+  --del-accent: #DC2626;
+  --del-accent-dark: #991B1B;
+  --del-bg: #F1F3F7;
+  --del-card-bg: #FFFFFF;
+  --del-text: #1E293B;
+  --del-text-muted: #64748B;
+  --del-border: #E2E8F0;
+  --del-header-bg: #111827;
+}
+
+/* ── Layout ────────────────────────────────────────────────────────────── */
+
+.del-page {
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: var(--del-bg);
+  font-family: 'DM Sans', 'Nunito', system-ui, sans-serif;
+  color: var(--del-text);
+}
+
+.del-scroll {
+  flex: 1;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
+.del-content {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 28px 32px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+/* ── Header ────────────────────────────────────────────────────────────── */
+
+.del-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 28px;
+  background: var(--del-header-bg);
+  flex-wrap: wrap;
+  min-height: 56px;
+}
+
+.del-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.del-logo {
+  height: 32px;
+  width: auto;
+  flex-shrink: 0;
+}
+
+.del-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.del-header-entity {
+  font-size: 10.5px;
+  color: rgba(255,255,255,.5);
+  letter-spacing: .3px;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.del-header-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -.2px;
+}
+
+.del-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ── Year pills ────────────────────────────────────────────────────────── */
+
+.del-pills {
+  display: flex;
+  gap: 3px;
+  background: rgba(255,255,255,.08);
+  border-radius: 7px;
+  padding: 3px;
+}
+
+.del-pill {
+  padding: 5px 14px;
+  border: none;
+  border-radius: 5px;
+  font-size: 12.5px;
+  font-weight: 700;
+  font-family: inherit;
+  color: rgba(255,255,255,.5);
+  background: transparent;
+  cursor: pointer;
+  transition: all .15s;
+}
+.del-pill:hover { color: #fff; background: rgba(255,255,255,.1); }
+.del-pill--active {
+  color: var(--del-header-bg);
+  background: #fff;
+}
+
+/* ── Select / buttons ──────────────────────────────────────────────────── */
+
+.del-select {
+  padding: 5px 10px;
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 6px;
+  background: rgba(255,255,255,.07);
+  color: rgba(255,255,255,.85);
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  max-width: 200px;
+}
+.del-select option { background: #1e293b; color: #fff; }
+
+.del-btn-back,
+.del-btn-map {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 6px;
+  background: rgba(255,255,255,.07);
+  color: rgba(255,255,255,.85);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all .15s;
+}
+.del-btn-back:hover,
+.del-btn-map:hover { background: rgba(255,255,255,.15); color: #fff; }
+
+.del-user-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  color: rgba(255,255,255,.55);
+  font-weight: 600;
+}
+
+/* ── Red band ──────────────────────────────────────────────────────────── */
+
+.del-band {
+  height: 3px;
+  background: linear-gradient(90deg, var(--del-accent), var(--del-accent-dark), #111827);
+  flex-shrink: 0;
+}
+
+/* ── KPI Row ───────────────────────────────────────────────────────────── */
+
+.del-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+}
+
+.del-kpi {
+  background: var(--del-card-bg);
+  border: 1px solid var(--del-border);
+  border-radius: 10px;
+  padding: 18px 16px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  position: relative;
+  overflow: hidden;
+  transition: transform .15s, box-shadow .15s;
+}
+.del-kpi:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,.06);
+}
+.del-kpi::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 3px;
+  background: var(--kpi-accent);
+}
+
+.del-kpi-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--kpi-accent) 10%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+.del-kpi-icon svg {
+  width: 18px;
+  height: 18px;
+  stroke: var(--kpi-accent);
+}
+
+.del-kpi-val {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -.5px;
+  color: var(--del-text);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.del-kpi-label {
+  font-size: 11.5px;
+  color: var(--del-text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+}
+
+/* ── Cards ─────────────────────────────────────────────────────────────── */
+
+.del-card {
+  background: var(--del-card-bg);
+  border: 1px solid var(--del-border);
+  border-radius: 10px;
+  padding: 20px 22px;
+  overflow-x: auto;
+}
+
+.del-card--wide {
+  min-width: 0;
+}
+
+.del-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--del-text);
+  margin-bottom: 16px;
+  letter-spacing: -.2px;
+}
+
+.del-card-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--del-accent);
+  flex-shrink: 0;
+}
+
+/* ── Grid layouts ──────────────────────────────────────────────────────── */
+
+.del-grid-2 {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 18px;
+}
+
+.del-col-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* ── SVG Chart styles ──────────────────────────────────────────────────── */
+
+.del-chart-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.del-chart-label {
+  font-size: 10px;
+  fill: var(--del-text-muted);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+}
+
+.del-chart-val {
+  font-size: 10.5px;
+  fill: var(--del-text);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+}
+
+.del-chart-val-sm {
+  font-size: 9.5px;
+  fill: var(--del-text);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+}
+
+.del-chart-val-xs {
+  font-size: 8px;
+  fill: var(--del-text-muted);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+}
+
+.del-chart-xlabel {
+  font-size: 9.5px;
+  fill: var(--del-text-muted);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+}
+
+/* ── Donut ─────────────────────────────────────────────────────────────── */
+
+.del-donut-wrap {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.del-donut-total {
+  font-size: 16px;
+  fill: var(--del-text);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 800;
+}
+
+.del-donut-label {
+  font-size: 9px;
+  fill: var(--del-text-muted);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+
+.del-donut-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.del-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--del-text);
+}
+
+.del-legend-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.del-legend-text { font-weight: 500; }
+.del-legend-num { font-weight: 700; color: var(--del-text-muted); font-size: 11px; margin-left: auto; }
+
+/* ── Monthly legend ────────────────────────────────────────────────────── */
+
+.del-month-legend {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+/* ── Ranked list ───────────────────────────────────────────────────────── */
+
+.del-ranked {
+  background: var(--del-card-bg);
+  border: 1px solid var(--del-border);
+  border-radius: 10px;
+  padding: 18px 20px;
+}
+
+.del-ranked-title {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: var(--del-text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.del-ranked-title::before {
+  content: '';
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--del-accent);
+}
+
+.del-ranked-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+.del-ranked-row:last-child { border-bottom: none; }
+
+.del-ranked-pos {
+  width: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--del-text-muted);
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.del-ranked-name {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--del-text);
+  min-width: 120px;
+  flex-shrink: 0;
+}
+
+.del-ranked-bar-bg {
+  flex: 1;
+  height: 6px;
+  background: #f1f5f9;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.del-ranked-bar {
+  height: 100%;
+  background: var(--del-accent);
+  border-radius: 3px;
+  transition: width .4s ease;
+  opacity: .7;
+}
+
+.del-ranked-num {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--del-text);
+  min-width: 32px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Footer ────────────────────────────────────────────────────────────── */
+
+.del-footer {
+  text-align: center;
+  padding: 24px 0 8px;
+  color: var(--del-text-muted);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.del-footer-line {
+  width: 60px;
+  height: 2px;
+  background: var(--del-accent);
+  margin: 0 auto 12px;
+  border-radius: 1px;
+  opacity: .4;
+}
+
+.del-footer p { margin: 2px 0; }
+
+/* ── Skeleton ──────────────────────────────────────────────────────────── */
+
+.del-skeleton-wrap {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 28px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.del-skel-row {
+  display: flex;
+  gap: 14px;
+}
+
+.del-skel-card {
+  flex: 1;
+  height: 110px;
+  border-radius: 10px;
+  background: #e2e8f0;
+}
+
+.del-skel-block {
+  flex: 1;
+  height: 260px;
+  border-radius: 10px;
+  background: #e2e8f0;
+}
+
+.del-shimmer {
+  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+  background-size: 200% 100%;
+  animation: del-shimmer 1.4s ease infinite;
+}
+
+@keyframes del-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Responsive ────────────────────────────────────────────────────────── */
+
+@media (max-width: 1024px) {
+  .del-kpi-row { grid-template-columns: repeat(3, 1fr); }
+  .del-grid-2 { grid-template-columns: 1fr; }
+  .del-content { padding: 20px 18px 40px; }
+}
+
+@media (max-width: 768px) {
+  .del-header { padding: 8px 14px; gap: 8px; }
+  .del-header-left { gap: 8px; }
+  .del-logo { height: 26px; }
+  .del-header-title { font-size: 13px; }
+  .del-kpi-row { grid-template-columns: repeat(2, 1fr); }
+  .del-kpi-val { font-size: 22px; }
+  .del-content { padding: 14px 10px 32px; gap: 14px; }
+  .del-select { max-width: 150px; }
+}
+
+@media (max-width: 480px) {
+  .del-kpi-row { grid-template-columns: 1fr; }
+  .del-header-text { display: none; }
+}

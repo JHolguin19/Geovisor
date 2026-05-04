@@ -480,4 +480,27 @@ export const tablesService = {
   },
 };
 
+// ============================
+// SERVICIO DE DELITOS (Gobierno)
+// ============================
+
+export const delitosService = {
+  getStats: async (params = {}) => {
+    const res = await api.get('/delitos/stats', { params });
+    return res.data;
+  },
+  getGeoJSON: async (params = {}) => {
+    const res = await api.get('/delitos/geojson', { params });
+    return res.data;
+  },
+  getTipos: async () => {
+    const res = await api.get('/delitos/tipos');
+    return res.data;
+  },
+  getLista: async (params = {}) => {
+    const res = await api.get('/delitos/lista', { params });
+    return res.data;
+  },
+};
+
 export default api;

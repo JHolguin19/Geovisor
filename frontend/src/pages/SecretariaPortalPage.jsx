@@ -5,6 +5,22 @@ import { getSecretariaById } from '../config/secretarias';
 import './SecretariaPortalPage.css';
 
 // ── Módulos extra por secretaría ──────────────────────────────────────────────
+const MODULOS_GOBIERNO = [
+  {
+    id: 'delitos',
+    nombre: 'Observatorio de Seguridad',
+    descripcion: 'Estadísticas de delitos: homicidios, hurtos, lesiones, VIF y más. Datos 2024-2025 de la Policía Nacional.',
+    icono: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+    ),
+    activo: true,
+    getPath: () => '/gobierno/delitos',
+    color: '#DC2626',
+  },
+];
+
 const MODULOS_PLANEACION = [
   {
     id: 'catastro',
@@ -258,7 +274,9 @@ export default function SecretariaPortalPage() {
             Módulos disponibles
           </h2>
           <div className="portal-grid">
-            {(secretariaId === 'planeacion' ? [...MODULOS_PLANEACION, ...MODULOS] : MODULOS).map(m => (
+            {(secretariaId === 'planeacion' ? [...MODULOS_PLANEACION, ...MODULOS]
+              : secretariaId === 'gobierno' ? [...MODULOS_GOBIERNO, ...MODULOS]
+              : MODULOS).map(m => (
               <ModuloCard
                 key={m.id}
                 modulo={m}

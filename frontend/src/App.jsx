@@ -17,6 +17,7 @@ import AdminUsuariosPage from './pages/AdminUsuariosPage';
 import DataPipelinePage from './pages/DataPipelinePage';
 import ProcessingPage from './pages/ProcessingPage';
 import SchemaManagerPage from './pages/SchemaManagerPage';
+import GobiernoDelitosPage from './pages/GobiernoDelitosPage';
 
 function PrivateRoute({ children, requiredRole }) {
   const { user, isAuthenticated, loading } = useContext(AuthContext);
@@ -61,6 +62,9 @@ function App() {
         <Route path="planeacion/vivienda" element={<DashboardVivienda />} />
         <Route path="planeacion/catastro/:visorId" element={<PlaneacionMapPage />} />
         <Route path="planeacion/vivienda/:visorId" element={<PlaneacionMapPage />} />
+
+        {/* Gobierno — Observatorio de seguridad */}
+        <Route path="gobierno/delitos" element={<GobiernoDelitosPage />} />
 
         {/* Pipeline ETL de datos */}
         <Route path="pipeline" element={<DataPipelinePage />} />

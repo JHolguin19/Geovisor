@@ -108,11 +108,32 @@ function makeDefaultStyleWithLabel(layerConfig) {
   });
 }
 
+// Paleta coroplética para delitos por barrio (rojo de baja a alta incidencia)
+const DELITOS_COLORS = ['#FEE2E2','#FECACA','#FCA5A5','#F87171','#EF4444','#DC2626','#B91C1C','#991B1B','#7F1D1D'];
+export function makeDelitosStyle(feature) {
+  const total = feature.get('total_delitos') || 0;
+  const idx = total <= 2 ? 0 : total <= 5 ? 1 : total <= 10 ? 2
+    : total <= 20 ? 3 : total <= 40 ? 4 : total <= 60 ? 5
+    : total <= 80 ? 6 : total <= 120 ? 7 : 8;
+  return new Style({
+    fill: new Fill({ color: hexToRgba(DELITOS_COLORS[idx], 0.7) }),
+    stroke: new Stroke({ color: '#991B1B', width: 1.2 }),
+    text: new Text({
+      text: `${total}`,
+      font: 'bold 11px sans-serif',
+      fill: new Fill({ color: total > 20 ? '#fff' : '#1E293B' }),
+      stroke: new Stroke({ color: total > 20 ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.8)', width: 2.5 }),
+      overflow: true,
+    }),
+  });
+}
+
 // Resolución de estilo por configuración de capa
 export function resolveStyleForConfig(layerConfig) {
   if (layerConfig.id === 'predios_urbanos') return makePrediosStyle();
   if (layerConfig.id === 'obras_pavimentacion' || layerConfig.id === 'pavimentacion2') return makePavimentacionStyle();
   if (layerConfig.id === 'ipm_santander') return makeIpmStyle;
+  if (layerConfig.id?.startsWith('delitos_')) return makeDelitosStyle;
   if (layerConfig.labelField) return makeDefaultStyleWithLabel(layerConfig);
   if (layerConfig.geometryType === 'line') return makeLineStyle(layerConfig);
   // Para WFS de puntos usamos point style
