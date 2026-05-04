@@ -1,4 +1,5 @@
 import { Style, Circle, Fill, Stroke } from 'ol/style';
+import Text from 'ol/style/Text';
 
 // Convertir color hex a rgba con opacidad
 function hexToRgba(hex, alpha) {
@@ -89,11 +90,30 @@ export function makeIpmStyle(feature) {
   });
 }
 
+// Estilo con etiqueta de texto para capas como veredas y cuadrantes
+function makeDefaultStyleWithLabel(layerConfig) {
+  const layerColor = layerConfig.color || '#3388ff';
+  const field = layerConfig.labelField;
+  return (feature) => new Style({
+    fill: new Fill({ color: hexToRgba(layerColor, 0.25) }),
+    stroke: new Stroke({ color: layerColor, width: 1.5 }),
+    text: new Text({
+      text: String(feature.get(field) ?? ''),
+      font: 'bold 11px sans-serif',
+      fill: new Fill({ color: '#111' }),
+      stroke: new Stroke({ color: 'rgba(255,255,255,0.9)', width: 3 }),
+      overflow: true,
+      placement: 'point'
+    })
+  });
+}
+
 // Resolución de estilo por configuración de capa
 export function resolveStyleForConfig(layerConfig) {
   if (layerConfig.id === 'predios_urbanos') return makePrediosStyle();
   if (layerConfig.id === 'obras_pavimentacion' || layerConfig.id === 'pavimentacion2') return makePavimentacionStyle();
   if (layerConfig.id === 'ipm_santander') return makeIpmStyle;
+  if (layerConfig.labelField) return makeDefaultStyleWithLabel(layerConfig);
   if (layerConfig.geometryType === 'line') return makeLineStyle(layerConfig);
   // Para WFS de puntos usamos point style
   if (layerConfig.type === 'wfs' || layerConfig.type === 'geojson') {

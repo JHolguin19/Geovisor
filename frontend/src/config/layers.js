@@ -400,6 +400,7 @@ export const LAYERS_BY_SECRETARIA = {
         queryable: true,
         geometryType: 'polygon',
         color: '#e11d48',
+        labelField: 'Nombre',
         description: 'División en cuadrantes del sistema de salud municipal',
         popupFields: [
           { field: 'Nombre', label: 'Cuadrante' }
@@ -457,6 +458,7 @@ export const LAYERS_BY_SECRETARIA = {
         queryable: true,
         geometryType: 'polygon',
         color: '#16a34a',
+        labelField: 'nombre',
         description: 'Veredas del municipio con datos de salud',
         popupFields: [
           { field: 'nombre',      label: 'Vereda' },

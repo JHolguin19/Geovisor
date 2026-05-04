@@ -132,6 +132,34 @@
   opacity: .9;
 }
 
+/* ── Logout button ── */
+.header-logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid rgba(239,68,68,.35);
+  background: rgba(239,68,68,.1);
+  color: rgba(255,200,200,.85);
+  font-family: 'Nunito', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .18s var(--ease);
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+.header-logout-btn:hover {
+  background: rgba(239,68,68,.25);
+  border-color: rgba(239,68,68,.6);
+  color: #fff;
+}
+.header-logout-btn svg {
+  flex-shrink: 0;
+  opacity: .85;
+}
+
 /* ── Toggle sidebar ── */
 .header-sidebar-toggle {
   display: flex;
