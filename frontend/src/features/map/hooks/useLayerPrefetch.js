@@ -24,6 +24,7 @@ function getAuthHeaders() {
  * Construye la URL real para una capa, incluyendo capas sisben_uba con endpoint custom.
  */
 function resolveUrl(layer) {
+  if (layer.apiUrl) return layer.apiUrl;
   if (SIS_UBA_MAP[layer.id]) {
     return `/api/sisben/uba/${SIS_UBA_MAP[layer.id]}/geojson`;
   }

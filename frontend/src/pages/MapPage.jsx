@@ -1,4 +1,4 @@
-import { useState, useCallback, useContext } from 'react';
+import { useState, useCallback, useContext, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import Header from '../organisms/Header/Header';
 import LayerPanel from '../organisms/LayerPanel';
@@ -27,7 +27,14 @@ function MapPageInner() {
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [searchOpen, setSearchOpen] = useState(false);
-  const { selectionResults, setSelectionResults, clearTools } = useContext(MapContext);
+  const { activeLayers, setActiveLayers, selectionResults, setSelectionResults, clearTools } = useContext(MapContext);
+
+  // Auto-activar capa de delitos al entrar en /mapa/gobierno
+  useEffect(() => {
+    if (secretariaId === 'gobierno' && !activeLayers.has('delitos_barrios_2025')) {
+      setActiveLayers(prev => new Set([...prev, 'delitos_barrios_2025']));
+    }
+  }, [secretariaId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggleSidebar  = useCallback(() => setSidebarOpen(p => !p), []);
   const closeSidebar   = useCallback(() => setSidebarOpen(false), []);

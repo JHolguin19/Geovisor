@@ -114,6 +114,27 @@ const LAYER_GROUPS = [
   },
 
   {
+    id: 'gobierno',
+    label: 'Secretaría de Gobierno',
+    accent: '#DC2626',
+    allowedSecretarias: ['sig', 'gobierno'],
+    layers: [
+      { id: 'barrios_urbanos_gobierno', label: 'Barrios Urbanos', dot: '#94A3B8' },
+    ],
+    subcategories: [
+      {
+        label: 'Delitos por barrio',
+        accent: '#DC2626',
+        layers: [
+          { id: 'delitos_barrios_2025', label: 'Delitos 2025', dot: '#DC2626' },
+          { id: 'delitos_barrios_2024', label: 'Delitos 2024', dot: '#F87171' },
+          { id: 'delitos_homicidios',   label: 'Homicidios (todos)', dot: '#7F1D1D' },
+        ]
+      }
+    ]
+  },
+
+  {
     id: 'salud',
     label: 'Secretaría de Salud',
     accent: '#E11D48',

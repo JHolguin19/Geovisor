@@ -82,6 +82,32 @@ export const QUERY_PRIORITY = [
       `<strong>🌿 Vereda:</strong> ${p.nombre || '—'}<br><strong>📐 Área:</strong> ${p.area_hecta ? Number(p.area_hecta).toFixed(1) + ' ha' : '—'}` },
   { id: 'zona_influencia_salud', props: (p) =>
       `<strong>📍 Zona de Influencia:</strong> ${p.NOMBRE_GEO || 'IPS'}<br><strong>📏 Radio:</strong> ${p.BUFF_DIST ?? 30} m` },
+  // 6b. Delitos por barrio (Gobierno)
+  { id: 'delitos_barrios_2025', props: (p) =>
+    `<strong>🛡️ ${p.nombre || '—'} — Delitos 2025</strong><br>
+    <strong>Total:</strong> ${p.total_delitos ?? 0}<br>
+    <strong>Homicidios:</strong> ${p.homicidios ?? 0}<br>
+    <strong>Hurto a personas:</strong> ${p.hurto_personas ?? 0}<br>
+    <strong>Lesiones:</strong> ${p.lesiones ?? 0}<br>
+    <strong>VIF:</strong> ${p.violencia_intrafamiliar ?? 0}<br>
+    <strong>Hurto motos:</strong> ${p.hurto_motos ?? 0}<br>
+    <strong>Extorsión:</strong> ${p.extorsion ?? 0}<br>
+    <strong>Delitos sexuales:</strong> ${p.delitos_sexuales ?? 0}` },
+  { id: 'delitos_barrios_2024', props: (p) =>
+    `<strong>🛡️ ${p.nombre || '—'} — Delitos 2024</strong><br>
+    <strong>Total:</strong> ${p.total_delitos ?? 0}<br>
+    <strong>Homicidios:</strong> ${p.homicidios ?? 0}<br>
+    <strong>Hurto a personas:</strong> ${p.hurto_personas ?? 0}<br>
+    <strong>Lesiones:</strong> ${p.lesiones ?? 0}<br>
+    <strong>VIF:</strong> ${p.violencia_intrafamiliar ?? 0}<br>
+    <strong>Hurto motos:</strong> ${p.hurto_motos ?? 0}<br>
+    <strong>Extorsión:</strong> ${p.extorsion ?? 0}<br>
+    <strong>Delitos sexuales:</strong> ${p.delitos_sexuales ?? 0}` },
+  { id: 'delitos_homicidios', props: (p) =>
+    `<strong>🛡️ ${p.nombre || '—'} — Homicidios</strong><br>
+    <strong>Total:</strong> ${p.total_delitos ?? 0}` },
+  { id: 'barrios_urbanos_gobierno', props: (p) =>
+    `<strong>🏘️ Barrio:</strong> ${p.nombre || '—'}` },
   // 7. UBAs
   { id: 'uba1', props: (p) => `<strong>🏘️ Barrio:</strong> ${p.nombre || ''}<br><strong>🏢 UBA:</strong> 1` },
   { id: 'uba2', props: (p) => `<strong>🏘️ Barrio:</strong> ${p.nombre || ''}<br><strong>🏢 UBA:</strong> 2` },
