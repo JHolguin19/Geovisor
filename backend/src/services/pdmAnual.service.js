@@ -351,10 +351,15 @@ export async function getYearMetas(year, { secretaria, pilar, semaforo, busqueda
   }
 
   // Filtro semáforo
-  if (semaforo === 'verde')    filters.push(`eficiencia_${y} >= 0.8`);
-  if (semaforo === 'amarillo') filters.push(`eficiencia_${y} >= 0.5 AND eficiencia_${y} < 0.8`);
-  if (semaforo === 'rojo')     filters.push(`eficiencia_${y} < 0.5`);
-  if (semaforo === 'sin_dato') filters.push(`eficiencia_${y} IS NULL AND meta_pdm_${y} IS NOT NULL`);
+  if (semaforo === 'verde')          filters.push(`eficiencia_${y} >= 0.8`);
+  if (semaforo === 'amarillo')       filters.push(`eficiencia_${y} >= 0.5 AND eficiencia_${y} < 0.8`);
+  if (semaforo === 'rojo')           filters.push(`eficiencia_${y} < 0.5`);
+  if (semaforo === 'sin_dato')       filters.push(`eficiencia_${y} IS NULL AND meta_pdm_${y} IS NOT NULL`);
+  // Alert filters
+  if (semaforo === 'sin_programar')  filters.push(`meta_pdm_${y} IS NULL`);
+  if (semaforo === 'sin_presupuesto') filters.push(
+    `(presupuesto_${y} IS NULL OR COALESCE((presupuesto_${y}->>'total_apropiacion')::numeric, 0) = 0)`
+  );
 
   const where = filters.length ? `WHERE ${filters.join(' AND ')}` : '';
   const offset = (parseInt(page) - 1) * parseInt(limit);

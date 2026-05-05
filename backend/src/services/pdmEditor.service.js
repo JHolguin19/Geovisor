@@ -36,7 +36,16 @@ export async function getGrid() {
       ponderado_avance_2026, ponderado_avance_2027,
       avance_fisico, ponderado_cuatrienio, cumplimiento_cuatrienio,
       observaciones_2024, observaciones_2025, observaciones_2026, observaciones_2027,
-      compromisos_2024,    compromisos_2025,    compromisos_2026,    compromisos_2027
+      compromisos_2024,    compromisos_2025,    compromisos_2026,    compromisos_2027,
+      -- Financial data extracted from JSONB columns (in millions)
+      ROUND(COALESCE((presupuesto_2024->>'total_apropiacion')::numeric, 0) / 1000000, 2) AS apropiacion_2024,
+      ROUND(COALESCE((presupuesto_2024->>'neto_registros')::numeric,    0) / 1000000, 2) AS comprometido_2024,
+      ROUND(COALESCE((presupuesto_2025->>'total_apropiacion')::numeric, 0) / 1000000, 2) AS apropiacion_2025,
+      ROUND(COALESCE((presupuesto_2025->>'neto_registros')::numeric,    0) / 1000000, 2) AS comprometido_2025,
+      ROUND(COALESCE((presupuesto_2026->>'total_apropiacion')::numeric, 0) / 1000000, 2) AS apropiacion_2026,
+      ROUND(COALESCE((presupuesto_2026->>'neto_registros')::numeric,    0) / 1000000, 2) AS comprometido_2026,
+      ROUND(COALESCE((presupuesto_2027->>'total_apropiacion')::numeric, 0) / 1000000, 2) AS apropiacion_2027,
+      ROUND(COALESCE((presupuesto_2027->>'neto_registros')::numeric,    0) / 1000000, 2) AS comprometido_2027
     FROM pdm_metas
     ORDER BY meta_num ASC NULLS LAST
   `);

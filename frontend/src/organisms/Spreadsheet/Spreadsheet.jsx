@@ -2,7 +2,7 @@ import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { evalFormula, fmtCell, isFormula } from './formulaEngine.js';
 import './Spreadsheet.css';
 
-// ── Definición de columnas ────────────────────────────────────────────────────
+// ── Computed column functions ─────────────────────────────────────────────────
 
 function efFn(y) {
   return row => {
@@ -16,7 +16,7 @@ function efFn(y) {
 function avFisFn(row) {
   const pdm  = [2024,2025,2026,2027].map(y => parseFloat(row[`meta_pdm_${y}`]) || 0);
   const fis  = [2024,2025,2026,2027].map(y => parseFloat(row[`meta_fisica_${y}`]) || 0);
-  const caps = [2024,2025,2026,2027].map((y, i) => pdm[i] > 0 ? Math.min(fis[i], pdm[i]) : fis[i]);
+  const caps = [2024,2025,2026,2027].map((_, i) => pdm[i] > 0 ? Math.min(fis[i], pdm[i]) : fis[i]);
   const tipo = row.tipo_ponderado;
   const mc   = parseFloat(row.meta_cuatrienio);
   if (tipo === 'Acumulativo') {
@@ -26,7 +26,27 @@ function avFisFn(row) {
   return sumPdm > 0 ? Math.min(caps.reduce((s, v) => s + v, 0) / sumPdm * 100, 100) : null;
 }
 
-// Paleta para eficiencia
+// Annual Physical Progress = (Actual_Y / Meta_Cuatrienio) × 100
+function avFisAnioFn(year) {
+  return row => {
+    const fis = parseFloat(row[`meta_fisica_${year}`]);
+    const mc  = parseFloat(row.meta_cuatrienio);
+    if (!mc || isNaN(fis)) return null;
+    return fis / mc * 100;
+  };
+}
+
+// Financial execution % = Comprometido / Apropiacion × 100
+function finPctFn(year) {
+  return row => {
+    const a = parseFloat(row[`apropiacion_${year}`]);
+    const c = parseFloat(row[`comprometido_${year}`]);
+    if (!a || isNaN(c)) return null;
+    return Math.min(c / a * 100, 100);
+  };
+}
+
+// Color palette for % indicators
 function effColor(v) {
   if (v == null) return '';
   if (v >= 80) return '#dcfce7';
@@ -34,44 +54,58 @@ function effColor(v) {
   return '#fee2e2';
 }
 
+// ── Physical column definitions ───────────────────────────────────────────────
+
 export const COLUMNS = [
-  // ── Fijas / frozen ──────────────────────────────────────────────────────────
-  { key: 'meta_num',       label: '#',          width: 46,  frozen: true,  editable: false, group: '' },
-  { key: 'secretaria',     label: 'Secretaría', width: 118, frozen: true,  editable: false, group: '' },
-  { key: 'nom_pilar',      label: 'Pilar',      width: 72,  frozen: true,  editable: false, group: '' },
-  { key: 'descripcion_meta', label: 'Meta',     width: 230, frozen: true,  editable: false, group: '' },
+  // ── Frozen ──────────────────────────────────────────────────────────────────
+  { key: 'meta_num',         label: '#',          width: 46,  frozen: true, editable: false, group: '' },
+  { key: 'secretaria',       label: 'Secretaría', width: 118, frozen: true, editable: false, group: '' },
+  { key: 'nom_pilar',        label: 'Pilar',      width: 72,  frozen: true, editable: false, group: '' },
+  { key: 'descripcion_meta', label: 'Meta',       width: 230, frozen: true, editable: false, group: '', wrap: true },
 
   // ── General ─────────────────────────────────────────────────────────────────
-  { key: 'tipo_ponderado', label: 'Tipo',       width: 80,  editable: false, group: 'General' },
-  { key: 'meta_cuatrienio',label: 'Meta 4A',    width: 78,  editable: true,  type: 'number', group: 'General' },
+  { key: 'tipo_ponderado',  label: 'Tipo',    width: 80, editable: false, group: 'General' },
+  { key: 'meta_cuatrienio', label: 'Meta 4A', width: 78, editable: true, type: 'number', group: 'General' },
 
   // ── 2024 ────────────────────────────────────────────────────────────────────
-  { key: 'meta_pdm_2024',   label: 'Programado', width: 80, editable: true,  type: 'number', group: '2024' },
-  { key: 'meta_fisica_2024',label: 'Realizado',  width: 80, editable: true,  type: 'number', group: '2024',
+  { key: 'meta_pdm_2024',   label: 'Programado',  width: 80, editable: true,  type: 'number', group: '2024' },
+  { key: 'meta_fisica_2024',label: 'Realizado',   width: 80, editable: true,  type: 'number', group: '2024',
     cellStyle: (row, eff) => ({ background: effColor(eff?.['_ef_2024']) }) },
-  { key: '_ef_2024', label: 'Ef.%', width: 58, editable: false, group: '2024',
+  { key: '_ef_2024',    label: 'Ef.%',        width: 58, editable: false, group: '2024',
     computed: efFn(2024), format: 'pct1',
+    cellStyle: (_, v) => ({ background: effColor(v), fontWeight: 600 }) },
+  { key: '_avfis_2024', label: 'Av.Fís.Año%', width: 72, editable: false, group: '2024',
+    computed: avFisAnioFn(2024), format: 'pct1',
     cellStyle: (_, v) => ({ background: effColor(v), fontWeight: 600 }) },
 
   // ── 2025 ────────────────────────────────────────────────────────────────────
-  { key: 'meta_pdm_2025',   label: 'Programado', width: 80, editable: true,  type: 'number', group: '2025' },
-  { key: 'meta_fisica_2025',label: 'Realizado',  width: 80, editable: true,  type: 'number', group: '2025' },
-  { key: '_ef_2025', label: 'Ef.%', width: 58, editable: false, group: '2025',
+  { key: 'meta_pdm_2025',   label: 'Programado',  width: 80, editable: true,  type: 'number', group: '2025' },
+  { key: 'meta_fisica_2025',label: 'Realizado',   width: 80, editable: true,  type: 'number', group: '2025' },
+  { key: '_ef_2025',    label: 'Ef.%',        width: 58, editable: false, group: '2025',
     computed: efFn(2025), format: 'pct1',
+    cellStyle: (_, v) => ({ background: effColor(v), fontWeight: 600 }) },
+  { key: '_avfis_2025', label: 'Av.Fís.Año%', width: 72, editable: false, group: '2025',
+    computed: avFisAnioFn(2025), format: 'pct1',
     cellStyle: (_, v) => ({ background: effColor(v), fontWeight: 600 }) },
 
   // ── 2026 ────────────────────────────────────────────────────────────────────
-  { key: 'meta_pdm_2026',   label: 'Programado', width: 80, editable: true,  type: 'number', group: '2026' },
-  { key: 'meta_fisica_2026',label: 'Realizado',  width: 80, editable: true,  type: 'number', group: '2026' },
-  { key: '_ef_2026', label: 'Ef.%', width: 58, editable: false, group: '2026',
+  { key: 'meta_pdm_2026',   label: 'Programado',  width: 80, editable: true,  type: 'number', group: '2026' },
+  { key: 'meta_fisica_2026',label: 'Realizado',   width: 80, editable: true,  type: 'number', group: '2026' },
+  { key: '_ef_2026',    label: 'Ef.%',        width: 58, editable: false, group: '2026',
     computed: efFn(2026), format: 'pct1',
+    cellStyle: (_, v) => ({ background: effColor(v), fontWeight: 600 }) },
+  { key: '_avfis_2026', label: 'Av.Fís.Año%', width: 72, editable: false, group: '2026',
+    computed: avFisAnioFn(2026), format: 'pct1',
     cellStyle: (_, v) => ({ background: effColor(v), fontWeight: 600 }) },
 
   // ── 2027 ────────────────────────────────────────────────────────────────────
-  { key: 'meta_pdm_2027',   label: 'Programado', width: 80, editable: true,  type: 'number', group: '2027' },
-  { key: 'meta_fisica_2027',label: 'Realizado',  width: 80, editable: true,  type: 'number', group: '2027' },
-  { key: '_ef_2027', label: 'Ef.%', width: 58, editable: false, group: '2027',
+  { key: 'meta_pdm_2027',   label: 'Programado',  width: 80, editable: true,  type: 'number', group: '2027' },
+  { key: 'meta_fisica_2027',label: 'Realizado',   width: 80, editable: true,  type: 'number', group: '2027' },
+  { key: '_ef_2027',    label: 'Ef.%',        width: 58, editable: false, group: '2027',
     computed: efFn(2027), format: 'pct1',
+    cellStyle: (_, v) => ({ background: effColor(v), fontWeight: 600 }) },
+  { key: '_avfis_2027', label: 'Av.Fís.Año%', width: 72, editable: false, group: '2027',
+    computed: avFisAnioFn(2027), format: 'pct1',
     cellStyle: (_, v) => ({ background: effColor(v), fontWeight: 600 }) },
 
   // ── Resumen ──────────────────────────────────────────────────────────────────
@@ -82,15 +116,24 @@ export const COLUMNS = [
     format: 'pct1' },
 
   // ── Notas ────────────────────────────────────────────────────────────────────
-  { key: 'observaciones_2025', label: 'Obs. 2025', width: 170, editable: true, type: 'text', group: 'Notas' },
-  { key: 'compromisos_2025',   label: 'Comp. 2025', width: 170, editable: true, type: 'text', group: 'Notas' },
-  { key: 'observaciones_2026', label: 'Obs. 2026', width: 170, editable: true, type: 'text', group: 'Notas' },
-  { key: 'compromisos_2026',   label: 'Comp. 2026', width: 170, editable: true, type: 'text', group: 'Notas' },
+  { key: 'observaciones_2025', label: 'Obs. 2025',  width: 170, editable: true, type: 'text', group: 'Notas', wrap: true },
+  { key: 'compromisos_2025',   label: 'Comp. 2025', width: 170, editable: true, type: 'text', group: 'Notas', wrap: true },
+  { key: 'observaciones_2026', label: 'Obs. 2026',  width: 170, editable: true, type: 'text', group: 'Notas', wrap: true },
+  { key: 'compromisos_2026',   label: 'Comp. 2026', width: 170, editable: true, type: 'text', group: 'Notas', wrap: true },
 ];
 
-// Mapa colLetter → key (para referencias tipo 'G', 'H', etc.)
+// ── Financial columns (shown when showFinancial = true) ───────────────────────
+
+export const FIN_COLUMNS = [2024, 2025, 2026, 2027].flatMap(y => [
+  { key: `apropiacion_${y}`,  label: 'Apropiación',  width: 92, editable: false, type: 'number', group: `${y} Fin` },
+  { key: `comprometido_${y}`, label: 'Comprometido', width: 92, editable: false, type: 'number', group: `${y} Fin` },
+  { key: `_pctfin_${y}`,      label: '% Ejec.',      width: 58, editable: false, group: `${y} Fin`,
+    computed: finPctFn(y), format: 'pct1',
+    cellStyle: (_, v) => ({ background: effColor(v), fontWeight: 600 }) },
+]);
+
+// ── Column letter helpers (base COLUMNS only, for formula evaluation) ─────────
 const COL_LETTER_MAP = {};
-let letterIdx = 0;
 function toColLetters(n) {
   let s = '';
   n++;
@@ -137,45 +180,19 @@ function getCellDisplayValue(col, effectiveRow, rawFormulas) {
   return String(raw);
 }
 
-function getComputedValue(col, row) {
-  if (!col.computed) return null;
-  return col.computed(row);
-}
-
-// ── Column groups for header ──────────────────────────────────────────────────
-function buildGroupHeaders() {
-  const groups = [];
-  let current = null;
-  COLUMNS.forEach(col => {
-    if (col.frozen) { groups.push({ label: '', span: 1, frozen: true }); return; }
-    if (!current || current.label !== col.group) {
-      current = { label: col.group || '', span: 1, frozen: false };
-      groups.push(current);
-    } else {
-      current.span++;
-    }
-  });
-  return groups;
-}
-
-const GROUP_HEADERS = buildGroupHeaders();
-
 // ── Spreadsheet component ─────────────────────────────────────────────────────
 
-export default function Spreadsheet({
-  rows: initialRows,
-  onSave,
-  saving,
-}) {
-  const [rows, setRows] = useState(initialRows);
-  const [pending, setPending]     = useState(new Map()); // 'metaNum__field' → value
-  const [rawFormulas, setRawFormulas] = useState(new Map()); // 'metaNum__field' → '=...'
-  const [selected, setSelected]   = useState(null);   // {ri, ci}
-  const [editing, setEditing]     = useState(null);   // {ri, ci}
-  const [editVal, setEditVal]     = useState('');
+export default function Spreadsheet({ rows: initialRows, onSave, saving }) {
+  const [rows, setRows]             = useState(initialRows);
+  const [pending, setPending]       = useState(new Map());
+  const [rawFormulas, setRawFormulas] = useState(new Map());
+  const [selected, setSelected]     = useState(null);
+  const [editing, setEditing]       = useState(null);
+  const [editVal, setEditVal]       = useState('');
   const [formulaBar, setFormulaBar] = useState('');
-  const [filter, setFilter]       = useState('');
-  const [secFilter, setSecFilter] = useState('');
+  const [filter, setFilter]         = useState('');
+  const [secFilter, setSecFilter]   = useState('');
+  const [showFinancial, setShowFinancial] = useState(false);
 
   const editInputRef = useRef(null);
   const fbarRef      = useRef(null);
@@ -184,7 +201,13 @@ export default function Spreadsheet({
   // Sync rows from props
   useEffect(() => { setRows(initialRows); }, [initialRows]);
 
-  // ── Filtered rows ─────────────────────────────────────────────────────────
+  // Active column set
+  const visibleCols = useMemo(
+    () => showFinancial ? [...COLUMNS, ...FIN_COLUMNS] : COLUMNS,
+    [showFinancial]
+  );
+
+  // ── Filtered rows ───────────────────────────────────────────────────────────
   const filteredRows = useMemo(() => {
     let r = rows;
     if (secFilter) r = r.filter(row => row.secretaria === secFilter);
@@ -201,14 +224,14 @@ export default function Spreadsheet({
 
   const secretarias = useMemo(() => [...new Set(rows.map(r => r.secretaria))].sort(), [rows]);
 
-  // ── Selection helpers ─────────────────────────────────────────────────────
+  // ── Selection helpers ───────────────────────────────────────────────────────
   const getColLetter = ci => toColLetters(ci);
   const getCellName  = (ri, ci) => `${getColLetter(ci)}${ri + 1}`;
 
   const updateFormulaBar = useCallback((ri, ci) => {
     const row = filteredRows[ri];
     if (!row) return;
-    const col = COLUMNS[ci];
+    const col = visibleCols[ci];
     if (!col || col.computed) { setFormulaBar(''); return; }
     const fKey = `${row.meta_num}__${col.key}`;
     const formula = rawFormulas.get(fKey);
@@ -216,7 +239,7 @@ export default function Spreadsheet({
     const pVal = pending.get(fKey);
     const raw = pVal !== undefined ? pVal : (row[col.key] ?? '');
     setFormulaBar(raw === null ? '' : String(raw));
-  }, [filteredRows, rawFormulas, pending]);
+  }, [filteredRows, rawFormulas, pending, visibleCols]);
 
   const selectCell = useCallback((ri, ci) => {
     setSelected({ ri, ci });
@@ -224,16 +247,15 @@ export default function Spreadsheet({
     updateFormulaBar(ri, ci);
   }, [updateFormulaBar]);
 
-  // ── Edit helpers ───────────────────────────────────────────────────────────
+  // ── Edit helpers ─────────────────────────────────────────────────────────────
   const commitEdit = useCallback((ri, ci, value) => {
     const row = filteredRows[ri];
     if (!row) return;
-    const col = COLUMNS[ci];
+    const col = visibleCols[ci];
     if (!col?.editable) return;
     const fKey = `${row.meta_num}__${col.key}`;
 
     if (isFormula(value)) {
-      // Store formula separately; evaluate immediately for pending value
       const evaluated = evalFormula(value, getEffectiveRow(row, pending), colLetter => {
         const k = COL_LETTER_MAP[colLetter.toUpperCase()];
         return k ? Number(getEffectiveRow(row, pending)[k]) || 0 : 0;
@@ -246,10 +268,10 @@ export default function Spreadsheet({
     }
     setEditing(null);
     setFormulaBar(value);
-  }, [filteredRows, pending]);
+  }, [filteredRows, pending, visibleCols]);
 
   const startEdit = useCallback((ri, ci, initialChar = null) => {
-    const col = COLUMNS[ci];
+    const col = visibleCols[ci];
     if (!col?.editable) return;
     const row = filteredRows[ri];
     if (!row) return;
@@ -265,21 +287,21 @@ export default function Spreadsheet({
     setEditing({ ri, ci });
     setEditVal(startVal);
     setTimeout(() => { editInputRef.current?.focus(); editInputRef.current?.select(); }, 0);
-  }, [filteredRows, rawFormulas, pending]);
+  }, [filteredRows, rawFormulas, pending, visibleCols]);
 
-  // ── Keyboard navigation ───────────────────────────────────────────────────
+  // ── Keyboard navigation ──────────────────────────────────────────────────────
   const moveSelection = useCallback((dri, dci) => {
     setSelected(prev => {
       if (!prev) return { ri: 0, ci: 0 };
       const ri = Math.max(0, Math.min(filteredRows.length - 1, prev.ri + dri));
-      const ci = Math.max(0, Math.min(COLUMNS.length - 1, prev.ci + dci));
+      const ci = Math.max(0, Math.min(visibleCols.length - 1, prev.ci + dci));
       updateFormulaBar(ri, ci);
       return { ri, ci };
     });
-  }, [filteredRows.length, updateFormulaBar]);
+  }, [filteredRows.length, visibleCols.length, updateFormulaBar]);
 
   const handleKeyDown = useCallback((e) => {
-    if (editing) return; // let input handle keys
+    if (editing) return;
     if (!selected) return;
     const { ri, ci } = selected;
 
@@ -293,23 +315,23 @@ export default function Spreadsheet({
         e.shiftKey ? moveSelection(0, -1) : moveSelection(0, 1);
         break;
       case 'Enter':
-        if (COLUMNS[ci]?.editable) startEdit(ri, ci);
+        if (visibleCols[ci]?.editable) startEdit(ri, ci);
         else moveSelection(1, 0);
         break;
       case 'F2':
         e.preventDefault();
-        if (COLUMNS[ci]?.editable) startEdit(ri, ci);
+        if (visibleCols[ci]?.editable) startEdit(ri, ci);
         break;
       case 'Delete':
       case 'Backspace':
-        if (COLUMNS[ci]?.editable) { startEdit(ri, ci, 'Delete'); }
+        if (visibleCols[ci]?.editable) startEdit(ri, ci, 'Delete');
         break;
       default:
-        if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && COLUMNS[ci]?.editable) {
+        if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && visibleCols[ci]?.editable) {
           startEdit(ri, ci, e.key);
         }
     }
-  }, [editing, selected, moveSelection, startEdit]);
+  }, [editing, selected, moveSelection, startEdit, visibleCols]);
 
   const handleEditKeyDown = useCallback((e) => {
     if (!editing) return;
@@ -332,7 +354,7 @@ export default function Spreadsheet({
     }
   }, [editing, editVal, commitEdit, moveSelection, updateFormulaBar]);
 
-  // ── Formula bar submit ─────────────────────────────────────────────────────
+  // ── Formula bar submit ────────────────────────────────────────────────────────
   const handleFormulaBarKeyDown = (e) => {
     if (!selected) return;
     if (e.key === 'Enter') {
@@ -344,7 +366,34 @@ export default function Spreadsheet({
     }
   };
 
-  // ── Save ──────────────────────────────────────────────────────────────────
+  // ── Bulk paste from Excel (Ctrl+V on grid) ────────────────────────────────────
+  const handlePaste = useCallback((e) => {
+    if (!selected) return;
+    const text = e.clipboardData?.getData('text/plain');
+    if (!text) return;
+    // Only intercept multi-cell paste (has tabs or multiple lines)
+    const isMultiCell = text.includes('\t') || text.split(/\r?\n/).filter(Boolean).length > 1;
+    if (!isMultiCell) return;
+    e.preventDefault();
+    const pasteRows = text.split(/\r?\n/).filter(r => r !== '');
+    const newPending = new Map(pending);
+    pasteRows.forEach((rowText, dri) => {
+      const vals = rowText.split('\t');
+      vals.forEach((val, dci) => {
+        const ri = selected.ri + dri;
+        const ci = selected.ci + dci;
+        if (ri >= filteredRows.length || ci >= visibleCols.length) return;
+        const col = visibleCols[ci];
+        if (!col?.editable) return;
+        const row = filteredRows[ri];
+        if (!row) return;
+        newPending.set(`${row.meta_num}__${col.key}`, val.trim());
+      });
+    });
+    setPending(newPending);
+  }, [selected, filteredRows, visibleCols, pending]);
+
+  // ── Save / Discard ────────────────────────────────────────────────────────────
   const handleSave = () => {
     const changes = [];
     for (const [fKey, value] of pending) {
@@ -354,7 +403,6 @@ export default function Spreadsheet({
     onSave?.(changes);
   };
 
-  // ── Discard ───────────────────────────────────────────────────────────────
   const handleDiscard = () => {
     setPending(new Map());
     setRawFormulas(new Map());
@@ -371,25 +419,22 @@ export default function Spreadsheet({
     setRawFormulas(new Map());
   }, []);
 
-  // Expose updateRows via ref pattern
   useEffect(() => {
     if (onSave) onSave._updateRows = updateRows;
   }, [onSave, updateRows]);
 
-  // ── Frozen column positions ───────────────────────────────────────────────
+  // ── Frozen column positions ───────────────────────────────────────────────────
   const frozenLeft = useMemo(() => {
     let left = 0;
-    return COLUMNS.map(col => {
+    return visibleCols.map(col => {
       if (!col.frozen) return null;
       const l = left;
       left += col.width;
       return l;
     });
-  }, []);
+  }, [visibleCols]);
 
-  const totalFrozenWidth = COLUMNS.filter(c => c.frozen).reduce((s, c) => s + c.width, 0);
-
-  // ── Render ────────────────────────────────────────────────────────────────
+  // ── Render ────────────────────────────────────────────────────────────────────
   const hasPending = pending.size > 0;
 
   return (
@@ -407,7 +452,7 @@ export default function Spreadsheet({
             onChange={e => setFormulaBar(e.target.value)}
             onKeyDown={handleFormulaBarKeyDown}
             onFocus={() => {
-              if (selected && COLUMNS[selected.ci]?.editable) setEditing(null);
+              if (selected && visibleCols[selected.ci]?.editable) setEditing(null);
             }}
           />
         </div>
@@ -422,6 +467,13 @@ export default function Spreadsheet({
             <option value="">Todas las secretarías</option>
             {secretarias.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
+          <button
+            className={`sps__btn ${showFinancial ? 'sps__btn--fin-active' : 'sps__btn--fin'}`}
+            onClick={() => setShowFinancial(f => !f)}
+            title="Mostrar / ocultar columnas financieras por año"
+          >
+            {showFinancial ? '$ Ocultar financiero' : '$ Ver financiero'}
+          </button>
           {hasPending && (
             <>
               <span className="sps__pending-badge">{pending.size} cambio{pending.size > 1 ? 's' : ''}</span>
@@ -435,21 +487,27 @@ export default function Spreadsheet({
       </div>
 
       {/* ── Grid ── */}
-      <div className="sps__grid-wrap" tabIndex={0} onKeyDown={handleKeyDown}>
+      <div
+        className="sps__grid-wrap"
+        tabIndex={0}
+        onKeyDown={handleKeyDown}
+        onPaste={handlePaste}
+      >
         <table className="sps__table">
           {/* Group header row */}
           <thead>
             <tr className="sps__group-row">
-              {COLUMNS.map((col, ci) => {
-                const isFirst = ci === 0 || COLUMNS[ci - 1].group !== col.group || (ci > 0 && COLUMNS[ci - 1].frozen !== col.frozen);
-                // Only render th for first column in a group (others are handled via colspan in a more complex impl)
-                // Here we render one th per column with group label on first of group
-                const showLabel = ci === 0 || col.group !== COLUMNS[ci - 1].group || col.frozen !== COLUMNS[ci - 1].frozen;
+              {visibleCols.map((col, ci) => {
+                const showLabel = ci === 0
+                  || col.group !== visibleCols[ci - 1].group
+                  || col.frozen !== visibleCols[ci - 1].frozen;
                 return (
                   <th
                     key={`g-${ci}`}
                     className={`sps__th-group${col.frozen ? ' sps__cell--frozen' : ''}${col.group ? ` sps__group--${col.group.replace(/\s/g,'').toLowerCase()}` : ''}`}
-                    style={col.frozen ? { left: frozenLeft[ci], zIndex: 3, width: col.width, minWidth: col.width } : { width: col.width, minWidth: col.width }}
+                    style={col.frozen
+                      ? { left: frozenLeft[ci], zIndex: 3, width: col.width, minWidth: col.width }
+                      : { width: col.width, minWidth: col.width }}
                   >
                     {showLabel && !col.frozen ? col.group : ''}
                   </th>
@@ -458,11 +516,13 @@ export default function Spreadsheet({
             </tr>
             {/* Column header row */}
             <tr className="sps__header-row">
-              {COLUMNS.map((col, ci) => (
+              {visibleCols.map((col, ci) => (
                 <th
                   key={`h-${ci}`}
                   className={`sps__th${col.frozen ? ' sps__cell--frozen' : ''}${col.editable ? ' sps__th--editable' : ''}`}
-                  style={col.frozen ? { left: frozenLeft[ci], zIndex: 3, width: col.width, minWidth: col.width } : { width: col.width, minWidth: col.width }}
+                  style={col.frozen
+                    ? { left: frozenLeft[ci], zIndex: 3, width: col.width, minWidth: col.width }
+                    : { width: col.width, minWidth: col.width }}
                   onClick={() => { if (!col.frozen) selectCell(0, ci); }}
                 >
                   {toColLetters(ci)}<br/>
@@ -478,16 +538,16 @@ export default function Spreadsheet({
 
               // Pre-compute all derived values for this row
               const derived = {};
-              COLUMNS.forEach(col => {
+              visibleCols.forEach(col => {
                 if (col.computed) derived[col.key] = col.computed(effectiveRow);
               });
 
               return (
                 <tr key={row.id || row.meta_num} className={`sps__row${ri % 2 === 0 ? '' : ' sps__row--odd'}`}>
-                  {COLUMNS.map((col, ci) => {
-                    const isSel  = selected?.ri === ri && selected?.ci === ci;
-                    const isEdit = editing?.ri === ri && editing?.ci === ci;
-                    const fKey   = `${row.meta_num}__${col.key}`;
+                  {visibleCols.map((col, ci) => {
+                    const isSel    = selected?.ri === ri && selected?.ci === ci;
+                    const isEdit   = editing?.ri  === ri && editing?.ci  === ci;
+                    const fKey     = `${row.meta_num}__${col.key}`;
                     const isChanged = pending.has(fKey);
 
                     // Display value
@@ -500,19 +560,22 @@ export default function Spreadsheet({
                     }
 
                     // Computed value for cellStyle (raw number)
-                    const computedVal = col.computed ? derived[col.key] : null;
-                    const extraStyle = col.cellStyle ? col.cellStyle(effectiveRow, computedVal ?? (col.format ? parseFloat(displayVal) : null)) : {};
+                    const computedVal  = col.computed ? derived[col.key] : null;
+                    const extraStyle   = col.cellStyle
+                      ? col.cellStyle(effectiveRow, computedVal ?? (col.format ? parseFloat(displayVal) : null))
+                      : {};
 
                     return (
                       <td
                         key={`${ri}-${ci}`}
                         className={[
                           'sps__cell',
-                          col.frozen        ? 'sps__cell--frozen' : '',
-                          col.editable      ? 'sps__cell--editable' : '',
-                          isSel             ? 'sps__cell--selected' : '',
-                          isChanged         ? 'sps__cell--changed' : '',
+                          col.frozen    ? 'sps__cell--frozen'   : '',
+                          col.editable  ? 'sps__cell--editable' : '',
+                          isSel         ? 'sps__cell--selected' : '',
+                          isChanged     ? 'sps__cell--changed'  : '',
                           col.type === 'number' ? 'sps__cell--num' : '',
+                          col.wrap      ? 'sps__cell--wrap'     : '',
                         ].filter(Boolean).join(' ')}
                         style={{
                           ...(col.frozen ? { left: frozenLeft[ci], zIndex: 2 } : {}),
@@ -547,6 +610,7 @@ export default function Spreadsheet({
         <span>{filteredRows.length} / {rows.length} metas</span>
         {selected && <span>Celda: {getCellName(selected.ri, selected.ci)}</span>}
         {hasPending && <span className="sps__status--warn">{pending.size} cambio(s) pendiente(s)</span>}
+        <span className="sps__status--hint">Ctrl+V para pegar desde Excel</span>
       </div>
     </div>
   );

@@ -129,6 +129,26 @@
   background: #d1d5db;
 }
 
+.sps__btn--fin {
+  background: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #7dd3fc;
+}
+
+.sps__btn--fin:hover {
+  background: #bae6fd;
+}
+
+.sps__btn--fin-active {
+  background: #0369a1;
+  color: #fff;
+  border: 1px solid #0369a1;
+}
+
+.sps__btn--fin-active:hover {
+  background: #0284c7;
+}
+
 /* ── Grid wrapper ───────────────────────────────────────────────────────────── */
 
 .sps__grid-wrap {
@@ -148,7 +168,6 @@
 .sps__table {
   border-collapse: collapse;
   table-layout: fixed;
-  white-space: nowrap;
 }
 
 /* ── Group header row ───────────────────────────────────────────────────────── */
@@ -184,6 +203,12 @@
 .sps__group--general  { background: #374151 !important; color: #d1d5db !important; }
 .sps__group--resumen  { background: #1f2937 !important; color: #f9fafb !important; }
 .sps__group--notas    { background: #422006 !important; color: #fde68a !important; }
+
+/* Financial year group colors (slightly darker shades) */
+.sps__group--2024fin  { background: #1e3a8a !important; color: #93c5fd !important; border-top: 2px solid #60a5fa; }
+.sps__group--2025fin  { background: #064e3b !important; color: #6ee7b7 !important; border-top: 2px solid #34d399; }
+.sps__group--2026fin  { background: #431407 !important; color: #fdba74 !important; border-top: 2px solid #fb923c; }
+.sps__group--2027fin  { background: #2e1065 !important; color: #c4b5fd !important; border-top: 2px solid #a78bfa; }
 
 /* ── Column header row ──────────────────────────────────────────────────────── */
 
@@ -267,9 +292,22 @@
   vertical-align: middle;
   font-size: 12px;
   color: #1f2937;
-  max-height: 24px;
   height: 24px;
   cursor: cell;
+}
+
+/* Wrapped text cells (meta description, observations, commitments) */
+.sps__cell--wrap {
+  white-space: normal !important;
+  word-break: break-word;
+  overflow: visible;
+  text-overflow: clip;
+  height: auto !important;
+  min-height: 24px;
+  max-height: none;
+  vertical-align: top;
+  padding: 4px 6px;
+  line-height: 1.45;
 }
 
 .sps__cell--num {
@@ -342,4 +380,10 @@
 .sps__status--warn {
   color: #d97706;
   font-weight: 600;
+}
+
+.sps__status--hint {
+  margin-left: auto;
+  color: #9ca3af;
+  font-style: italic;
 }

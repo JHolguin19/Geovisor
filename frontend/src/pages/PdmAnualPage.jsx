@@ -211,6 +211,7 @@ export default function PdmAnualPage() {
           {tab === 'metas' && (
             <AnualMetasTab
               metas={metas} total={total} loading={tblLoading} year={year}
+              overview={overview}
               secretarias={secretarias} pilares={pilaresLista}
               secFiltro={secFiltro} pilarFiltro={pilarFiltro}
               semaforoFiltro={semaforoFiltro} busqueda={busqueda}
