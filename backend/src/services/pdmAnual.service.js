@@ -211,9 +211,9 @@ export async function getYearOverview(year) {
         -- Contribución del año ${y} al cuatrienio (ponderado_avance capeado on-the-fly)
         CASE
           WHEN tipo_ponderado = 'Acumulativo' AND COALESCE(meta_cuatrienio::numeric,0) > 0
-            THEN LEAST(c${y} / meta_cuatrienio::numeric, 1.0)
+            THEN LEAST(c${y % 100} / meta_cuatrienio::numeric, 1.0)
           WHEN tipo_ponderado != 'Acumulativo' AND sum_pdm > 0
-            THEN LEAST(c${y} / sum_pdm, 1.0)
+            THEN LEAST(c${y % 100} / sum_pdm, 1.0)
           ELSE 0
         END AS pond_anio_capped
       FROM caps
