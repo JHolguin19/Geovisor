@@ -1,0 +1,345 @@
+/* ── Spreadsheet (sps) ────────────────────────────────────────────────────── */
+
+.sps {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #fff;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-size: 12px;
+  overflow: hidden;
+}
+
+/* ── Toolbar ────────────────────────────────────────────────────────────────── */
+
+.sps__toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  background: #f3f4f6;
+  border-bottom: 1px solid #d1d5db;
+  flex-shrink: 0;
+  min-height: 34px;
+}
+
+.sps__toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.sps__toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.sps__cell-name {
+  display: inline-block;
+  width: 54px;
+  padding: 2px 6px;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 3px;
+  font-weight: 600;
+  font-size: 11px;
+  text-align: center;
+  color: #374151;
+  flex-shrink: 0;
+}
+
+.sps__fbar {
+  flex: 1;
+  min-width: 0;
+  padding: 3px 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 3px;
+  font-size: 12px;
+  font-family: 'Consolas', 'Courier New', monospace;
+  background: #fff;
+  color: #111827;
+  outline: none;
+}
+
+.sps__fbar:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37,99,235,0.15);
+}
+
+.sps__filter {
+  padding: 3px 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 3px;
+  font-size: 11px;
+  background: #fff;
+  color: #374151;
+  outline: none;
+  height: 26px;
+}
+
+.sps__filter:focus {
+  border-color: #2563eb;
+}
+
+.sps__pending-badge {
+  padding: 2px 8px;
+  background: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #92400e;
+}
+
+.sps__btn {
+  padding: 3px 12px;
+  border-radius: 4px;
+  border: none;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  height: 26px;
+  transition: background 0.15s;
+}
+
+.sps__btn--save {
+  background: #16a34a;
+  color: #fff;
+}
+
+.sps__btn--save:hover:not(:disabled) {
+  background: #15803d;
+}
+
+.sps__btn--save:disabled {
+  background: #86efac;
+  cursor: default;
+}
+
+.sps__btn--discard {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.sps__btn--discard:hover {
+  background: #d1d5db;
+}
+
+/* ── Grid wrapper ───────────────────────────────────────────────────────────── */
+
+.sps__grid-wrap {
+  flex: 1;
+  overflow: auto;
+  outline: none;
+  position: relative;
+}
+
+.sps__grid-wrap:focus-within .sps__cell--selected {
+  outline: 2px solid #2563eb;
+  outline-offset: -2px;
+}
+
+/* ── Table ──────────────────────────────────────────────────────────────────── */
+
+.sps__table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  white-space: nowrap;
+}
+
+/* ── Group header row ───────────────────────────────────────────────────────── */
+
+.sps__group-row {
+  height: 20px;
+  background: #1e3a5f;
+}
+
+.sps__th-group {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-align: center;
+  color: #93c5fd;
+  border-right: 1px solid #2563eb33;
+  padding: 0 2px;
+  background: inherit;
+  position: sticky;
+  top: 0;
+}
+
+.sps__th-group.sps__cell--frozen {
+  background: #1e3a5f;
+}
+
+/* Year group colors */
+.sps__group--2024     { background: #1e40af !important; color: #bfdbfe !important; }
+.sps__group--2025     { background: #065f46 !important; color: #a7f3d0 !important; }
+.sps__group--2026     { background: #7c2d12 !important; color: #fed7aa !important; }
+.sps__group--2027     { background: #4c1d95 !important; color: #ddd6fe !important; }
+.sps__group--general  { background: #374151 !important; color: #d1d5db !important; }
+.sps__group--resumen  { background: #1f2937 !important; color: #f9fafb !important; }
+.sps__group--notas    { background: #422006 !important; color: #fde68a !important; }
+
+/* ── Column header row ──────────────────────────────────────────────────────── */
+
+.sps__header-row {
+  height: 30px;
+  background: #1e3a5f;
+}
+
+.sps__th {
+  font-size: 10px;
+  font-weight: 600;
+  text-align: center;
+  color: #e2e8f0;
+  border-right: 1px solid #2563eb44;
+  border-bottom: 2px solid #2563eb88;
+  padding: 2px 4px;
+  background: inherit;
+  position: sticky;
+  top: 20px;         /* below group row */
+  cursor: default;
+  user-select: none;
+  vertical-align: middle;
+  line-height: 1.2;
+}
+
+.sps__th.sps__cell--frozen {
+  background: #1e3a5f;
+}
+
+.sps__th--editable {
+  color: #fde68a;
+}
+
+.sps__th-label {
+  font-size: 9px;
+  font-weight: 400;
+  color: #94a3b8;
+  display: block;
+}
+
+/* ── Frozen column cells ────────────────────────────────────────────────────── */
+
+.sps__cell--frozen {
+  position: sticky;
+  background: #fff;
+  z-index: 2;
+}
+
+.sps__header-row .sps__cell--frozen,
+.sps__group-row .sps__cell--frozen {
+  z-index: 3;
+}
+
+/* ── Body rows ──────────────────────────────────────────────────────────────── */
+
+.sps__row:hover td {
+  background-color: #eff6ff !important;
+}
+
+.sps__row--odd td {
+  background: #f9fafb;
+}
+
+.sps__row--odd .sps__cell--frozen {
+  background: #f9fafb;
+}
+
+.sps__row:hover .sps__cell--frozen {
+  background: #eff6ff !important;
+}
+
+/* ── Cells ──────────────────────────────────────────────────────────────────── */
+
+.sps__cell {
+  padding: 2px 6px;
+  border-right: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
+  font-size: 12px;
+  color: #1f2937;
+  max-height: 24px;
+  height: 24px;
+  cursor: cell;
+}
+
+.sps__cell--num {
+  text-align: right;
+}
+
+.sps__cell--editable {
+  cursor: text;
+}
+
+/* Selected cell */
+.sps__cell--selected {
+  outline: 2px solid #2563eb !important;
+  outline-offset: -2px;
+  z-index: 1;
+}
+
+/* Changed / pending cell */
+.sps__cell--changed {
+  background: #fffbeb !important;
+  border-right-color: #f59e0b;
+  border-bottom-color: #f59e0b;
+}
+
+.sps__cell--changed::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 6px 6px 0;
+  border-color: transparent #f59e0b transparent transparent;
+}
+
+.sps__cell--changed {
+  position: relative;
+}
+
+/* ── Edit input (inline) ────────────────────────────────────────────────────── */
+
+.sps__edit-input {
+  width: 100%;
+  height: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 12px;
+  font-family: inherit;
+  color: #1f2937;
+  padding: 0;
+}
+
+/* ── Status bar ─────────────────────────────────────────────────────────────── */
+
+.sps__status {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 2px 12px;
+  background: #f3f4f6;
+  border-top: 1px solid #d1d5db;
+  font-size: 11px;
+  color: #6b7280;
+  flex-shrink: 0;
+  min-height: 20px;
+}
+
+.sps__status--warn {
+  color: #d97706;
+  font-weight: 600;
+}

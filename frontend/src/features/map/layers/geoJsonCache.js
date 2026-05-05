@@ -58,6 +58,14 @@ export function prefetch(url, headers = {}) {
 }
 
 /**
+ * Elimina una URL específica del caché (para forzar re-fetch).
+ */
+export function remove(url) {
+  cache.delete(url);
+  ready.delete(url);
+}
+
+/**
  * Limpia todo el caché (por ejemplo al hacer logout).
  */
 export function clearCache() {

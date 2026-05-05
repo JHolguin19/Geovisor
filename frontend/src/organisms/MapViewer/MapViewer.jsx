@@ -4,6 +4,7 @@ import { useLayerManager } from '../../features/map/hooks/useLayerManager';
 import { useMapClick } from '../../features/map/hooks/useMapClick';
 import { useMapTools } from '../../features/map/hooks/useMapTools';
 import { useSisbenHeatmap } from '../../features/map/hooks/useSisbenHeatmap';
+import { useDelitosLayer } from '../../features/map/hooks/useDelitosLayer';
 import BasemapSwitcher from '../../features/map/components/BasemapSwitcher';
 import PopupOverlay from '../../features/map/components/PopupOverlay';
 import './MapViewer.css';
@@ -36,6 +37,9 @@ export default function MapViewer() {
 
   // Hook 5: Herramientas SIG (medición, buffer, selección)
   useMapTools(mapRef, toolSourceRef);
+
+  // Hook 6: Capa dinámica de delitos (controlada por DelitosPanel)
+  useDelitosLayer(mapRef);
 
   // Cerrar popup al hacer click en el botón X
   useEffect(() => {

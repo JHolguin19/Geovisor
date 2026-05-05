@@ -128,12 +128,37 @@ export function makeDelitosStyle(feature) {
   });
 }
 
+// Mapa categorizado para delitos — 4 categorías con colores distintos para identificación manual
+const DELITOS_CAT = [
+  { max: 0,   color: '#F1F5F9', label: '' },
+  { max: 5,   color: '#FEF9C3', label: 'Bajo' },
+  { max: 20,  color: '#FED7AA', label: 'Medio' },
+  { max: 60,  color: '#FCA5A5', label: 'Alto' },
+  { max: Infinity, color: '#DC2626', label: 'Muy alto' },
+];
+export function makeDelitosCategorizedStyle(feature) {
+  const total = feature.get('total_delitos') || 0;
+  const cat = DELITOS_CAT.find(c => total <= c.max) || DELITOS_CAT[DELITOS_CAT.length - 1];
+  return new Style({
+    fill: new Fill({ color: hexToRgba(cat.color, 0.85) }),
+    stroke: new Stroke({ color: '#7F1D1D', width: 1.5 }),
+    text: total > 0 ? new Text({
+      text: `${cat.label}\n${total}`,
+      font: 'bold 11px sans-serif',
+      fill: new Fill({ color: total > 60 ? '#fff' : '#1E293B' }),
+      stroke: new Stroke({ color: total > 60 ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.85)', width: 3 }),
+      overflow: true,
+      placement: 'point',
+    }) : null,
+  });
+}
+
 // Resolución de estilo por configuración de capa
 export function resolveStyleForConfig(layerConfig) {
   if (layerConfig.id === 'predios_urbanos') return makePrediosStyle();
   if (layerConfig.id === 'obras_pavimentacion' || layerConfig.id === 'pavimentacion2') return makePavimentacionStyle();
   if (layerConfig.id === 'ipm_santander') return makeIpmStyle;
-  if (layerConfig.id?.startsWith('delitos_')) return makeDelitosStyle;
+  if (layerConfig.id?.startsWith('delitos_') || layerConfig.id === 'delitos_panel') return makeDelitosStyle;
   if (layerConfig.labelField) return makeDefaultStyleWithLabel(layerConfig);
   if (layerConfig.geometryType === 'line') return makeLineStyle(layerConfig);
   // Para WFS de puntos usamos point style

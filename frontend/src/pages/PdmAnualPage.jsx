@@ -154,6 +154,11 @@ export default function PdmAnualPage() {
             ))}
           </div>
           {canUpload && (
+            <Link to="/pdm/editor" className="pdm-a-btn pdm-a-btn--editor">
+              Editor PDM
+            </Link>
+          )}
+          {canUpload && (
             <button className="pdm-a-btn pdm-a-btn--upload" onClick={() => setShowUpload(true)}>
               Actualizar datos
             </button>

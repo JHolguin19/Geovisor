@@ -18,6 +18,7 @@ import DataPipelinePage from './pages/DataPipelinePage';
 import ProcessingPage from './pages/ProcessingPage';
 import SchemaManagerPage from './pages/SchemaManagerPage';
 import GobiernoDelitosPage from './pages/GobiernoDelitosPage';
+import PdmEditorPage from './pages/PdmEditorPage';
 
 function PrivateRoute({ children, requiredRole }) {
   const { user, isAuthenticated, loading } = useContext(AuthContext);
@@ -82,6 +83,16 @@ function App() {
         {/* Seguimiento PDM */}
         <Route path="pdm/anual" element={<PdmAnualPage />} />
         <Route path="pdm" element={<PdmPage />} />
+
+        {/* Editor PDM — solo admin y editor_geo */}
+        <Route
+          path="pdm/editor"
+          element={
+            <PrivateRoute requiredRole="editor_geo">
+              <PdmEditorPage />
+            </PrivateRoute>
+          }
+        />
 
         {/* Administración — solo admin */}
         <Route

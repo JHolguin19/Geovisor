@@ -484,6 +484,25 @@ export const tablesService = {
 // SERVICIO DE DELITOS (Gobierno)
 // ============================
 
+// ============================
+// SERVICIO EDITOR PDM
+// ============================
+
+export const pdmEditorService = {
+  getGrid: async () => {
+    const res = await api.get('/pdm/editor/grid');
+    return res.data;
+  },
+  save: async (changes) => {
+    const res = await api.post('/pdm/editor/save', { changes });
+    return res.data;
+  },
+};
+
+// ============================
+// SERVICIO DE DELITOS (Gobierno)
+// ============================
+
 export const delitosService = {
   getStats: async (params = {}) => {
     const res = await api.get('/delitos/stats', { params });

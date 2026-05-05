@@ -13,6 +13,11 @@ export function MapProvider({ children }) {
   const [selectedSisbenBarrio, setSelectedSisbenBarrio] = useState(null);
   const [sisbenHeatmapVariable, setSisbenHeatmapVariable] = useState(null);
   const [sisbenBarriosFeatures, setSisbenBarriosFeatures] = useState(null);
+  const [delitosConfig, setDelitosConfig] = useState({
+    anio: null,        // null = Todos, 2024 o 2025
+    tipoDeLito: null,  // null = Todos, o tipo específico string
+    vizMode: 'heatmap' // 'heatmap' | 'categorized'
+  });
 
   const clearTools = useCallback(() => {
     setActiveTool(null);
@@ -41,6 +46,8 @@ export function MapProvider({ children }) {
     setSisbenHeatmapVariable,
     sisbenBarriosFeatures,
     setSisbenBarriosFeatures,
+    delitosConfig,
+    setDelitosConfig,
   };
 
   return (
