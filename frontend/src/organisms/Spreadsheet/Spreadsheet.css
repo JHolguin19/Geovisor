@@ -168,6 +168,7 @@
 .sps__table {
   border-collapse: collapse;
   table-layout: fixed;
+  user-select: none; /* prevent text highlight during drag selection */
 }
 
 /* ── Group header row ───────────────────────────────────────────────────────── */
@@ -386,6 +387,22 @@
   margin-left: auto;
   color: #9ca3af;
   font-style: italic;
+}
+
+.sps__status--stat {
+  color: #1d4ed8;
+  font-weight: 600;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 3px;
+  padding: 0 5px;
+}
+
+.sps__status--muted {
+  color: #6b7280;
+  background: #f3f4f6;
+  border-color: #e5e7eb;
+  font-weight: 400;
 }
 
 .sps__status--range {

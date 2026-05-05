@@ -183,40 +183,16 @@ function normalizeRawPdmRows(rows) {
 export async function getYearOverview(year) {
   const y = assertYear(year);
 
-  // REGLA DE CAPPING: avance_fisico_pct y avg_ponderado_anio se calculan
-  // on-the-fly usando meta_fisica capeada a meta_pdm por año.
-  // Esto garantiza que la sobre-ejecución (ej: 348 real vs 150 planeado)
-  // no distorsione los indicadores, independientemente del valor almacenado.
+  // Avance físico: capped at MIN(meta_fisica_Y, meta_pdm_Y) / meta_cuatrienio.
+  // Guarantees over-achievement doesn't inflate indicators.
   const { rows } = await pool.query(`
     WITH caps AS (
       SELECT *,
-        -- Valor efectivo de cada año: meta_fisica capeada a meta_pdm
         LEAST(COALESCE(meta_fisica_2024::numeric,0), CASE WHEN COALESCE(meta_pdm_2024::numeric,0)>0 THEN meta_pdm_2024::numeric ELSE COALESCE(meta_fisica_2024::numeric,0) END) AS c24,
         LEAST(COALESCE(meta_fisica_2025::numeric,0), CASE WHEN COALESCE(meta_pdm_2025::numeric,0)>0 THEN meta_pdm_2025::numeric ELSE COALESCE(meta_fisica_2025::numeric,0) END) AS c25,
         LEAST(COALESCE(meta_fisica_2026::numeric,0), CASE WHEN COALESCE(meta_pdm_2026::numeric,0)>0 THEN meta_pdm_2026::numeric ELSE COALESCE(meta_fisica_2026::numeric,0) END) AS c26,
-        LEAST(COALESCE(meta_fisica_2027::numeric,0), CASE WHEN COALESCE(meta_pdm_2027::numeric,0)>0 THEN meta_pdm_2027::numeric ELSE COALESCE(meta_fisica_2027::numeric,0) END) AS c27,
-        COALESCE(meta_pdm_2024::numeric,0)+COALESCE(meta_pdm_2025::numeric,0)+COALESCE(meta_pdm_2026::numeric,0)+COALESCE(meta_pdm_2027::numeric,0) AS sum_pdm
+        LEAST(COALESCE(meta_fisica_2027::numeric,0), CASE WHEN COALESCE(meta_pdm_2027::numeric,0)>0 THEN meta_pdm_2027::numeric ELSE COALESCE(meta_fisica_2027::numeric,0) END) AS c27
       FROM pdm_metas
-    ),
-    avances AS (
-      SELECT *,
-        -- Avance físico cuatrienio capeado (calculado on-the-fly)
-        CASE
-          WHEN tipo_ponderado = 'Acumulativo' AND COALESCE(meta_cuatrienio::numeric,0) > 0
-            THEN LEAST(GREATEST(c24,c25,c26,c27) / meta_cuatrienio::numeric, 1.0)
-          WHEN tipo_ponderado != 'Acumulativo' AND sum_pdm > 0
-            THEN LEAST((c24+c25+c26+c27) / sum_pdm, 1.0)
-          ELSE NULL
-        END AS av_capped,
-        -- Contribución del año ${y} al cuatrienio (ponderado_avance capeado on-the-fly)
-        CASE
-          WHEN tipo_ponderado = 'Acumulativo' AND COALESCE(meta_cuatrienio::numeric,0) > 0
-            THEN LEAST(c${y % 100} / meta_cuatrienio::numeric, 1.0)
-          WHEN tipo_ponderado != 'Acumulativo' AND sum_pdm > 0
-            THEN LEAST(c${y % 100} / sum_pdm, 1.0)
-          ELSE 0
-        END AS pond_anio_capped
-      FROM caps
     )
     SELECT
       COUNT(*)                                                              AS total_metas,
@@ -229,16 +205,23 @@ export async function getYearOverview(year) {
                          AND (presupuesto_${y}->>'total_apropiacion')::numeric > 0) AS activas_con_presupuesto,
       COUNT(*) FILTER (WHERE meta_pdm_${y} IS NOT NULL
                          AND (meta_fisica_${y} IS NULL OR meta_fisica_${y}::numeric = 0)) AS sin_ejecucion,
+      -- Programadas sin presupuesto asignado (scheduled but zero budget)
+      COUNT(*) FILTER (WHERE meta_pdm_${y} IS NOT NULL
+                         AND (presupuesto_${y} IS NULL
+                              OR COALESCE((presupuesto_${y}->>'total_apropiacion')::numeric, 0) = 0))
+                                                                            AS programadas_sin_presupuesto,
 
-      -- Eficiencia capped at 100%
       ROUND(AVG(LEAST(eficiencia_${y}, 1.0)) FILTER (WHERE eficiencia_${y} IS NOT NULL) * 100, 1) AS eficiencia_promedio,
 
-      -- Avance físico cuatrienio: on-the-fly con capping (no usa el campo almacenado)
-      ROUND(AVG(av_capped) FILTER (WHERE av_capped IS NOT NULL) * 100, 1) AS avance_fisico_pct,
+      -- avance_fisico_pct: SUM(all capped years) / SUM(meta_cuatrienio), global cap at 100%
+      ROUND(
+        LEAST(SUM(c24+c25+c26+c27), SUM(COALESCE(meta_cuatrienio::numeric,0)))
+        / NULLIF(SUM(COALESCE(meta_cuatrienio::numeric,0)), 0) * 100, 1
+      ) AS avance_fisico_pct,
 
-      -- Contribución del año ${y}: on-the-fly con capping
-      ROUND(AVG(COALESCE(pond_anio_capped, 0)) FILTER (WHERE av_capped IS NOT NULL) * 100, 1) AS avg_ponderado_anio,
-      ROUND(AVG(COALESCE(pond_anio_capped, 0)) FILTER (WHERE av_capped IS NOT NULL) * 100, 1) AS avance_fisico_anio_pct,
+      -- avance_fisico_anio_pct: SUM(capped year Y) / SUM(meta_cuatrienio)
+      ROUND(SUM(c${y % 100}) / NULLIF(SUM(COALESCE(meta_cuatrienio::numeric,0)), 0) * 100, 1) AS avg_ponderado_anio,
+      ROUND(SUM(c${y % 100}) / NULLIF(SUM(COALESCE(meta_cuatrienio::numeric,0)), 0) * 100, 1) AS avance_fisico_anio_pct,
 
       -- % del cuatrienio esperado para este año (usa incremento para acumulativas)
       ROUND(
@@ -249,12 +232,10 @@ export async function getYearOverview(year) {
         / NULLIF(SUM(meta_cuatrienio::numeric) FILTER (WHERE meta_pdm_${y} IS NOT NULL AND meta_cuatrienio::numeric > 0), 0) * 100, 1
       ) AS pct_programado_del_cuatrienio,
 
-      -- Presupuesto del año
       ROUND(SUM(COALESCE((presupuesto_${y}->>'total_apropiacion')::numeric, 0)) / 1000000, 0) AS apropiacion_m,
       ROUND(SUM(COALESCE((presupuesto_${y}->>'neto_registros')::numeric, 0)) / 1000000, 0)    AS comprometido_m,
       ROUND(SUM(COALESCE((presupuesto_${y}->>'total_obligacion')::numeric, 0)) / 1000000, 0)  AS obligado_m,
 
-      -- Avance financiero (ejecución presupuestal)
       ROUND(
         SUM(COALESCE((presupuesto_${y}->>'neto_registros')::numeric, 0)) /
         NULLIF(SUM(COALESCE((presupuesto_${y}->>'total_apropiacion')::numeric, 0)), 0) * 100, 1
@@ -264,12 +245,11 @@ export async function getYearOverview(year) {
         NULLIF(SUM(COALESCE((presupuesto_${y}->>'total_apropiacion')::numeric, 0)), 0) * 100, 1
       ) AS avance_financiero_obligado_pct,
 
-      -- Semáforo
       COUNT(*) FILTER (WHERE eficiencia_${y} IS NOT NULL AND eficiencia_${y} >= 0.8)                             AS semaforo_verde,
       COUNT(*) FILTER (WHERE eficiencia_${y} IS NOT NULL AND eficiencia_${y} >= 0.5 AND eficiencia_${y} < 0.8)  AS semaforo_amarillo,
       COUNT(*) FILTER (WHERE eficiencia_${y} IS NOT NULL AND eficiencia_${y} < 0.5)                              AS semaforo_rojo,
       COUNT(*) FILTER (WHERE eficiencia_${y} IS NULL AND meta_pdm_${y} IS NOT NULL)                              AS semaforo_sin_dato
-    FROM avances
+    FROM caps
   `);
 
   return rows[0];
@@ -287,20 +267,26 @@ export async function getYearBySecretaria(year) {
       COUNT(*) FILTER (WHERE meta_pdm_${y} IS NOT NULL)                    AS programadas,
       COUNT(*) FILTER (WHERE meta_pdm_${y} IS NULL)                        AS no_programadas,
       ROUND(AVG(LEAST(eficiencia_${y}, 1.0)) FILTER (WHERE eficiencia_${y} IS NOT NULL) * 100, 1) AS eficiencia_promedio,
-      -- avance_fisico cuatrienio: SUM(todas las meta_fisica) / SUM(meta_cuatrienio)
+      -- avance_fisico cuatrienio: SUM(capped all years) / SUM(mc), capped at 100%
       ROUND(
-        SUM(COALESCE(meta_fisica_2024::numeric,0)+COALESCE(meta_fisica_2025::numeric,0)+COALESCE(meta_fisica_2026::numeric,0)+COALESCE(meta_fisica_2027::numeric,0))
-        / NULLIF(SUM(COALESCE(meta_cuatrienio::numeric,0)),0) * 100, 1
+        LEAST(
+          SUM(
+            LEAST(COALESCE(meta_fisica_2024::numeric,0), CASE WHEN COALESCE(meta_pdm_2024::numeric,0)>0 THEN meta_pdm_2024::numeric ELSE COALESCE(meta_fisica_2024::numeric,0) END) +
+            LEAST(COALESCE(meta_fisica_2025::numeric,0), CASE WHEN COALESCE(meta_pdm_2025::numeric,0)>0 THEN meta_pdm_2025::numeric ELSE COALESCE(meta_fisica_2025::numeric,0) END) +
+            LEAST(COALESCE(meta_fisica_2026::numeric,0), CASE WHEN COALESCE(meta_pdm_2026::numeric,0)>0 THEN meta_pdm_2026::numeric ELSE COALESCE(meta_fisica_2026::numeric,0) END) +
+            LEAST(COALESCE(meta_fisica_2027::numeric,0), CASE WHEN COALESCE(meta_pdm_2027::numeric,0)>0 THEN meta_pdm_2027::numeric ELSE COALESCE(meta_fisica_2027::numeric,0) END)
+          ),
+          SUM(COALESCE(meta_cuatrienio::numeric,0))
+        ) / NULLIF(SUM(COALESCE(meta_cuatrienio::numeric,0)), 0) * 100, 1
       ) AS avance_fisico_pct,
-      -- avance_fisico año: SUM(meta_fisica_Y) / SUM(meta_cuatrienio)
+      -- avance_fisico año: SUM(capped year Y) / SUM(mc)
       ROUND(
-        SUM(COALESCE(meta_fisica_${y}::numeric,0))
-        / NULLIF(SUM(COALESCE(meta_cuatrienio::numeric,0)),0) * 100, 1
+        SUM(LEAST(COALESCE(meta_fisica_${y}::numeric,0), CASE WHEN COALESCE(meta_pdm_${y}::numeric,0)>0 THEN meta_pdm_${y}::numeric ELSE COALESCE(meta_fisica_${y}::numeric,0) END))
+        / NULLIF(SUM(COALESCE(meta_cuatrienio::numeric,0)), 0) * 100, 1
       ) AS avance_fisico_anio_pct,
       ROUND(SUM(COALESCE((presupuesto_${y}->>'total_apropiacion')::numeric, 0)) / 1000000, 0) AS apropiacion_m,
       ROUND(SUM(COALESCE((presupuesto_${y}->>'neto_registros')::numeric, 0)) / 1000000, 0)    AS comprometido_m,
       ROUND(SUM(COALESCE((presupuesto_${y}->>'total_obligacion')::numeric, 0)) / 1000000, 0)  AS obligado_m,
-      -- sum_meta_pdm / sum_meta_fisica: valores RAW para mostrar en tabla
       SUM(COALESCE(meta_pdm_${y}::numeric, 0))    AS sum_meta_pdm,
       SUM(COALESCE(meta_fisica_${y}::numeric, 0)) AS sum_meta_fisica,
       COUNT(*) FILTER (WHERE eficiencia_${y} IS NOT NULL AND eficiencia_${y} >= 0.8)                             AS semaforo_verde,
@@ -326,15 +312,22 @@ export async function getYearByPilar(year) {
       COUNT(*) FILTER (WHERE meta_pdm_${y} IS NOT NULL)                    AS programadas,
       COUNT(*) FILTER (WHERE meta_pdm_${y} IS NULL)                        AS no_programadas,
       ROUND(AVG(LEAST(eficiencia_${y}, 1.0)) FILTER (WHERE eficiencia_${y} IS NOT NULL) * 100, 1) AS eficiencia_promedio,
-      -- avance_fisico cuatrienio: SUM(todas las meta_fisica) / SUM(meta_cuatrienio)
+      -- avance_fisico cuatrienio: SUM(capped all years) / SUM(mc), capped at 100%
       ROUND(
-        SUM(COALESCE(meta_fisica_2024::numeric,0)+COALESCE(meta_fisica_2025::numeric,0)+COALESCE(meta_fisica_2026::numeric,0)+COALESCE(meta_fisica_2027::numeric,0))
-        / NULLIF(SUM(COALESCE(meta_cuatrienio::numeric,0)),0) * 100, 1
+        LEAST(
+          SUM(
+            LEAST(COALESCE(meta_fisica_2024::numeric,0), CASE WHEN COALESCE(meta_pdm_2024::numeric,0)>0 THEN meta_pdm_2024::numeric ELSE COALESCE(meta_fisica_2024::numeric,0) END) +
+            LEAST(COALESCE(meta_fisica_2025::numeric,0), CASE WHEN COALESCE(meta_pdm_2025::numeric,0)>0 THEN meta_pdm_2025::numeric ELSE COALESCE(meta_fisica_2025::numeric,0) END) +
+            LEAST(COALESCE(meta_fisica_2026::numeric,0), CASE WHEN COALESCE(meta_pdm_2026::numeric,0)>0 THEN meta_pdm_2026::numeric ELSE COALESCE(meta_fisica_2026::numeric,0) END) +
+            LEAST(COALESCE(meta_fisica_2027::numeric,0), CASE WHEN COALESCE(meta_pdm_2027::numeric,0)>0 THEN meta_pdm_2027::numeric ELSE COALESCE(meta_fisica_2027::numeric,0) END)
+          ),
+          SUM(COALESCE(meta_cuatrienio::numeric,0))
+        ) / NULLIF(SUM(COALESCE(meta_cuatrienio::numeric,0)), 0) * 100, 1
       ) AS avance_fisico_pct,
-      -- avance_fisico año: SUM(meta_fisica_Y) / SUM(meta_cuatrienio)
+      -- avance_fisico año: SUM(capped year Y) / SUM(mc)
       ROUND(
-        SUM(COALESCE(meta_fisica_${y}::numeric,0))
-        / NULLIF(SUM(COALESCE(meta_cuatrienio::numeric,0)),0) * 100, 1
+        SUM(LEAST(COALESCE(meta_fisica_${y}::numeric,0), CASE WHEN COALESCE(meta_pdm_${y}::numeric,0)>0 THEN meta_pdm_${y}::numeric ELSE COALESCE(meta_fisica_${y}::numeric,0) END))
+        / NULLIF(SUM(COALESCE(meta_cuatrienio::numeric,0)), 0) * 100, 1
       ) AS avance_fisico_anio_pct,
       ROUND(SUM(COALESCE((presupuesto_${y}->>'total_apropiacion')::numeric, 0)) / 1000000, 0) AS apropiacion_m,
       ROUND(SUM(COALESCE((presupuesto_${y}->>'neto_registros')::numeric, 0)) / 1000000, 0)    AS comprometido_m,
@@ -376,6 +369,9 @@ export async function getYearMetas(year, { secretaria, pilar, semaforo, busqueda
   if (semaforo === 'sin_programar')  filters.push(`meta_pdm_${y} IS NULL`);
   if (semaforo === 'sin_presupuesto') filters.push(
     `(presupuesto_${y} IS NULL OR COALESCE((presupuesto_${y}->>'total_apropiacion')::numeric, 0) = 0)`
+  );
+  if (semaforo === 'programada_sin_presupuesto') filters.push(
+    `meta_pdm_${y} IS NOT NULL AND (presupuesto_${y} IS NULL OR COALESCE((presupuesto_${y}->>'total_apropiacion')::numeric, 0) = 0)`
   );
 
   const where = filters.length ? `WHERE ${filters.join(' AND ')}` : '';
@@ -974,13 +970,13 @@ export async function getComparativoFinanciero() {
           WHEN 2027 THEN (m.presupuesto_2027->>'total_apropiacion')::numeric
         END > 0) AS con_presupuesto,
 
-        -- Avance físico del año: SUM(meta_fisica_Y) / SUM(meta_cuatrienio)
+        -- Avance físico del año: SUM(capped_Y) / SUM(meta_cuatrienio)
         ROUND(
           SUM(CASE yr.year
-            WHEN 2024 THEN COALESCE(m.meta_fisica_2024::numeric, 0)
-            WHEN 2025 THEN COALESCE(m.meta_fisica_2025::numeric, 0)
-            WHEN 2026 THEN COALESCE(m.meta_fisica_2026::numeric, 0)
-            WHEN 2027 THEN COALESCE(m.meta_fisica_2027::numeric, 0)
+            WHEN 2024 THEN LEAST(COALESCE(m.meta_fisica_2024::numeric,0), CASE WHEN COALESCE(m.meta_pdm_2024::numeric,0)>0 THEN m.meta_pdm_2024::numeric ELSE COALESCE(m.meta_fisica_2024::numeric,0) END)
+            WHEN 2025 THEN LEAST(COALESCE(m.meta_fisica_2025::numeric,0), CASE WHEN COALESCE(m.meta_pdm_2025::numeric,0)>0 THEN m.meta_pdm_2025::numeric ELSE COALESCE(m.meta_fisica_2025::numeric,0) END)
+            WHEN 2026 THEN LEAST(COALESCE(m.meta_fisica_2026::numeric,0), CASE WHEN COALESCE(m.meta_pdm_2026::numeric,0)>0 THEN m.meta_pdm_2026::numeric ELSE COALESCE(m.meta_fisica_2026::numeric,0) END)
+            WHEN 2027 THEN LEAST(COALESCE(m.meta_fisica_2027::numeric,0), CASE WHEN COALESCE(m.meta_pdm_2027::numeric,0)>0 THEN m.meta_pdm_2027::numeric ELSE COALESCE(m.meta_fisica_2027::numeric,0) END)
           END) /
           NULLIF(SUM(COALESCE(m.meta_cuatrienio::numeric, 0)), 0) * 100, 1
         ) AS avance_fisico_pct

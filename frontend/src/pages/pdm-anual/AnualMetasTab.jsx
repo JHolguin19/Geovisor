@@ -16,12 +16,11 @@ export default function AnualMetasTab({
   onPaginaAnterior, onPaginaSiguiente,
   onMetaClick,
 }) {
-  const noPresupuesto = overview
-    ? parseInt(overview.total_metas ?? 0) - parseInt(overview.con_presupuesto ?? 0)
-    : null;
   const noProgramadas = overview ? parseInt(overview.no_programadas ?? 0) : null;
+  const programadasSinPresupuesto = overview ? parseInt(overview.programadas_sin_presupuesto ?? 0) : null;
 
-  const hasAlerts = (noPresupuesto != null && noPresupuesto > 0) || (noProgramadas != null && noProgramadas > 0);
+  const hasAlerts = (noProgramadas != null && noProgramadas > 0) ||
+                    (programadasSinPresupuesto != null && programadasSinPresupuesto > 0);
 
   return (
     <>
@@ -46,14 +45,14 @@ export default function AnualMetasTab({
                 <span className="ma-alert-card__hint">meta_pdm ausente</span>
               </button>
             )}
-            {noPresupuesto > 0 && (
+            {programadasSinPresupuesto > 0 && (
               <button
-                className={`ma-alert-card ma-alert-card--nb${semaforoFiltro === 'sin_presupuesto' ? ' active' : ''}`}
-                onClick={() => onSemaforoFiltro(semaforoFiltro === 'sin_presupuesto' ? '' : 'sin_presupuesto')}
+                className={`ma-alert-card ma-alert-card--nb${semaforoFiltro === 'programada_sin_presupuesto' ? ' active' : ''}`}
+                onClick={() => onSemaforoFiltro(semaforoFiltro === 'programada_sin_presupuesto' ? '' : 'programada_sin_presupuesto')}
               >
-                <span className="ma-alert-card__count">{noPresupuesto}</span>
-                <span className="ma-alert-card__label">Sin presupuesto en {year}</span>
-                <span className="ma-alert-card__hint">apropiación = 0</span>
+                <span className="ma-alert-card__count">{programadasSinPresupuesto}</span>
+                <span className="ma-alert-card__label">Programadas sin presupuesto</span>
+                <span className="ma-alert-card__hint">tienen meta PDM pero apropiación = 0</span>
               </button>
             )}
           </div>
@@ -91,6 +90,7 @@ export default function AnualMetasTab({
             <optgroup label="── Alertas ──">
               <option value="sin_programar">Sin programar ({year})</option>
               <option value="sin_presupuesto">Sin presupuesto ({year})</option>
+              <option value="programada_sin_presupuesto">Programadas sin presupuesto ({year})</option>
             </optgroup>
           </select>
         </div>
@@ -109,8 +109,9 @@ export default function AnualMetasTab({
         <div className="pdm-table-header">
           <span className="pdm-table-count">
             {loading ? 'Cargando…' : `${total} metas — año ${year}`}
-            {semaforoFiltro === 'sin_programar'  && <span className="ma-filter-badge ma-filter-badge--np"> · Sin programar</span>}
-            {semaforoFiltro === 'sin_presupuesto' && <span className="ma-filter-badge ma-filter-badge--nb"> · Sin presupuesto</span>}
+            {semaforoFiltro === 'sin_programar'             && <span className="ma-filter-badge ma-filter-badge--np"> · Sin programar</span>}
+            {semaforoFiltro === 'sin_presupuesto'            && <span className="ma-filter-badge ma-filter-badge--nb"> · Sin presupuesto</span>}
+            {semaforoFiltro === 'programada_sin_presupuesto' && <span className="ma-filter-badge ma-filter-badge--nb"> · Programadas sin presupuesto</span>}
           </span>
           <span className="pdm-table-hint">Clic en una fila para ver detalle</span>
         </div>

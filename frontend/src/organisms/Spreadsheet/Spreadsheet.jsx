@@ -13,25 +13,31 @@ function efFn(y) {
   };
 }
 
-// Annual Physical Progress = meta_fisica_Y / meta_cuatrienio × 100
+// Annual Physical Progress — capped at MIN(planned_share, 100%)
+// "planned_share" = meta_pdm_Y / meta_cuatrienio. If no plan for the year, cap at 100%.
 function avFisAnioFn(year) {
   return row => {
     const fis = parseFloat(row[`meta_fisica_${year}`]);
     const mc  = parseFloat(row.meta_cuatrienio);
+    const pdm = parseFloat(row[`meta_pdm_${year}`]);
     if (!mc || isNaN(fis)) return null;
-    return fis / mc * 100;
+    const planShare = pdm > 0 ? pdm / mc : 1.0;
+    return Math.min(fis / mc, planShare, 1.0) * 100;
   };
 }
 
-// 4-year total = SUM of all annual contributions (consistent with avFisAnioFn)
+// 4-year total = SUM of capped annual values, total capped at 100%
 function avFisFn(row) {
   const mc = parseFloat(row.meta_cuatrienio);
   if (!mc) return null;
   const sum = [2024, 2025, 2026, 2027].reduce((acc, y) => {
     const fis = parseFloat(row[`meta_fisica_${y}`]);
-    return acc + (isNaN(fis) ? 0 : fis);
+    const pdm = parseFloat(row[`meta_pdm_${y}`]);
+    if (isNaN(fis)) return acc;
+    const planShare = pdm > 0 ? pdm / mc : 1.0;
+    return acc + Math.min(fis / mc, planShare, 1.0);
   }, 0);
-  return sum / mc * 100;
+  return Math.min(sum, 1.0) * 100;
 }
 
 // Financial execution % = comprometido / apropiacion × 100
@@ -197,6 +203,14 @@ export default function Spreadsheet({ rows: initialRows, onSave, saving }) {
   const editInputRef = useRef(null);
   const fbarRef      = useRef(null);
   const tbodyRef     = useRef(null);
+  const isDragging   = useRef(false);
+
+  // Stop drag on global mouseup
+  useEffect(() => {
+    const stop = () => { isDragging.current = false; };
+    window.addEventListener('mouseup', stop);
+    return () => window.removeEventListener('mouseup', stop);
+  }, []);
 
   // Sync rows from props
   useEffect(() => { setRows(initialRows); }, [initialRows]);
@@ -235,6 +249,38 @@ export default function Spreadsheet({ rows: initialRows, onSave, saving }) {
 
   const hasRangeSelection = sel.cursor && sel.anchor &&
     (sel.cursor.ri !== sel.anchor.ri || sel.cursor.ci !== sel.anchor.ci);
+
+  // Aggregate stats for the selected range (sum + average of numeric values)
+  const rangeStats = useMemo(() => {
+    if (!hasRangeSelection) return null;
+    const { cursor, anchor } = sel;
+    const r0 = Math.min(anchor.ri, cursor.ri), r1 = Math.max(anchor.ri, cursor.ri);
+    const c0 = Math.min(anchor.ci, cursor.ci), c1 = Math.max(anchor.ci, cursor.ci);
+    const nums = [];
+    for (let ri = r0; ri <= r1; ri++) {
+      const row = filteredRows[ri];
+      if (!row) continue;
+      const effectiveRow = getEffectiveRow(row, pending);
+      for (let ci = c0; ci <= c1; ci++) {
+        const col = visibleCols[ci];
+        if (!col) continue;
+        let v;
+        if (col.computed) {
+          v = col.computed(effectiveRow);
+        } else {
+          const raw = getCellRawValue(col, effectiveRow, rawFormulas);
+          v = isFormula(raw)
+            ? evalFormula(raw, effectiveRow, cl => { const k = COL_LETTER_MAP[cl.toUpperCase()]; return k ? Number(effectiveRow[k]) || 0 : 0; })
+            : raw;
+        }
+        const n = parseFloat(v);
+        if (!isNaN(n)) nums.push(n);
+      }
+    }
+    if (!nums.length) return null;
+    const sum = nums.reduce((a, b) => a + b, 0);
+    return { sum, avg: sum / nums.length, count: nums.length };
+  }, [sel, hasRangeSelection, filteredRows, visibleCols, pending, rawFormulas]);
 
   // ── Selection helpers ─────────────────────────────────────────────────────
   const getColLetter = ci => toColLetters(ci);
@@ -630,9 +676,15 @@ export default function Spreadsheet({ rows: initialRows, onSave, saving }) {
                           width: col.width, minWidth: col.width,
                           ...extraStyle,
                         }}
-                        onClick={e => {
+                        onMouseDown={e => {
+                          if (e.button !== 0) return;
+                          e.preventDefault(); // prevent browser text-selection drag
                           if (e.shiftKey) extendSelectionTo(ri, ci);
                           else selectCell(ri, ci);
+                          isDragging.current = true;
+                        }}
+                        onMouseEnter={() => {
+                          if (isDragging.current) extendSelectionTo(ri, ci);
                         }}
                         onDoubleClick={() => { if (col.editable) startEdit(ri, ci); }}
                       >
@@ -661,12 +713,21 @@ export default function Spreadsheet({ rows: initialRows, onSave, saving }) {
         <span>{filteredRows.length} / {rows.length} metas</span>
         {selected && <span>Celda: {getCellName(selected.ri, selected.ci)}</span>}
         {hasRangeSelection && (
-          <span className="sps__status--range">
-            {Math.abs(sel.cursor.ri - sel.anchor.ri) + 1} × {Math.abs(sel.cursor.ci - sel.anchor.ci) + 1} celdas
-          </span>
+          <>
+            <span className="sps__status--range">
+              {Math.abs(sel.cursor.ri - sel.anchor.ri) + 1} × {Math.abs(sel.cursor.ci - sel.anchor.ci) + 1}
+            </span>
+            {rangeStats && (
+              <>
+                <span className="sps__status--stat">Σ {rangeStats.sum.toLocaleString('es-CO', { maximumFractionDigits: 2 })}</span>
+                <span className="sps__status--stat">x̄ {rangeStats.avg.toLocaleString('es-CO', { maximumFractionDigits: 2 })}</span>
+                <span className="sps__status--stat sps__status--muted">{rangeStats.count} núm.</span>
+              </>
+            )}
+          </>
         )}
         {hasPending && <span className="sps__status--warn">{pending.size} cambio(s) pendiente(s)</span>}
-        <span className="sps__status--hint">Shift+clic/flechas para seleccionar rango · Ctrl+V para pegar desde Excel</span>
+        <span className="sps__status--hint">Arrastrar / Shift+clic para rango · Ctrl+V pegar Excel</span>
       </div>
     </div>
   );
