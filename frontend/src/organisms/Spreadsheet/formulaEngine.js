@@ -267,6 +267,11 @@ export function fmtCell(value, type) {
     case 'pct100': return `${Math.min(Math.round(n * 100), 100)}%`;
     case 'int':    return n.toLocaleString('es-CO', { maximumFractionDigits: 0 });
     case 'num2':   return n.toLocaleString('es-CO', { maximumFractionDigits: 2 });
+    case 'money_m': {
+      if (n === 0) return '$0 M';
+      if (Math.abs(n) >= 1000) return `$${(n / 1000).toFixed(1)} mil M`;
+      return `$${parseInt(n).toLocaleString('es-CO')} M`;
+    }
     default:       return n % 1 === 0 ? n.toLocaleString('es-CO') : n.toLocaleString('es-CO', { maximumFractionDigits: 2 });
   }
 }

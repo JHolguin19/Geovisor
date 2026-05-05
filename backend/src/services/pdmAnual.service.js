@@ -287,13 +287,20 @@ export async function getYearBySecretaria(year) {
       COUNT(*) FILTER (WHERE meta_pdm_${y} IS NOT NULL)                    AS programadas,
       COUNT(*) FILTER (WHERE meta_pdm_${y} IS NULL)                        AS no_programadas,
       ROUND(AVG(LEAST(eficiencia_${y}, 1.0)) FILTER (WHERE eficiencia_${y} IS NOT NULL) * 100, 1) AS eficiencia_promedio,
-      -- avance_fisico capeado a 1.0 — sobre-ejecución no eleva el indicador
-      ROUND(AVG(LEAST(avance_fisico, 1.0)) FILTER (WHERE avance_fisico IS NOT NULL) * 100, 1) AS avance_fisico_pct,
-      ROUND(AVG(LEAST(ponderado_avance_${y}, COALESCE(meta_pdm_${y}::numeric / NULLIF(meta_cuatrienio::numeric, 0), ponderado_avance_${y}))) FILTER (WHERE ponderado_avance_${y} IS NOT NULL AND meta_pdm_${y} IS NOT NULL) * 100, 1) AS avance_fisico_anio_pct,
+      -- avance_fisico cuatrienio: SUM(todas las meta_fisica) / SUM(meta_cuatrienio)
+      ROUND(
+        SUM(COALESCE(meta_fisica_2024::numeric,0)+COALESCE(meta_fisica_2025::numeric,0)+COALESCE(meta_fisica_2026::numeric,0)+COALESCE(meta_fisica_2027::numeric,0))
+        / NULLIF(SUM(COALESCE(meta_cuatrienio::numeric,0)),0) * 100, 1
+      ) AS avance_fisico_pct,
+      -- avance_fisico año: SUM(meta_fisica_Y) / SUM(meta_cuatrienio)
+      ROUND(
+        SUM(COALESCE(meta_fisica_${y}::numeric,0))
+        / NULLIF(SUM(COALESCE(meta_cuatrienio::numeric,0)),0) * 100, 1
+      ) AS avance_fisico_anio_pct,
       ROUND(SUM(COALESCE((presupuesto_${y}->>'total_apropiacion')::numeric, 0)) / 1000000, 0) AS apropiacion_m,
       ROUND(SUM(COALESCE((presupuesto_${y}->>'neto_registros')::numeric, 0)) / 1000000, 0)    AS comprometido_m,
       ROUND(SUM(COALESCE((presupuesto_${y}->>'total_obligacion')::numeric, 0)) / 1000000, 0)  AS obligado_m,
-      -- sum_meta_pdm / sum_meta_fisica: valores RAW para mostrar en tabla (no capeados)
+      -- sum_meta_pdm / sum_meta_fisica: valores RAW para mostrar en tabla
       SUM(COALESCE(meta_pdm_${y}::numeric, 0))    AS sum_meta_pdm,
       SUM(COALESCE(meta_fisica_${y}::numeric, 0)) AS sum_meta_fisica,
       COUNT(*) FILTER (WHERE eficiencia_${y} IS NOT NULL AND eficiencia_${y} >= 0.8)                             AS semaforo_verde,
@@ -319,11 +326,21 @@ export async function getYearByPilar(year) {
       COUNT(*) FILTER (WHERE meta_pdm_${y} IS NOT NULL)                    AS programadas,
       COUNT(*) FILTER (WHERE meta_pdm_${y} IS NULL)                        AS no_programadas,
       ROUND(AVG(LEAST(eficiencia_${y}, 1.0)) FILTER (WHERE eficiencia_${y} IS NOT NULL) * 100, 1) AS eficiencia_promedio,
-      ROUND(AVG(LEAST(avance_fisico, 1.0)) FILTER (WHERE avance_fisico IS NOT NULL) * 100, 1) AS avance_fisico_pct,
-      ROUND(AVG(LEAST(ponderado_avance_${y}, COALESCE(meta_pdm_${y}::numeric / NULLIF(meta_cuatrienio::numeric, 0), ponderado_avance_${y}))) FILTER (WHERE ponderado_avance_${y} IS NOT NULL AND meta_pdm_${y} IS NOT NULL) * 100, 1) AS avance_fisico_anio_pct,
+      -- avance_fisico cuatrienio: SUM(todas las meta_fisica) / SUM(meta_cuatrienio)
+      ROUND(
+        SUM(COALESCE(meta_fisica_2024::numeric,0)+COALESCE(meta_fisica_2025::numeric,0)+COALESCE(meta_fisica_2026::numeric,0)+COALESCE(meta_fisica_2027::numeric,0))
+        / NULLIF(SUM(COALESCE(meta_cuatrienio::numeric,0)),0) * 100, 1
+      ) AS avance_fisico_pct,
+      -- avance_fisico año: SUM(meta_fisica_Y) / SUM(meta_cuatrienio)
+      ROUND(
+        SUM(COALESCE(meta_fisica_${y}::numeric,0))
+        / NULLIF(SUM(COALESCE(meta_cuatrienio::numeric,0)),0) * 100, 1
+      ) AS avance_fisico_anio_pct,
       ROUND(SUM(COALESCE((presupuesto_${y}->>'total_apropiacion')::numeric, 0)) / 1000000, 0) AS apropiacion_m,
       ROUND(SUM(COALESCE((presupuesto_${y}->>'neto_registros')::numeric, 0)) / 1000000, 0)    AS comprometido_m,
       ROUND(SUM(COALESCE((presupuesto_${y}->>'total_obligacion')::numeric, 0)) / 1000000, 0)  AS obligado_m,
+      SUM(COALESCE(meta_pdm_${y}::numeric, 0))    AS sum_meta_pdm,
+      SUM(COALESCE(meta_fisica_${y}::numeric, 0)) AS sum_meta_fisica,
       COUNT(*) FILTER (WHERE eficiencia_${y} IS NOT NULL AND eficiencia_${y} >= 0.8)                             AS semaforo_verde,
       COUNT(*) FILTER (WHERE eficiencia_${y} IS NOT NULL AND eficiencia_${y} >= 0.5 AND eficiencia_${y} < 0.8)  AS semaforo_amarillo,
       COUNT(*) FILTER (WHERE eficiencia_${y} IS NOT NULL AND eficiencia_${y} < 0.5)                              AS semaforo_rojo
@@ -957,33 +974,16 @@ export async function getComparativoFinanciero() {
           WHEN 2027 THEN (m.presupuesto_2027->>'total_apropiacion')::numeric
         END > 0) AS con_presupuesto,
 
-        -- Avance físico promedio ese año (para comparar con ejecución financiera)
-        ROUND(AVG(LEAST(CASE yr.year
-          WHEN 2024 THEN m.ponderado_avance_2024
-          WHEN 2025 THEN m.ponderado_avance_2025
-          WHEN 2026 THEN m.ponderado_avance_2026
-          WHEN 2027 THEN m.ponderado_avance_2027
-        END, COALESCE(CASE yr.year
-          WHEN 2024 THEN m.meta_pdm_2024::numeric / NULLIF(m.meta_cuatrienio::numeric, 0)
-          WHEN 2025 THEN m.meta_pdm_2025::numeric / NULLIF(m.meta_cuatrienio::numeric, 0)
-          WHEN 2026 THEN m.meta_pdm_2026::numeric / NULLIF(m.meta_cuatrienio::numeric, 0)
-          WHEN 2027 THEN m.meta_pdm_2027::numeric / NULLIF(m.meta_cuatrienio::numeric, 0)
-        END, CASE yr.year
-          WHEN 2024 THEN m.ponderado_avance_2024
-          WHEN 2025 THEN m.ponderado_avance_2025
-          WHEN 2026 THEN m.ponderado_avance_2026
-          WHEN 2027 THEN m.ponderado_avance_2027
-        END))) FILTER (WHERE CASE yr.year
-          WHEN 2024 THEN m.ponderado_avance_2024
-          WHEN 2025 THEN m.ponderado_avance_2025
-          WHEN 2026 THEN m.ponderado_avance_2026
-          WHEN 2027 THEN m.ponderado_avance_2027
-        END IS NOT NULL AND CASE yr.year
-          WHEN 2024 THEN m.meta_pdm_2024
-          WHEN 2025 THEN m.meta_pdm_2025
-          WHEN 2026 THEN m.meta_pdm_2026
-          WHEN 2027 THEN m.meta_pdm_2027
-        END IS NOT NULL) * 100, 1) AS avance_fisico_pct
+        -- Avance físico del año: SUM(meta_fisica_Y) / SUM(meta_cuatrienio)
+        ROUND(
+          SUM(CASE yr.year
+            WHEN 2024 THEN COALESCE(m.meta_fisica_2024::numeric, 0)
+            WHEN 2025 THEN COALESCE(m.meta_fisica_2025::numeric, 0)
+            WHEN 2026 THEN COALESCE(m.meta_fisica_2026::numeric, 0)
+            WHEN 2027 THEN COALESCE(m.meta_fisica_2027::numeric, 0)
+          END) /
+          NULLIF(SUM(COALESCE(m.meta_cuatrienio::numeric, 0)), 0) * 100, 1
+        ) AS avance_fisico_pct
 
       FROM pdm_metas m
       CROSS JOIN (VALUES (2024),(2025),(2026),(2027)) AS yr(year)

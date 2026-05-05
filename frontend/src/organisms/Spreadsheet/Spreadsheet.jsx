@@ -13,20 +13,7 @@ function efFn(y) {
   };
 }
 
-function avFisFn(row) {
-  const pdm  = [2024,2025,2026,2027].map(y => parseFloat(row[`meta_pdm_${y}`]) || 0);
-  const fis  = [2024,2025,2026,2027].map(y => parseFloat(row[`meta_fisica_${y}`]) || 0);
-  const caps = [2024,2025,2026,2027].map((_, i) => pdm[i] > 0 ? Math.min(fis[i], pdm[i]) : fis[i]);
-  const tipo = row.tipo_ponderado;
-  const mc   = parseFloat(row.meta_cuatrienio);
-  if (tipo === 'Acumulativo') {
-    return mc > 0 ? Math.min(Math.max(...caps) / mc * 100, 100) : null;
-  }
-  const sumPdm = pdm.reduce((s, v) => s + v, 0);
-  return sumPdm > 0 ? Math.min(caps.reduce((s, v) => s + v, 0) / sumPdm * 100, 100) : null;
-}
-
-// Annual Physical Progress = (Actual_Y / Meta_Cuatrienio) × 100
+// Annual Physical Progress = meta_fisica_Y / meta_cuatrienio × 100
 function avFisAnioFn(year) {
   return row => {
     const fis = parseFloat(row[`meta_fisica_${year}`]);
@@ -36,7 +23,18 @@ function avFisAnioFn(year) {
   };
 }
 
-// Financial execution % = Comprometido / Apropiacion × 100
+// 4-year total = SUM of all annual contributions (consistent with avFisAnioFn)
+function avFisFn(row) {
+  const mc = parseFloat(row.meta_cuatrienio);
+  if (!mc) return null;
+  const sum = [2024, 2025, 2026, 2027].reduce((acc, y) => {
+    const fis = parseFloat(row[`meta_fisica_${y}`]);
+    return acc + (isNaN(fis) ? 0 : fis);
+  }, 0);
+  return sum / mc * 100;
+}
+
+// Financial execution % = comprometido / apropiacion × 100
 function finPctFn(year) {
   return row => {
     const a = parseFloat(row[`apropiacion_${year}`]);
@@ -123,11 +121,11 @@ export const COLUMNS = [
 ];
 
 // ── Financial columns (shown when showFinancial = true) ───────────────────────
-
+// Values in millions of COP (backend divides by 1,000,000)
 export const FIN_COLUMNS = [2024, 2025, 2026, 2027].flatMap(y => [
-  { key: `apropiacion_${y}`,  label: 'Apropiación',  width: 92, editable: false, type: 'number', group: `${y} Fin` },
-  { key: `comprometido_${y}`, label: 'Comprometido', width: 92, editable: false, type: 'number', group: `${y} Fin` },
-  { key: `_pctfin_${y}`,      label: '% Ejec.',      width: 58, editable: false, group: `${y} Fin`,
+  { key: `apropiacion_${y}`,  label: 'Apropia. (M$)',  width: 96, editable: false, format: 'money_m', group: `${y} Fin` },
+  { key: `comprometido_${y}`, label: 'Comprometido (M$)', width: 96, editable: false, format: 'money_m', group: `${y} Fin` },
+  { key: `_pctfin_${y}`,      label: '% Ejec.',        width: 58, editable: false, group: `${y} Fin`,
     computed: finPctFn(y), format: 'pct1',
     cellStyle: (_, v) => ({ background: effColor(v), fontWeight: 600 }) },
 ]);
@@ -183,15 +181,17 @@ function getCellDisplayValue(col, effectiveRow, rawFormulas) {
 // ── Spreadsheet component ─────────────────────────────────────────────────────
 
 export default function Spreadsheet({ rows: initialRows, onSave, saving }) {
-  const [rows, setRows]             = useState(initialRows);
-  const [pending, setPending]       = useState(new Map());
+  const [rows, setRows]               = useState(initialRows);
+  const [pending, setPending]         = useState(new Map());
   const [rawFormulas, setRawFormulas] = useState(new Map());
-  const [selected, setSelected]     = useState(null);
-  const [editing, setEditing]       = useState(null);
-  const [editVal, setEditVal]       = useState('');
-  const [formulaBar, setFormulaBar] = useState('');
-  const [filter, setFilter]         = useState('');
-  const [secFilter, setSecFilter]   = useState('');
+  // Unified selection: cursor = active cell, anchor = start of range
+  const [sel, setSel]                 = useState({ cursor: null, anchor: null });
+  const selected                      = sel.cursor; // alias for backward compat
+  const [editing, setEditing]         = useState(null);
+  const [editVal, setEditVal]         = useState('');
+  const [formulaBar, setFormulaBar]   = useState('');
+  const [filter, setFilter]           = useState('');
+  const [secFilter, setSecFilter]     = useState('');
   const [showFinancial, setShowFinancial] = useState(false);
 
   const editInputRef = useRef(null);
@@ -207,7 +207,7 @@ export default function Spreadsheet({ rows: initialRows, onSave, saving }) {
     [showFinancial]
   );
 
-  // ── Filtered rows ───────────────────────────────────────────────────────────
+  // ── Filtered rows ──────────────────────────────────────────────────────────
   const filteredRows = useMemo(() => {
     let r = rows;
     if (secFilter) r = r.filter(row => row.secretaria === secFilter);
@@ -224,7 +224,19 @@ export default function Spreadsheet({ rows: initialRows, onSave, saving }) {
 
   const secretarias = useMemo(() => [...new Set(rows.map(r => r.secretaria))].sort(), [rows]);
 
-  // ── Selection helpers ───────────────────────────────────────────────────────
+  // ── Selection range helpers ───────────────────────────────────────────────
+  const inRange = (ri, ci) => {
+    const { cursor, anchor } = sel;
+    if (!cursor || !anchor) return false;
+    const r0 = Math.min(anchor.ri, cursor.ri), r1 = Math.max(anchor.ri, cursor.ri);
+    const c0 = Math.min(anchor.ci, cursor.ci), c1 = Math.max(anchor.ci, cursor.ci);
+    return ri >= r0 && ri <= r1 && ci >= c0 && ci <= c1;
+  };
+
+  const hasRangeSelection = sel.cursor && sel.anchor &&
+    (sel.cursor.ri !== sel.anchor.ri || sel.cursor.ci !== sel.anchor.ci);
+
+  // ── Selection helpers ─────────────────────────────────────────────────────
   const getColLetter = ci => toColLetters(ci);
   const getCellName  = (ri, ci) => `${getColLetter(ci)}${ri + 1}`;
 
@@ -241,13 +253,20 @@ export default function Spreadsheet({ rows: initialRows, onSave, saving }) {
     setFormulaBar(raw === null ? '' : String(raw));
   }, [filteredRows, rawFormulas, pending, visibleCols]);
 
+  // Select a single cell (resets anchor)
   const selectCell = useCallback((ri, ci) => {
-    setSelected({ ri, ci });
+    setSel({ cursor: { ri, ci }, anchor: { ri, ci } });
     setEditing(null);
     updateFormulaBar(ri, ci);
   }, [updateFormulaBar]);
 
-  // ── Edit helpers ─────────────────────────────────────────────────────────────
+  // Extend selection (keeps anchor, moves cursor)
+  const extendSelectionTo = useCallback((ri, ci) => {
+    setSel(prev => ({ ...prev, cursor: { ri, ci } }));
+    updateFormulaBar(ri, ci);
+  }, [updateFormulaBar]);
+
+  // ── Edit helpers ──────────────────────────────────────────────────────────
   const commitEdit = useCallback((ri, ci, value) => {
     const row = filteredRows[ri];
     if (!row) return;
@@ -289,14 +308,26 @@ export default function Spreadsheet({ rows: initialRows, onSave, saving }) {
     setTimeout(() => { editInputRef.current?.focus(); editInputRef.current?.select(); }, 0);
   }, [filteredRows, rawFormulas, pending, visibleCols]);
 
-  // ── Keyboard navigation ──────────────────────────────────────────────────────
+  // ── Keyboard navigation ───────────────────────────────────────────────────
+  // Move cursor and reset anchor (single cell)
   const moveSelection = useCallback((dri, dci) => {
-    setSelected(prev => {
-      if (!prev) return { ri: 0, ci: 0 };
-      const ri = Math.max(0, Math.min(filteredRows.length - 1, prev.ri + dri));
-      const ci = Math.max(0, Math.min(visibleCols.length - 1, prev.ci + dci));
+    setSel(prev => {
+      const cur = prev.cursor ?? { ri: 0, ci: 0 };
+      const ri = Math.max(0, Math.min(filteredRows.length - 1, cur.ri + dri));
+      const ci = Math.max(0, Math.min(visibleCols.length - 1, cur.ci + dci));
       updateFormulaBar(ri, ci);
-      return { ri, ci };
+      return { cursor: { ri, ci }, anchor: { ri, ci } };
+    });
+  }, [filteredRows.length, visibleCols.length, updateFormulaBar]);
+
+  // Extend selection range (keeps anchor)
+  const extendMove = useCallback((dri, dci) => {
+    setSel(prev => {
+      const cur = prev.cursor ?? { ri: 0, ci: 0 };
+      const ri = Math.max(0, Math.min(filteredRows.length - 1, cur.ri + dri));
+      const ci = Math.max(0, Math.min(visibleCols.length - 1, cur.ci + dci));
+      updateFormulaBar(ri, ci);
+      return { ...prev, cursor: { ri, ci } };
     });
   }, [filteredRows.length, visibleCols.length, updateFormulaBar]);
 
@@ -306,10 +337,22 @@ export default function Spreadsheet({ rows: initialRows, onSave, saving }) {
     const { ri, ci } = selected;
 
     switch (e.key) {
-      case 'ArrowUp':    e.preventDefault(); moveSelection(-1, 0); break;
-      case 'ArrowDown':  e.preventDefault(); moveSelection(1, 0);  break;
-      case 'ArrowLeft':  e.preventDefault(); moveSelection(0, -1); break;
-      case 'ArrowRight': e.preventDefault(); moveSelection(0, 1);  break;
+      case 'ArrowUp':
+        e.preventDefault();
+        e.shiftKey ? extendMove(-1, 0) : moveSelection(-1, 0);
+        break;
+      case 'ArrowDown':
+        e.preventDefault();
+        e.shiftKey ? extendMove(1, 0) : moveSelection(1, 0);
+        break;
+      case 'ArrowLeft':
+        e.preventDefault();
+        e.shiftKey ? extendMove(0, -1) : moveSelection(0, -1);
+        break;
+      case 'ArrowRight':
+        e.preventDefault();
+        e.shiftKey ? extendMove(0, 1) : moveSelection(0, 1);
+        break;
       case 'Tab':
         e.preventDefault();
         e.shiftKey ? moveSelection(0, -1) : moveSelection(0, 1);
@@ -331,7 +374,7 @@ export default function Spreadsheet({ rows: initialRows, onSave, saving }) {
           startEdit(ri, ci, e.key);
         }
     }
-  }, [editing, selected, moveSelection, startEdit, visibleCols]);
+  }, [editing, selected, moveSelection, extendMove, startEdit, visibleCols]);
 
   const handleEditKeyDown = useCallback((e) => {
     if (!editing) return;
@@ -354,7 +397,7 @@ export default function Spreadsheet({ rows: initialRows, onSave, saving }) {
     }
   }, [editing, editVal, commitEdit, moveSelection, updateFormulaBar]);
 
-  // ── Formula bar submit ────────────────────────────────────────────────────────
+  // ── Formula bar submit ────────────────────────────────────────────────────
   const handleFormulaBarKeyDown = (e) => {
     if (!selected) return;
     if (e.key === 'Enter') {
@@ -366,22 +409,25 @@ export default function Spreadsheet({ rows: initialRows, onSave, saving }) {
     }
   };
 
-  // ── Bulk paste from Excel (Ctrl+V on grid) ────────────────────────────────────
+  // ── Bulk paste from Excel (Ctrl+V on grid) ────────────────────────────────
   const handlePaste = useCallback((e) => {
     if (!selected) return;
     const text = e.clipboardData?.getData('text/plain');
     if (!text) return;
-    // Only intercept multi-cell paste (has tabs or multiple lines)
     const isMultiCell = text.includes('\t') || text.split(/\r?\n/).filter(Boolean).length > 1;
     if (!isMultiCell) return;
     e.preventDefault();
+    // Paste starts from top-left of current selection range
+    const { cursor, anchor } = sel;
+    const startRi = anchor ? Math.min(anchor.ri, cursor.ri) : cursor.ri;
+    const startCi = anchor ? Math.min(anchor.ci, cursor.ci) : cursor.ci;
     const pasteRows = text.split(/\r?\n/).filter(r => r !== '');
     const newPending = new Map(pending);
     pasteRows.forEach((rowText, dri) => {
       const vals = rowText.split('\t');
       vals.forEach((val, dci) => {
-        const ri = selected.ri + dri;
-        const ci = selected.ci + dci;
+        const ri = startRi + dri;
+        const ci = startCi + dci;
         if (ri >= filteredRows.length || ci >= visibleCols.length) return;
         const col = visibleCols[ci];
         if (!col?.editable) return;
@@ -391,9 +437,9 @@ export default function Spreadsheet({ rows: initialRows, onSave, saving }) {
       });
     });
     setPending(newPending);
-  }, [selected, filteredRows, visibleCols, pending]);
+  }, [sel, selected, filteredRows, visibleCols, pending]);
 
-  // ── Save / Discard ────────────────────────────────────────────────────────────
+  // ── Save / Discard ────────────────────────────────────────────────────────
   const handleSave = () => {
     const changes = [];
     for (const [fKey, value] of pending) {
@@ -423,7 +469,7 @@ export default function Spreadsheet({ rows: initialRows, onSave, saving }) {
     if (onSave) onSave._updateRows = updateRows;
   }, [onSave, updateRows]);
 
-  // ── Frozen column positions ───────────────────────────────────────────────────
+  // ── Frozen column positions ───────────────────────────────────────────────
   const frozenLeft = useMemo(() => {
     let left = 0;
     return visibleCols.map(col => {
@@ -434,7 +480,7 @@ export default function Spreadsheet({ rows: initialRows, onSave, saving }) {
     });
   }, [visibleCols]);
 
-  // ── Render ────────────────────────────────────────────────────────────────────
+  // ── Render ────────────────────────────────────────────────────────────────
   const hasPending = pending.size > 0;
 
   return (
@@ -470,7 +516,7 @@ export default function Spreadsheet({ rows: initialRows, onSave, saving }) {
           <button
             className={`sps__btn ${showFinancial ? 'sps__btn--fin-active' : 'sps__btn--fin'}`}
             onClick={() => setShowFinancial(f => !f)}
-            title="Mostrar / ocultar columnas financieras por año"
+            title="Mostrar / ocultar columnas financieras por año (valores en millones de COP)"
           >
             {showFinancial ? '$ Ocultar financiero' : '$ Ver financiero'}
           </button>
@@ -545,10 +591,11 @@ export default function Spreadsheet({ rows: initialRows, onSave, saving }) {
               return (
                 <tr key={row.id || row.meta_num} className={`sps__row${ri % 2 === 0 ? '' : ' sps__row--odd'}`}>
                   {visibleCols.map((col, ci) => {
-                    const isSel    = selected?.ri === ri && selected?.ci === ci;
-                    const isEdit   = editing?.ri  === ri && editing?.ci  === ci;
-                    const fKey     = `${row.meta_num}__${col.key}`;
+                    const isSel     = selected?.ri === ri && selected?.ci === ci;
+                    const isEdit    = editing?.ri  === ri && editing?.ci  === ci;
+                    const fKey      = `${row.meta_num}__${col.key}`;
                     const isChanged = pending.has(fKey);
+                    const isInRange = inRange(ri, ci);
 
                     // Display value
                     let displayVal;
@@ -560,8 +607,8 @@ export default function Spreadsheet({ rows: initialRows, onSave, saving }) {
                     }
 
                     // Computed value for cellStyle (raw number)
-                    const computedVal  = col.computed ? derived[col.key] : null;
-                    const extraStyle   = col.cellStyle
+                    const computedVal = col.computed ? derived[col.key] : null;
+                    const extraStyle  = col.cellStyle
                       ? col.cellStyle(effectiveRow, computedVal ?? (col.format ? parseFloat(displayVal) : null))
                       : {};
 
@@ -574,15 +621,19 @@ export default function Spreadsheet({ rows: initialRows, onSave, saving }) {
                           col.editable  ? 'sps__cell--editable' : '',
                           isSel         ? 'sps__cell--selected' : '',
                           isChanged     ? 'sps__cell--changed'  : '',
-                          col.type === 'number' ? 'sps__cell--num' : '',
+                          col.type === 'number' || col.format === 'money_m' ? 'sps__cell--num' : '',
                           col.wrap      ? 'sps__cell--wrap'     : '',
+                          isInRange && !isSel ? 'sps__cell--in-range' : '',
                         ].filter(Boolean).join(' ')}
                         style={{
                           ...(col.frozen ? { left: frozenLeft[ci], zIndex: 2 } : {}),
                           width: col.width, minWidth: col.width,
                           ...extraStyle,
                         }}
-                        onClick={() => selectCell(ri, ci)}
+                        onClick={e => {
+                          if (e.shiftKey) extendSelectionTo(ri, ci);
+                          else selectCell(ri, ci);
+                        }}
                         onDoubleClick={() => { if (col.editable) startEdit(ri, ci); }}
                       >
                         {isEdit ? (
@@ -609,8 +660,13 @@ export default function Spreadsheet({ rows: initialRows, onSave, saving }) {
       <div className="sps__status">
         <span>{filteredRows.length} / {rows.length} metas</span>
         {selected && <span>Celda: {getCellName(selected.ri, selected.ci)}</span>}
+        {hasRangeSelection && (
+          <span className="sps__status--range">
+            {Math.abs(sel.cursor.ri - sel.anchor.ri) + 1} × {Math.abs(sel.cursor.ci - sel.anchor.ci) + 1} celdas
+          </span>
+        )}
         {hasPending && <span className="sps__status--warn">{pending.size} cambio(s) pendiente(s)</span>}
-        <span className="sps__status--hint">Ctrl+V para pegar desde Excel</span>
+        <span className="sps__status--hint">Shift+clic/flechas para seleccionar rango · Ctrl+V para pegar desde Excel</span>
       </div>
     </div>
   );

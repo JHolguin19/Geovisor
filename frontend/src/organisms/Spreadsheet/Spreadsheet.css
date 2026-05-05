@@ -387,3 +387,15 @@
   color: #9ca3af;
   font-style: italic;
 }
+
+.sps__status--range {
+  color: #2563eb;
+  font-weight: 600;
+}
+
+/* Range selection highlight */
+.sps__cell--in-range {
+  background: #dbeafe !important;
+  outline: 1px solid #93c5fd;
+  outline-offset: -1px;
+}

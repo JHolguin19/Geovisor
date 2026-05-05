@@ -45,7 +45,7 @@ export default function AnualSecretariasTab({ data, year, onSecretariaClick }) {
               const eff = parseFloat(s.eficiencia_promedio) || 0;
               const pdm = parseFloat(s.sum_meta_pdm) || 0;
               const fisica = parseFloat(s.sum_meta_fisica) || 0;
-              const pctFisico = pdm > 0 ? Math.min(Math.round(fisica / pdm * 100), 100) : 0;
+              const pctFisico = parseFloat(s.avance_fisico_anio_pct) || 0;
               const apropia = parseFloat(s.apropiacion_m) || 0;
               const registro = parseFloat(s.comprometido_m) || 0;
               const pctReg = apropia > 0 ? Math.round(registro / apropia * 100) : 0;
