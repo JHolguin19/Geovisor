@@ -41,9 +41,9 @@ function HBarChart({ data, labelKey, valueKey, colorFn, maxItems = 15 }) {
   const h = items.length * (barH + gap);
 
   return (
-    <svg viewBox={`0 0 460 ${h}`} className="del-chart-svg" preserveAspectRatio="xMinYMin meet">
+    <svg viewBox={`0 0 520 ${h}`} className="del-chart-svg" preserveAspectRatio="xMinYMin meet">
       {items.map((d, i) => {
-        const w = (+d[valueKey] / max) * 280;
+        const w = (+d[valueKey] / max) * 250;
         const y = i * (barH + gap);
         const color = colorFn ? colorFn(d[labelKey]) : 'var(--del-accent)';
         return (

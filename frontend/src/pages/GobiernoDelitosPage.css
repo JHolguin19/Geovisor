@@ -28,6 +28,7 @@
 
 .del-scroll {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   scroll-behavior: smooth;
 }
@@ -41,6 +42,15 @@
   gap: 22px;
 }
 
+/* Prevent grid/flex children from blowing out their columns due to SVG min-width: auto */
+.del-grid-2 > * {
+  min-width: 0;
+}
+
+.del-col-stack > * {
+  min-width: 0;
+}
+
 /* ── Header ────────────────────────────────────────────────────────────── */
 
 .del-header {
@@ -52,6 +62,19 @@
   background: var(--del-header-bg);
   flex-wrap: wrap;
   min-height: 56px;
+  flex-shrink: 0;
+}
+
+/* btn-logout override for dark header context */
+.del-header .btn-logout {
+  color: rgba(255,255,255,.75);
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.2);
+}
+.del-header .btn-logout:hover {
+  color: #fff;
+  background: rgba(255,255,255,.15);
+  border-color: rgba(255,255,255,.35);
 }
 
 .del-header-left {
@@ -278,6 +301,7 @@
   display: grid;
   grid-template-columns: 3fr 2fr;
   gap: 18px;
+  align-items: start;
 }
 
 .del-col-stack {
@@ -292,6 +316,7 @@
   width: 100%;
   height: auto;
   display: block;
+  overflow: visible;
 }
 
 .del-chart-label {
