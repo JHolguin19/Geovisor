@@ -38,28 +38,28 @@ const MES_LABELS = { ene:'Ene',feb:'Feb',mar:'Mar',abr:'Abr',may:'May',jun:'Jun'
 function HBarChart({ data, labelKey, valueKey, colorFn, maxItems = 15 }) {
   const items = data.slice(0, maxItems);
   const max = Math.max(...items.map(d => +d[valueKey]), 1);
-  const barH = 26, gap = 4;
-  const labelW = 170;
-  const barMaxW = 220;
-  const valW = 55;
+  const barH = 34, gap = 6;
+  const labelW = 210;
+  const barMaxW = 300;
+  const valW = 60;
   const svgW = labelW + barMaxW + valW;
   const h = items.length * (barH + gap);
 
   return (
     <div className="del-chart-scroll">
       <svg viewBox={`0 0 ${svgW} ${h}`} className="del-chart-svg" width={svgW} height={h}
-        preserveAspectRatio="xMinYMin meet" style={{ minWidth: `${Math.min(svgW, 420)}px` }}>
+        preserveAspectRatio="xMinYMin meet" style={{ minWidth: `${Math.min(svgW, 520)}px` }}>
         {items.map((d, i) => {
           const w = (+d[valueKey] / max) * barMaxW;
           const y = i * (barH + gap);
           const color = colorFn ? colorFn(d[labelKey]) : 'var(--del-accent)';
           const rawLabel = d[labelKey] || 'Sin dato';
-          const label = rawLabel.length > 22 ? rawLabel.slice(0, 20) + '...' : rawLabel;
+          const label = rawLabel.length > 28 ? rawLabel.slice(0, 26) + '...' : rawLabel;
           return (
             <g key={i}>
-              <text x={labelW - 8} y={y + barH / 2 + 4} textAnchor="end" className="del-chart-label">{label}</text>
-              <rect x={labelW} y={y + 2} width={Math.max(w, 2)} height={barH - 4} rx="3" fill={color} opacity=".85" />
-              <text x={labelW + w + 6} y={y + barH / 2 + 4} className="del-chart-val">{(+d[valueKey]).toLocaleString()}</text>
+              <text x={labelW - 10} y={y + barH / 2 + 5} textAnchor="end" className="del-chart-label">{label}</text>
+              <rect x={labelW} y={y + 3} width={Math.max(w, 3)} height={barH - 6} rx="4" fill={color} opacity=".85" />
+              <text x={labelW + w + 8} y={y + barH / 2 + 5} className="del-chart-val">{(+d[valueKey]).toLocaleString()}</text>
             </g>
           );
         })}
@@ -72,21 +72,21 @@ function VBarChart({ data, labelKey, valueKey, color = 'var(--del-accent)' }) {
   if (!data || data.length === 0) return null;
   const max = Math.max(...data.map(d => +d[valueKey]), 1);
   const n = data.length;
-  const barW = n > 10 ? 24 : 36;
-  const gap = n > 10 ? 3 : 5;
+  const barW = n > 10 ? 30 : 42;
+  const gap = n > 10 ? 5 : 7;
 
   const maxLabelLen = Math.max(...data.map(d => String(d[labelKey] ?? '').length), 0);
   const rotateLabels = maxLabelLen > 4;
-  const padL = rotateLabels ? 30 : 10;
-  const padR = 12;
+  const padL = rotateLabels ? 36 : 14;
+  const padR = 16;
   const w = padL + n * (barW + gap) + padR;
-  const chartH = 130;
-  const labelAreaH = rotateLabels ? 90 : 38;
+  const chartH = 170;
+  const labelAreaH = rotateLabels ? 100 : 44;
 
   return (
     <div className="del-chart-scroll">
       <svg viewBox={`0 0 ${w} ${chartH + labelAreaH}`} className="del-chart-svg" width={w} height={chartH + labelAreaH}
-        preserveAspectRatio="xMinYMin meet" style={{ minWidth: `${Math.min(w, 280)}px` }}>
+        preserveAspectRatio="xMinYMin meet" style={{ minWidth: `${Math.min(w, 360)}px` }}>
         {data.map((d, i) => {
           const h = (+d[valueKey] / max) * chartH;
           const x = padL + i * (barW + gap);
@@ -101,14 +101,14 @@ function VBarChart({ data, labelKey, valueKey, color = 'var(--del-accent)' }) {
               {rotateLabels ? (
                 <text
                   x={cx}
-                  y={chartH + 16}
+                  y={chartH + 18}
                   textAnchor="end"
-                  transform={`rotate(-40, ${cx}, ${chartH + 16})`}
-                  style={{ fontSize: '9px' }}
+                  transform={`rotate(-40, ${cx}, ${chartH + 18})`}
+                  style={{ fontSize: '11px' }}
                   className="del-chart-xlabel"
                 >{lbl}</text>
               ) : (
-                <text x={cx} y={chartH + 26} textAnchor="middle" className="del-chart-xlabel">{lbl}</text>
+                <text x={cx} y={chartH + 30} textAnchor="middle" className="del-chart-xlabel">{lbl}</text>
               )}
             </g>
           );
@@ -130,7 +130,7 @@ function DonutChart({ data, labelKey, valueKey }) {
     const endAngle = cumAngle;
     const large = frac > 0.5 ? 1 : 0;
     const toRad = a => (a - 90) * Math.PI / 180;
-    const r = 60, cx = 80, cy = 80;
+    const r = 70, cx = 90, cy = 90;
     const x1 = cx + r * Math.cos(toRad(startAngle));
     const y1 = cy + r * Math.sin(toRad(startAngle));
     const x2 = cx + r * Math.cos(toRad(endAngle - 0.5));
@@ -147,11 +147,11 @@ function DonutChart({ data, labelKey, valueKey }) {
 
   return (
     <div className="del-donut-wrap">
-      <svg viewBox="0 0 160 160" className="del-donut-svg">
+      <svg viewBox="0 0 180 180" className="del-donut-svg">
         {arcs}
-        <circle cx="80" cy="80" r="35" fill="var(--del-card-bg)" />
-        <text x="80" y="76" textAnchor="middle" className="del-donut-total">{total.toLocaleString()}</text>
-        <text x="80" y="92" textAnchor="middle" className="del-donut-label">Total</text>
+        <circle cx="90" cy="90" r="40" fill="var(--del-card-bg)" />
+        <text x="90" y="86" textAnchor="middle" className="del-donut-total">{total.toLocaleString()}</text>
+        <text x="90" y="104" textAnchor="middle" className="del-donut-label">Total</text>
       </svg>
       <div className="del-donut-legend">
         {data.map((d, i) => (
@@ -173,17 +173,17 @@ function MonthlyChart({ data }) {
     byYear[d.anio][d.mes] = +d.total;
   });
   const years = Object.keys(byYear).sort();
-  const barW = 18, groupGap = 10, monthW = years.length * barW + groupGap;
-  const w = MES_ORDER.length * monthW + 40;
-  const chartH = 120;
+  const barW = 22, groupGap = 14, monthW = years.length * barW + groupGap;
+  const w = MES_ORDER.length * monthW + 50;
+  const chartH = 160;
   const max = Math.max(...data.map(d => +d.total), 1);
   const yearColors = { '2024': '#2563EB', '2025': '#DC2626' };
 
   return (
     <div>
       <div className="del-chart-scroll">
-        <svg viewBox={`0 0 ${w} ${chartH + 32}`} className="del-chart-svg" width={w} height={chartH + 32}
-          preserveAspectRatio="xMinYMin meet" style={{ minWidth: `${Math.min(w, 500)}px` }}>
+        <svg viewBox={`0 0 ${w} ${chartH + 38}`} className="del-chart-svg" width={w} height={chartH + 38}
+          preserveAspectRatio="xMinYMin meet" style={{ minWidth: `${Math.min(w, 580)}px` }}>
           {MES_ORDER.map((mes, mi) => {
             const gx = mi * monthW + 20;
             return (
@@ -194,7 +194,7 @@ function MonthlyChart({ data }) {
                   const x = gx + yi * barW;
                   return (
                     <g key={yr}>
-                      <rect x={x} y={chartH - h} width={barW - 3} height={Math.max(h, 0)} rx="2"
+                      <rect x={x} y={chartH - h} width={barW - 4} height={Math.max(h, 0)} rx="3"
                         fill={yearColors[yr] || '#6B7280'} opacity=".8" />
                       {val > 0 && (
                         <text x={x + (barW - 3) / 2} y={chartH - h - 4} textAnchor="middle" className="del-chart-val-xs">{val}</text>
@@ -202,7 +202,7 @@ function MonthlyChart({ data }) {
                     </g>
                   );
                 })}
-                <text x={gx + (years.length * barW) / 2} y={chartH + 14} textAnchor="middle" className="del-chart-xlabel">{MES_LABELS[mes]}</text>
+                <text x={gx + (years.length * barW) / 2} y={chartH + 18} textAnchor="middle" className="del-chart-xlabel">{MES_LABELS[mes]}</text>
               </g>
             );
           })}
@@ -368,12 +368,12 @@ export default function GobiernoDelitosPage() {
 
           <div className="del-header-actions">
             <button className="del-btn-back" onClick={() => navigate('/portal/gobierno')} title="Portal">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
               <span className="del-btn-text">Portal</span>
             </button>
 
             <button className="del-btn-map" onClick={() => navigate('/mapa/gobierno')} title="Geovisor">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="9"/><path d="M3.6 9h16.8M3.6 15h16.8"/></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="9"/><path d="M3.6 9h16.8M3.6 15h16.8"/></svg>
               <span className="del-btn-text">Geovisor</span>
             </button>
 

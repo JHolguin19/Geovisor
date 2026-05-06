@@ -1,6 +1,6 @@
 /* ============================================================
    GobiernoDelitosPage.css — Observatorio de Seguridad
-   Fully responsive: desktop > tablet > mobile
+   Professional dashboard — fully responsive
    ============================================================ */
 
 :root {
@@ -35,12 +35,12 @@
 }
 
 .del-content {
-  max-width: 1320px;
+  max-width: 1440px;
   margin: 0 auto;
-  padding: 24px 28px 48px;
+  padding: 32px 36px 56px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 28px;
 }
 
 /* Prevent grid/flex children SVG blowout */
@@ -53,11 +53,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 8px 24px;
+  gap: 16px;
+  padding: 12px 32px;
   background: var(--del-header-bg);
   flex-wrap: wrap;
-  min-height: 52px;
+  min-height: 60px;
   flex-shrink: 0;
 }
 
@@ -75,12 +75,12 @@
 .del-header-left {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
   flex-shrink: 0;
 }
 
 .del-logo {
-  height: 30px;
+  height: 36px;
   width: auto;
   flex-shrink: 0;
 }
@@ -88,19 +88,19 @@
 .del-header-text {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 2px;
 }
 
 .del-header-entity {
-  font-size: 10px;
-  color: rgba(255,255,255,.5);
-  letter-spacing: .3px;
+  font-size: 11.5px;
+  color: rgba(255,255,255,.55);
+  letter-spacing: .4px;
   text-transform: uppercase;
   font-weight: 500;
 }
 
 .del-header-title {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 700;
   color: #fff;
   letter-spacing: -.2px;
@@ -110,14 +110,14 @@
 .del-header-right {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
 .del-header-actions {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 /* -- Year pills -------------------------------------------------------- */
@@ -126,15 +126,15 @@
   display: flex;
   gap: 2px;
   background: rgba(255,255,255,.08);
-  border-radius: 7px;
-  padding: 2px;
+  border-radius: 8px;
+  padding: 3px;
 }
 
 .del-pill {
-  padding: 4px 12px;
+  padding: 6px 16px;
   border: none;
-  border-radius: 5px;
-  font-size: 12px;
+  border-radius: 6px;
+  font-size: 13px;
   font-weight: 700;
   font-family: inherit;
   color: rgba(255,255,255,.5);
@@ -151,15 +151,15 @@
 /* -- Select / buttons -------------------------------------------------- */
 
 .del-select {
-  padding: 4px 8px;
+  padding: 6px 12px;
   border: 1px solid rgba(255,255,255,.2);
-  border-radius: 6px;
+  border-radius: 7px;
   background: rgba(255,255,255,.07);
   color: rgba(255,255,255,.85);
-  font-size: 11.5px;
+  font-size: 13px;
   font-family: inherit;
   cursor: pointer;
-  max-width: 180px;
+  max-width: 220px;
 }
 .del-select option { background: #1e293b; color: #fff; }
 
@@ -167,13 +167,13 @@
 .del-btn-map {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
+  gap: 6px;
+  padding: 6px 14px;
   border: 1px solid rgba(255,255,255,.2);
-  border-radius: 6px;
+  border-radius: 7px;
   background: rgba(255,255,255,.07);
   color: rgba(255,255,255,.85);
-  font-size: 11.5px;
+  font-size: 13px;
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
@@ -186,9 +186,9 @@
 .del-user-badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font-size: 11px;
-  color: rgba(255,255,255,.55);
+  gap: 5px;
+  font-size: 12.5px;
+  color: rgba(255,255,255,.6);
   font-weight: 600;
   white-space: nowrap;
 }
@@ -196,7 +196,7 @@
 /* -- Red band ---------------------------------------------------------- */
 
 .del-band {
-  height: 3px;
+  height: 4px;
   background: linear-gradient(90deg, var(--del-accent), var(--del-accent-dark), #111827);
   flex-shrink: 0;
 }
@@ -206,52 +206,52 @@
 .del-kpi-row {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 12px;
+  gap: 16px;
 }
 
 .del-kpi {
   background: var(--del-card-bg);
   border: 1px solid var(--del-border);
-  border-radius: 10px;
-  padding: 16px 14px 12px;
+  border-radius: 12px;
+  padding: 20px 18px 16px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 3px;
+  gap: 6px;
   position: relative;
   overflow: hidden;
   transition: transform .15s, box-shadow .15s;
 }
 .del-kpi:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0,0,0,.06);
+  box-shadow: 0 8px 24px rgba(0,0,0,.07);
 }
 .del-kpi::after {
   content: '';
   position: absolute;
   top: 0; left: 0;
-  width: 100%; height: 3px;
+  width: 100%; height: 4px;
   background: var(--kpi-accent);
 }
 
 .del-kpi-icon {
-  width: 30px;
-  height: 30px;
-  border-radius: 7px;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
   background: color-mix(in srgb, var(--kpi-accent) 10%, transparent);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
 }
 .del-kpi-icon svg {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   stroke: var(--kpi-accent);
 }
 
 .del-kpi-val {
-  font-size: 28px;
+  font-size: 32px;
   font-weight: 800;
   letter-spacing: -.5px;
   color: var(--del-text);
@@ -260,13 +260,12 @@
 }
 
 .del-kpi-label {
-  font-size: 11.5px;
+  font-size: 13px;
   color: var(--del-text-muted);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: .3px;
   line-height: 1.3;
-  /* Allow wrapping on small cards instead of truncating */
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -278,25 +277,25 @@
 .del-card {
   background: var(--del-card-bg);
   border: 1px solid var(--del-border);
-  border-radius: 10px;
-  padding: 18px 20px;
+  border-radius: 12px;
+  padding: 24px 26px;
   min-width: 0;
 }
 
 .del-card-title {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 15px;
+  gap: 10px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--del-text);
-  margin-bottom: 14px;
+  margin-bottom: 18px;
   letter-spacing: -.2px;
 }
 
 .del-card-dot {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   background: var(--del-accent);
   flex-shrink: 0;
@@ -307,7 +306,7 @@
 .del-grid-2 {
   display: grid;
   grid-template-columns: 3fr 2fr;
-  gap: 16px;
+  gap: 20px;
   align-items: start;
 }
 
@@ -318,7 +317,7 @@
 .del-col-stack {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
 }
 
 /* -- Chart scroll wrapper (horizontal scroll on narrow screens) -------- */
@@ -327,7 +326,7 @@
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   margin: 0 -4px;
-  padding: 0 4px 8px;
+  padding: 0 4px 10px;
 }
 
 /* -- SVG Chart styles -------------------------------------------------- */
@@ -340,35 +339,35 @@
 }
 
 .del-chart-label {
-  font-size: 11.5px;
-  fill: var(--del-text-muted);
+  font-size: 12.5px;
+  fill: var(--del-text);
   font-family: 'DM Sans', sans-serif;
   font-weight: 500;
 }
 
 .del-chart-val {
-  font-size: 11.5px;
+  font-size: 12.5px;
   fill: var(--del-text);
   font-family: 'DM Sans', sans-serif;
   font-weight: 700;
 }
 
 .del-chart-val-sm {
-  font-size: 10px;
+  font-size: 11.5px;
   fill: var(--del-text);
   font-family: 'DM Sans', sans-serif;
   font-weight: 700;
 }
 
 .del-chart-val-xs {
-  font-size: 9px;
+  font-size: 10.5px;
   fill: var(--del-text-muted);
   font-family: 'DM Sans', sans-serif;
   font-weight: 600;
 }
 
 .del-chart-xlabel {
-  font-size: 10.5px;
+  font-size: 12px;
   fill: var(--del-text-muted);
   font-family: 'DM Sans', sans-serif;
   font-weight: 600;
@@ -379,25 +378,25 @@
 .del-donut-wrap {
   display: flex;
   align-items: flex-start;
-  gap: 14px;
+  gap: 20px;
   flex-wrap: wrap;
 }
 
 .del-donut-svg {
-  width: 120px;
-  height: 120px;
+  width: 150px;
+  height: 150px;
   flex-shrink: 0;
 }
 
 .del-donut-total {
-  font-size: 16px;
+  font-size: 18px;
   fill: var(--del-text);
   font-family: 'DM Sans', sans-serif;
   font-weight: 800;
 }
 
 .del-donut-label {
-  font-size: 9px;
+  font-size: 10px;
   fill: var(--del-text-muted);
   font-family: 'DM Sans', sans-serif;
   font-weight: 600;
@@ -408,7 +407,7 @@
 .del-donut-legend {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 8px;
   min-width: 0;
   flex: 1;
 }
@@ -416,15 +415,15 @@
 .del-legend-item {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 13px;
+  gap: 8px;
+  font-size: 14px;
   color: var(--del-text);
   min-width: 0;
 }
 
 .del-legend-dot {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   border-radius: 3px;
   flex-shrink: 0;
 }
@@ -440,7 +439,7 @@
 .del-legend-num {
   font-weight: 700;
   color: var(--del-text-muted);
-  font-size: 11.5px;
+  font-size: 13px;
   margin-left: auto;
   flex-shrink: 0;
   white-space: nowrap;
@@ -450,9 +449,11 @@
 
 .del-month-legend {
   display: flex;
-  gap: 14px;
+  gap: 18px;
   justify-content: center;
-  margin-top: 6px;
+  margin-top: 10px;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 /* -- Ranked list ------------------------------------------------------- */
@@ -460,22 +461,22 @@
 .del-ranked {
   background: var(--del-card-bg);
   border: 1px solid var(--del-border);
-  border-radius: 10px;
-  padding: 16px 18px;
+  border-radius: 12px;
+  padding: 20px 22px;
 }
 
 .del-ranked-title {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
-  margin-bottom: 10px;
+  margin-bottom: 14px;
   color: var(--del-text);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 .del-ranked-title::before {
   content: '';
-  width: 8px; height: 8px;
+  width: 10px; height: 10px;
   border-radius: 50%;
   background: var(--del-accent);
   flex-shrink: 0;
@@ -484,15 +485,15 @@
 .del-ranked-row {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 0;
+  gap: 10px;
+  padding: 6px 0;
   border-bottom: 1px solid #f1f5f9;
 }
 .del-ranked-row:last-child { border-bottom: none; }
 
 .del-ranked-pos {
-  width: 18px;
-  font-size: 12px;
+  width: 22px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--del-text-muted);
   text-align: center;
@@ -500,12 +501,12 @@
 }
 
 .del-ranked-name {
-  font-size: 12.5px;
+  font-size: 13.5px;
   font-weight: 500;
   color: var(--del-text);
   flex: 0 1 auto;
-  min-width: 60px;
-  max-width: 140px;
+  min-width: 80px;
+  max-width: 200px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -513,26 +514,26 @@
 
 .del-ranked-bar-bg {
   flex: 1;
-  height: 5px;
+  height: 7px;
   background: #f1f5f9;
-  border-radius: 3px;
+  border-radius: 4px;
   overflow: hidden;
-  min-width: 30px;
+  min-width: 40px;
 }
 
 .del-ranked-bar {
   height: 100%;
   background: var(--del-accent);
-  border-radius: 3px;
+  border-radius: 4px;
   transition: width .4s ease;
-  opacity: .7;
+  opacity: .75;
 }
 
 .del-ranked-num {
-  font-size: 12.5px;
+  font-size: 13.5px;
   font-weight: 700;
   color: var(--del-text);
-  min-width: 28px;
+  min-width: 32px;
   text-align: right;
   font-variant-numeric: tabular-nums;
   flex-shrink: 0;
@@ -542,9 +543,9 @@
 
 .del-footer {
   text-align: center;
-  padding: 20px 0 8px;
+  padding: 24px 0 12px;
   color: var(--del-text-muted);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
 }
 
@@ -552,40 +553,40 @@
   width: 60px;
   height: 2px;
   background: var(--del-accent);
-  margin: 0 auto 12px;
+  margin: 0 auto 14px;
   border-radius: 1px;
   opacity: .4;
 }
 
-.del-footer p { margin: 2px 0; }
+.del-footer p { margin: 3px 0; }
 
 /* -- Skeleton ---------------------------------------------------------- */
 
 .del-skeleton-wrap {
-  max-width: 1320px;
+  max-width: 1440px;
   margin: 0 auto;
-  padding: 24px 28px;
+  padding: 32px 36px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 20px;
 }
 
 .del-skel-row {
   display: flex;
-  gap: 12px;
+  gap: 16px;
 }
 
 .del-skel-card {
   flex: 1;
-  height: 100px;
-  border-radius: 10px;
+  height: 110px;
+  border-radius: 12px;
   background: #e2e8f0;
 }
 
 .del-skel-block {
   flex: 1;
-  height: 240px;
-  border-radius: 10px;
+  height: 260px;
+  border-radius: 12px;
   background: #e2e8f0;
 }
 
@@ -606,8 +607,8 @@
 
 /* -- Tablet (<=1024px) ------------------------------------------------- */
 @media (max-width: 1024px) {
-  .del-content { padding: 20px 16px 36px; gap: 16px; }
-  .del-kpi-row { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .del-content { padding: 24px 20px 40px; gap: 20px; }
+  .del-kpi-row { grid-template-columns: repeat(3, 1fr); gap: 12px; }
   .del-grid-2 { grid-template-columns: 1fr; }
   .del-grid-2--equal { grid-template-columns: 1fr 1fr; }
 }
@@ -615,62 +616,62 @@
 /* -- Small tablet / large phone (<=768px) ------------------------------ */
 @media (max-width: 768px) {
   .del-header {
-    padding: 6px 12px;
-    gap: 6px;
+    padding: 10px 16px;
+    gap: 8px;
     flex-direction: column;
     align-items: stretch;
   }
 
   .del-header-left {
-    gap: 8px;
+    gap: 10px;
     justify-content: center;
   }
 
-  .del-logo { height: 24px; }
-  .del-header-entity { font-size: 9px; }
-  .del-header-title { font-size: 12.5px; white-space: normal; text-align: center; }
+  .del-logo { height: 28px; }
+  .del-header-entity { font-size: 10px; }
+  .del-header-title { font-size: 14px; white-space: normal; text-align: center; }
 
   .del-header-right {
     justify-content: center;
-    gap: 6px;
+    gap: 8px;
   }
 
-  .del-header-actions { gap: 4px; }
+  .del-header-actions { gap: 6px; }
 
-  .del-pill { padding: 4px 10px; font-size: 11px; }
-  .del-select { max-width: 160px; font-size: 11px; }
+  .del-pill { padding: 5px 12px; font-size: 12px; }
+  .del-select { max-width: 180px; font-size: 12px; }
   .del-btn-text { display: none; }
   .del-btn-back,
-  .del-btn-map { padding: 5px 8px; }
+  .del-btn-map { padding: 6px 10px; }
   .del-user-name { display: none; }
 
-  .del-content { padding: 14px 10px 28px; gap: 14px; }
-  .del-kpi-row { grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .del-kpi { padding: 12px 10px 10px; }
-  .del-kpi-icon { width: 26px; height: 26px; }
-  .del-kpi-icon svg { width: 14px; height: 14px; }
-  .del-kpi-val { font-size: 20px; }
-  .del-kpi-label { font-size: 9.5px; }
+  .del-content { padding: 18px 14px 32px; gap: 18px; }
+  .del-kpi-row { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .del-kpi { padding: 16px 14px 12px; }
+  .del-kpi-icon { width: 30px; height: 30px; }
+  .del-kpi-icon svg { width: 15px; height: 15px; }
+  .del-kpi-val { font-size: 24px; }
+  .del-kpi-label { font-size: 11px; }
 
   .del-grid-2,
   .del-grid-2--equal { grid-template-columns: 1fr; }
 
-  .del-card { padding: 14px 12px; }
-  .del-card-title { font-size: 12.5px; margin-bottom: 10px; }
+  .del-card { padding: 18px 16px; }
+  .del-card-title { font-size: 14px; margin-bottom: 14px; }
 
-  .del-donut-svg { width: 100px; height: 100px; }
-  .del-legend-item { font-size: 11px; }
-  .del-legend-num { font-size: 10px; }
+  .del-donut-svg { width: 120px; height: 120px; }
+  .del-legend-item { font-size: 12.5px; }
+  .del-legend-num { font-size: 11.5px; }
 
-  .del-ranked { padding: 14px 12px; }
-  .del-ranked-name { max-width: 100px; font-size: 10.5px; }
-  .del-ranked-num { font-size: 10.5px; min-width: 24px; }
+  .del-ranked { padding: 16px 14px; }
+  .del-ranked-name { max-width: 140px; font-size: 12px; }
+  .del-ranked-num { font-size: 12px; min-width: 28px; }
 
-  .del-footer { font-size: 10px; padding: 16px 8px 6px; }
+  .del-footer { font-size: 11px; padding: 18px 10px 8px; }
 
-  .del-skel-row { gap: 8px; }
-  .del-skel-card { height: 80px; }
-  .del-skel-block { height: 180px; }
+  .del-skel-row { gap: 10px; }
+  .del-skel-card { height: 90px; }
+  .del-skel-block { height: 200px; }
 }
 
 /* -- Phone (<=480px) --------------------------------------------------- */
@@ -682,34 +683,34 @@
     justify-content: center;
   }
 
-  .del-kpi-row { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .del-kpi-row { grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .del-kpi:last-child {
     grid-column: 1 / -1;
   }
-  .del-kpi-val { font-size: 18px; }
-  .del-kpi-icon { width: 24px; height: 24px; }
-  .del-kpi-icon svg { width: 13px; height: 13px; }
+  .del-kpi-val { font-size: 22px; }
+  .del-kpi-icon { width: 28px; height: 28px; }
+  .del-kpi-icon svg { width: 14px; height: 14px; }
 
-  .del-content { padding: 10px 8px 24px; gap: 12px; }
+  .del-content { padding: 14px 10px 28px; gap: 14px; }
 
   .del-donut-wrap { flex-direction: column; align-items: center; }
   .del-donut-legend { width: 100%; }
 
-  .del-ranked-name { max-width: 80px; min-width: 50px; }
+  .del-ranked-name { max-width: 100px; min-width: 60px; }
 
   .del-skel-row { flex-wrap: wrap; }
-  .del-skel-card { min-width: calc(50% - 6px); }
+  .del-skel-card { min-width: calc(50% - 8px); }
 }
 
 /* -- Very small phone (<=360px) ---------------------------------------- */
 @media (max-width: 360px) {
-  .del-header { padding: 4px 8px; }
-  .del-logo { height: 20px; }
-  .del-pill { padding: 3px 8px; font-size: 10.5px; }
-  .del-select { max-width: 130px; font-size: 10.5px; }
+  .del-header { padding: 6px 10px; }
+  .del-logo { height: 22px; }
+  .del-pill { padding: 4px 10px; font-size: 11px; }
+  .del-select { max-width: 150px; font-size: 11px; }
 
-  .del-kpi-row { grid-template-columns: 1fr 1fr; gap: 6px; }
-  .del-kpi { padding: 10px 8px 8px; }
-  .del-kpi-val { font-size: 16px; }
-  .del-kpi-label { font-size: 9px; -webkit-line-clamp: 1; }
+  .del-kpi-row { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .del-kpi { padding: 12px 10px 10px; }
+  .del-kpi-val { font-size: 18px; }
+  .del-kpi-label { font-size: 10px; -webkit-line-clamp: 1; }
 }
