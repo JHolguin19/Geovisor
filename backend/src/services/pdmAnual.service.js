@@ -219,9 +219,15 @@ export async function getYearOverview(year) {
         / NULLIF(SUM(COALESCE(meta_cuatrienio::numeric,0)), 0) * 100, 1
       ) AS avance_fisico_pct,
 
-      -- avance_fisico_anio_pct: SUM(realizado año Y) / SUM(meta_cuatrienio), capped at 100%
-      LEAST(ROUND(SUM(COALESCE(meta_fisica_${y}::numeric,0)) / NULLIF(SUM(COALESCE(meta_cuatrienio::numeric,0)), 0) * 100, 1), 100) AS avg_ponderado_anio,
-      LEAST(ROUND(SUM(COALESCE(meta_fisica_${y}::numeric,0)) / NULLIF(SUM(COALESCE(meta_cuatrienio::numeric,0)), 0) * 100, 1), 100) AS avance_fisico_anio_pct,
+      -- avance_fisico_anio_pct: AVG(min(realizado_Y/meta_cuatrienio, 1)) × 100 — matches Spreadsheet col R
+      LEAST(ROUND(
+        AVG(LEAST(COALESCE(meta_fisica_${y}::numeric,0) / NULLIF(meta_cuatrienio::numeric,0), 1.0))
+        FILTER (WHERE meta_cuatrienio::numeric > 0) * 100, 1
+      ), 100) AS avg_ponderado_anio,
+      LEAST(ROUND(
+        AVG(LEAST(COALESCE(meta_fisica_${y}::numeric,0) / NULLIF(meta_cuatrienio::numeric,0), 1.0))
+        FILTER (WHERE meta_cuatrienio::numeric > 0) * 100, 1
+      ), 100) AS avance_fisico_anio_pct,
 
       -- % del cuatrienio esperado para este año (usa incremento para acumulativas)
       ROUND(
@@ -279,10 +285,10 @@ export async function getYearBySecretaria(year) {
           SUM(COALESCE(meta_cuatrienio::numeric,0))
         ) / NULLIF(SUM(COALESCE(meta_cuatrienio::numeric,0)), 0) * 100, 1
       ) AS avance_fisico_pct,
-      -- avance_fisico año: SUM(realizado año Y) / SUM(mc), capped at 100%
+      -- avance_fisico año: AVG(min(realizado_Y/mc, 1)) × 100 — matches Spreadsheet col R
       LEAST(ROUND(
-        SUM(COALESCE(meta_fisica_${y}::numeric,0))
-        / NULLIF(SUM(COALESCE(meta_cuatrienio::numeric,0)), 0) * 100, 1
+        AVG(LEAST(COALESCE(meta_fisica_${y}::numeric,0) / NULLIF(meta_cuatrienio::numeric,0), 1.0))
+        FILTER (WHERE meta_cuatrienio::numeric > 0) * 100, 1
       ), 100) AS avance_fisico_anio_pct,
       ROUND(SUM(COALESCE((presupuesto_${y}->>'total_apropiacion')::numeric, 0)) / 1000000, 0) AS apropiacion_m,
       ROUND(SUM(COALESCE((presupuesto_${y}->>'neto_registros')::numeric, 0)) / 1000000, 0)    AS comprometido_m,
@@ -324,10 +330,10 @@ export async function getYearByPilar(year) {
           SUM(COALESCE(meta_cuatrienio::numeric,0))
         ) / NULLIF(SUM(COALESCE(meta_cuatrienio::numeric,0)), 0) * 100, 1
       ) AS avance_fisico_pct,
-      -- avance_fisico año: SUM(realizado año Y) / SUM(mc), capped at 100%
+      -- avance_fisico año: AVG(min(realizado_Y/mc, 1)) × 100 — matches Spreadsheet col R
       LEAST(ROUND(
-        SUM(COALESCE(meta_fisica_${y}::numeric,0))
-        / NULLIF(SUM(COALESCE(meta_cuatrienio::numeric,0)), 0) * 100, 1
+        AVG(LEAST(COALESCE(meta_fisica_${y}::numeric,0) / NULLIF(meta_cuatrienio::numeric,0), 1.0))
+        FILTER (WHERE meta_cuatrienio::numeric > 0) * 100, 1
       ), 100) AS avance_fisico_anio_pct,
       ROUND(SUM(COALESCE((presupuesto_${y}->>'total_apropiacion')::numeric, 0)) / 1000000, 0) AS apropiacion_m,
       ROUND(SUM(COALESCE((presupuesto_${y}->>'neto_registros')::numeric, 0)) / 1000000, 0)    AS comprometido_m,
