@@ -2,12 +2,38 @@ import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { evalFormula, fmtCell, isFormula } from './formulaEngine.js';
 import './Spreadsheet.css';
 
+// ── Locale-aware number parser ────────────────────────────────────────────────
+// Handles es-CO formats: "1.500" → 1500, "0,5" → 0.5, "1.500,25" → 1500.25
+// Also accepts plain JS numbers unchanged.
+function toNum(v) {
+  if (v == null || v === '') return NaN;
+  if (typeof v === 'number') return v;
+  let s = String(v).trim().replace(/\s/g, '');
+  if (!s || s === '-') return NaN;
+  if (s.includes(',') && s.includes('.')) {
+    s = s.lastIndexOf(',') > s.lastIndexOf('.')
+      ? s.replace(/\./g, '').replace(',', '.')  // "1.234,56" → "1234.56"
+      : s.replace(/,/g, '');                     // "1,234.56" → "1234.56"
+  } else if (s.includes(',')) {
+    // comma as decimal if ≤2 digits after it, else thousands
+    s = s.split(',').pop().length <= 2
+      ? s.replace(',', '.')
+      : s.replace(/,/g, '');
+  } else if (s.includes('.')) {
+    // dot as thousands if exactly 3 digits after it OR multiple dots
+    const parts = s.split('.');
+    if (parts.length > 2 || parts[parts.length - 1].length === 3)
+      s = s.replace(/\./g, '');
+  }
+  return parseFloat(s);
+}
+
 // ── Computed column functions ─────────────────────────────────────────────────
 
 function efFn(y) {
   return row => {
-    const fis = parseFloat(row[`meta_fisica_${y}`]);
-    const pdm = parseFloat(row[`meta_pdm_${y}`]);
+    const fis = toNum(row[`meta_fisica_${y}`]);
+    const pdm = toNum(row[`meta_pdm_${y}`]);
     if (!pdm || isNaN(fis)) return null;
     return Math.min(fis / pdm, 1) * 100;
   };
@@ -18,9 +44,9 @@ function efFn(y) {
 // Result is the capped contribution of this year expressed as % of the 4-year goal.
 function avFisAnioFn(year) {
   return row => {
-    const fis = parseFloat(row[`meta_fisica_${year}`]);
-    const mc  = parseFloat(row.meta_cuatrienio);
-    const pdm = parseFloat(row[`meta_pdm_${year}`]);
+    const fis = toNum(row[`meta_fisica_${year}`]);
+    const mc  = toNum(row.meta_cuatrienio);
+    const pdm = toNum(row[`meta_pdm_${year}`]);
     if (!mc || isNaN(fis)) return null;
     const cap = pdm > 0 ? Math.min(fis, pdm) : fis;
     return Math.min(cap / mc, 1) * 100;
@@ -336,7 +362,9 @@ export default function Spreadsheet({ rows: initialRows, onSave, saving }) {
       setPending(prev => new Map(prev).set(fKey, evaluated));
     } else {
       setRawFormulas(prev => { const m = new Map(prev); m.delete(fKey); return m; });
-      setPending(prev => new Map(prev).set(fKey, value));
+      // Normalize locale-formatted numbers before storing (e.g. "1.500" → 1500, "0,5" → 0.5)
+      const stored = col.type === 'number' ? (() => { const n = toNum(value); return isNaN(n) ? value : n; })() : value;
+      setPending(prev => new Map(prev).set(fKey, stored));
     }
     setEditing(null);
     setFormulaBar(value);
@@ -486,7 +514,9 @@ export default function Spreadsheet({ rows: initialRows, onSave, saving }) {
         if (!col?.editable) return;
         const row = filteredRows[ri];
         if (!row) return;
-        newPending.set(`${row.meta_num}__${col.key}`, val.trim());
+        const trimmed = val.trim();
+        const stored  = col.type === 'number' ? (() => { const n = toNum(trimmed); return isNaN(n) ? trimmed : n; })() : trimmed;
+        newPending.set(`${row.meta_num}__${col.key}`, stored);
       });
     });
     setPending(newPending);
