@@ -28,8 +28,8 @@ const TIPO_COLORS = {
   ABIGEATO:                 '#059669',
 };
 
-const DAY_ORDER = ['Lunes','Martes','Miercoles','Jueves','Viernes','Sabado','Domingo'];
-const DAY_SHORT = { Lunes:'Lun', Martes:'Mar', Miercoles:'Mie', Jueves:'Jue', Viernes:'Vie', Sabado:'Sab', Domingo:'Dom' };
+const DAY_ORDER = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+const DAY_SHORT = { 'Lunes':'Lun', 'Martes':'Mar', 'Miércoles':'Mié', 'Jueves':'Jue', 'Viernes':'Vie', 'Sábado':'Sáb', 'Domingo':'Dom' };
 const MES_ORDER = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
 const MES_LABELS = { ene:'Ene',feb:'Feb',mar:'Mar',abr:'Abr',may:'May',jun:'Jun',jul:'Jul',ago:'Ago',sep:'Sep',oct:'Oct',nov:'Nov',dic:'Dic' };
 
@@ -78,22 +78,35 @@ function VBarChart({ data, labelKey, valueKey, color = 'var(--del-accent)' }) {
   const w = padL + n * (barW + gap) + 8;
   const chartH = 130;
 
+  const maxLabelLen = Math.max(...data.map(d => String(d[labelKey] || '').length));
+  const rotateLabels = maxLabelLen > 4;
+  const labelAreaH = rotateLabels ? 58 : 26;
+
   return (
     <div className="del-chart-scroll">
-      <svg viewBox={`0 0 ${w} ${chartH + 32}`} className="del-chart-svg" width={w} height={chartH + 32}
+      <svg viewBox={`0 0 ${w} ${chartH + labelAreaH}`} className="del-chart-svg" width={w} height={chartH + labelAreaH}
         preserveAspectRatio="xMinYMin meet" style={{ minWidth: `${Math.min(w, 300)}px` }}>
         {data.map((d, i) => {
           const h = (+d[valueKey] / max) * chartH;
           const x = padL + i * (barW + gap);
-          const lbl = d[labelKey] || '';
-          const shortLbl = lbl.length > 6 ? lbl.slice(0, 5) + '..' : lbl;
+          const cx = x + barW / 2;
+          const lbl = String(d[labelKey] || '');
           return (
             <g key={i}>
               <rect x={x} y={chartH - h} width={barW} height={Math.max(h, 1)} rx="3" fill={color} opacity=".82" />
               {+d[valueKey] > 0 && (
-                <text x={x + barW / 2} y={chartH - h - 4} textAnchor="middle" className="del-chart-val-sm">{+d[valueKey]}</text>
+                <text x={cx} y={chartH - h - 4} textAnchor="middle" className="del-chart-val-sm">{+d[valueKey]}</text>
               )}
-              <text x={x + barW / 2} y={chartH + 14} textAnchor="middle" className="del-chart-xlabel">{shortLbl}</text>
+              {rotateLabels ? (
+                <text
+                  x={cx} y={chartH + 10}
+                  textAnchor="end"
+                  transform={`rotate(-42, ${cx}, ${chartH + 10})`}
+                  className="del-chart-xlabel"
+                >{lbl}</text>
+              ) : (
+                <text x={cx} y={chartH + 16} textAnchor="middle" className="del-chart-xlabel">{lbl}</text>
+              )}
             </g>
           );
         })}
