@@ -28,64 +28,77 @@ const TIPO_COLORS = {
   ABIGEATO:                 '#059669',
 };
 
-const DAY_ORDER = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+const DAY_ORDER = ['Lunes','Martes','Miercoles','Jueves','Viernes','Sabado','Domingo'];
+const DAY_SHORT = { Lunes:'Lun', Martes:'Mar', Miercoles:'Mie', Jueves:'Jue', Viernes:'Vie', Sabado:'Sab', Domingo:'Dom' };
 const MES_ORDER = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
 const MES_LABELS = { ene:'Ene',feb:'Feb',mar:'Mar',abr:'Abr',may:'May',jun:'Jun',jul:'Jul',ago:'Ago',sep:'Sep',oct:'Oct',nov:'Nov',dic:'Dic' };
 
-/* ─── SVG Charts ─────────────────────────────────────────────────────────── */
+/* --- SVG Charts --------------------------------------------------------- */
 
 function HBarChart({ data, labelKey, valueKey, colorFn, maxItems = 15 }) {
   const items = data.slice(0, maxItems);
   const max = Math.max(...items.map(d => +d[valueKey]), 1);
   const barH = 26, gap = 4;
-  const labelW = 175;
-  const barMaxW = 230;
-  const svgW = labelW + barMaxW + 60;
+  const labelW = 170;
+  const barMaxW = 220;
+  const valW = 55;
+  const svgW = labelW + barMaxW + valW;
   const h = items.length * (barH + gap);
 
   return (
-    <svg viewBox={`0 0 ${svgW} ${h}`} className="del-chart-svg" preserveAspectRatio="xMinYMin meet">
-      {items.map((d, i) => {
-        const w = (+d[valueKey] / max) * barMaxW;
-        const y = i * (barH + gap);
-        const color = colorFn ? colorFn(d[labelKey]) : 'var(--del-accent)';
-        const rawLabel = d[labelKey] || 'Sin dato';
-        const label = rawLabel.length > 24 ? rawLabel.slice(0, 22) + '…' : rawLabel;
-        return (
-          <g key={i}>
-            <text x={labelW - 8} y={y + barH / 2 + 4} textAnchor="end" className="del-chart-label">{label}</text>
-            <rect x={labelW} y={y + 2} width={w} height={barH - 4} rx="3" fill={color} opacity=".85" />
-            <text x={labelW + w + 6} y={y + barH / 2 + 4} className="del-chart-val">{(+d[valueKey]).toLocaleString()}</text>
-          </g>
-        );
-      })}
-    </svg>
+    <div className="del-chart-scroll">
+      <svg viewBox={`0 0 ${svgW} ${h}`} className="del-chart-svg" width={svgW} height={h}
+        preserveAspectRatio="xMinYMin meet" style={{ minWidth: `${Math.min(svgW, 420)}px` }}>
+        {items.map((d, i) => {
+          const w = (+d[valueKey] / max) * barMaxW;
+          const y = i * (barH + gap);
+          const color = colorFn ? colorFn(d[labelKey]) : 'var(--del-accent)';
+          const rawLabel = d[labelKey] || 'Sin dato';
+          const label = rawLabel.length > 22 ? rawLabel.slice(0, 20) + '...' : rawLabel;
+          return (
+            <g key={i}>
+              <text x={labelW - 8} y={y + barH / 2 + 4} textAnchor="end" className="del-chart-label">{label}</text>
+              <rect x={labelW} y={y + 2} width={Math.max(w, 2)} height={barH - 4} rx="3" fill={color} opacity=".85" />
+              <text x={labelW + w + 6} y={y + barH / 2 + 4} className="del-chart-val">{(+d[valueKey]).toLocaleString()}</text>
+            </g>
+          );
+        })}
+      </svg>
+    </div>
   );
 }
 
 function VBarChart({ data, labelKey, valueKey, color = 'var(--del-accent)' }) {
+  if (!data || data.length === 0) return null;
   const max = Math.max(...data.map(d => +d[valueKey]), 1);
   const n = data.length;
-  const barW = n > 10 ? 30 : 44;
-  const gap = n > 10 ? 4 : 6;
-  const padL = 10;
-  const w = padL + n * (barW + gap);
-  const chartH = 140;
+  const barW = n > 10 ? 28 : 40;
+  const gap = n > 10 ? 3 : 5;
+  const padL = 8;
+  const w = padL + n * (barW + gap) + 8;
+  const chartH = 130;
 
   return (
-    <svg viewBox={`0 0 ${w} ${chartH + 34}`} className="del-chart-svg" preserveAspectRatio="xMinYMin meet">
-      {data.map((d, i) => {
-        const h = (+d[valueKey] / max) * chartH;
-        const x = padL + i * (barW + gap);
-        return (
-          <g key={i}>
-            <rect x={x} y={chartH - h} width={barW} height={Math.max(h, 1)} rx="3" fill={color} opacity=".82" />
-            {+d[valueKey] > 0 && <text x={x + barW / 2} y={chartH - h - 4} textAnchor="middle" className="del-chart-val-sm">{+d[valueKey]}</text>}
-            <text x={x + barW / 2} y={chartH + 16} textAnchor="middle" className="del-chart-xlabel">{d[labelKey]}</text>
-          </g>
-        );
-      })}
-    </svg>
+    <div className="del-chart-scroll">
+      <svg viewBox={`0 0 ${w} ${chartH + 32}`} className="del-chart-svg" width={w} height={chartH + 32}
+        preserveAspectRatio="xMinYMin meet" style={{ minWidth: `${Math.min(w, 300)}px` }}>
+        {data.map((d, i) => {
+          const h = (+d[valueKey] / max) * chartH;
+          const x = padL + i * (barW + gap);
+          const lbl = d[labelKey] || '';
+          const shortLbl = lbl.length > 6 ? lbl.slice(0, 5) + '..' : lbl;
+          return (
+            <g key={i}>
+              <rect x={x} y={chartH - h} width={barW} height={Math.max(h, 1)} rx="3" fill={color} opacity=".82" />
+              {+d[valueKey] > 0 && (
+                <text x={x + barW / 2} y={chartH - h - 4} textAnchor="middle" className="del-chart-val-sm">{+d[valueKey]}</text>
+              )}
+              <text x={x + barW / 2} y={chartH + 14} textAnchor="middle" className="del-chart-xlabel">{shortLbl}</text>
+            </g>
+          );
+        })}
+      </svg>
+    </div>
   );
 }
 
@@ -118,7 +131,7 @@ function DonutChart({ data, labelKey, valueKey }) {
 
   return (
     <div className="del-donut-wrap">
-      <svg viewBox="0 0 160 160" width="140" height="140" className="del-donut-svg">
+      <svg viewBox="0 0 160 160" className="del-donut-svg">
         {arcs}
         <circle cx="80" cy="80" r="35" fill="var(--del-card-bg)" />
         <text x="80" y="76" textAnchor="middle" className="del-donut-total">{total.toLocaleString()}</text>
@@ -144,7 +157,7 @@ function MonthlyChart({ data }) {
     byYear[d.anio][d.mes] = +d.total;
   });
   const years = Object.keys(byYear).sort();
-  const barW = 20, groupGap = 12, monthW = years.length * barW + groupGap;
+  const barW = 18, groupGap = 10, monthW = years.length * barW + groupGap;
   const w = MES_ORDER.length * monthW + 40;
   const chartH = 120;
   const max = Math.max(...data.map(d => +d.total), 1);
@@ -152,28 +165,33 @@ function MonthlyChart({ data }) {
 
   return (
     <div>
-      <svg viewBox={`0 0 ${w} ${chartH + 35}`} className="del-chart-svg" preserveAspectRatio="xMinYMin meet">
-        {MES_ORDER.map((mes, mi) => {
-          const gx = mi * monthW + 20;
-          return (
-            <g key={mes}>
-              {years.map((yr, yi) => {
-                const val = byYear[yr]?.[mes] || 0;
-                const h = (val / max) * chartH;
-                const x = gx + yi * barW;
-                return (
-                  <g key={yr}>
-                    <rect x={x} y={chartH - h} width={barW - 3} height={h} rx="2"
-                      fill={yearColors[yr] || '#6B7280'} opacity=".8" />
-                    {val > 0 && <text x={x + (barW - 3) / 2} y={chartH - h - 4} textAnchor="middle" className="del-chart-val-xs">{val}</text>}
-                  </g>
-                );
-              })}
-              <text x={gx + (years.length * barW) / 2} y={chartH + 16} textAnchor="middle" className="del-chart-xlabel">{MES_LABELS[mes]}</text>
-            </g>
-          );
-        })}
-      </svg>
+      <div className="del-chart-scroll">
+        <svg viewBox={`0 0 ${w} ${chartH + 32}`} className="del-chart-svg" width={w} height={chartH + 32}
+          preserveAspectRatio="xMinYMin meet" style={{ minWidth: `${Math.min(w, 500)}px` }}>
+          {MES_ORDER.map((mes, mi) => {
+            const gx = mi * monthW + 20;
+            return (
+              <g key={mes}>
+                {years.map((yr, yi) => {
+                  const val = byYear[yr]?.[mes] || 0;
+                  const h = (val / max) * chartH;
+                  const x = gx + yi * barW;
+                  return (
+                    <g key={yr}>
+                      <rect x={x} y={chartH - h} width={barW - 3} height={Math.max(h, 0)} rx="2"
+                        fill={yearColors[yr] || '#6B7280'} opacity=".8" />
+                      {val > 0 && (
+                        <text x={x + (barW - 3) / 2} y={chartH - h - 4} textAnchor="middle" className="del-chart-val-xs">{val}</text>
+                      )}
+                    </g>
+                  );
+                })}
+                <text x={gx + (years.length * barW) / 2} y={chartH + 14} textAnchor="middle" className="del-chart-xlabel">{MES_LABELS[mes]}</text>
+              </g>
+            );
+          })}
+        </svg>
+      </div>
       <div className="del-month-legend">
         {years.map(yr => (
           <span key={yr} className="del-legend-item">
@@ -186,19 +204,19 @@ function MonthlyChart({ data }) {
   );
 }
 
-/* ─── KPI Card ───────────────────────────────────────────────────────────── */
+/* --- KPI Card ----------------------------------------------------------- */
 
 function KpiCard({ label, value, icon, accent }) {
   return (
     <div className="del-kpi" style={{ '--kpi-accent': accent || 'var(--del-accent)' }}>
       <div className="del-kpi-icon">{icon}</div>
-      <div className="del-kpi-val">{value != null ? value.toLocaleString() : '—'}</div>
+      <div className="del-kpi-val">{value != null ? value.toLocaleString() : '---'}</div>
       <div className="del-kpi-label">{label}</div>
     </div>
   );
 }
 
-/* ─── Ranked List ────────────────────────────────────────────────────────── */
+/* --- Ranked List -------------------------------------------------------- */
 
 function RankedList({ title, data, labelKey, valueKey }) {
   const max = Math.max(...data.map(d => +d[valueKey]), 1);
@@ -208,7 +226,7 @@ function RankedList({ title, data, labelKey, valueKey }) {
       {data.map((d, i) => (
         <div key={i} className="del-ranked-row">
           <span className="del-ranked-pos">{i + 1}</span>
-          <span className="del-ranked-name">{d[labelKey] || '—'}</span>
+          <span className="del-ranked-name" title={d[labelKey] || ''}>{d[labelKey] || '---'}</span>
           <div className="del-ranked-bar-bg">
             <div className="del-ranked-bar" style={{ width: `${(+d[valueKey] / max) * 100}%` }} />
           </div>
@@ -219,7 +237,7 @@ function RankedList({ title, data, labelKey, valueKey }) {
   );
 }
 
-/* ─── Loading Skeleton ───────────────────────────────────────────────────── */
+/* --- Loading Skeleton --------------------------------------------------- */
 
 function Skeleton() {
   return (
@@ -239,9 +257,9 @@ function Skeleton() {
   );
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
+/* =========================================================================
    MAIN PAGE
-   ═══════════════════════════════════════════════════════════════════════════ */
+   ========================================================================= */
 
 export default function GobiernoDelitosPage() {
   const { user, logout } = useContext(AuthContext);
@@ -253,12 +271,10 @@ export default function GobiernoDelitosPage() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Load tipos once
   useEffect(() => {
     delitosService.getTipos().then(setTipos).catch(() => {});
   }, []);
 
-  // Load stats when filters change
   useEffect(() => {
     setLoading(true);
     const params = {};
@@ -271,7 +287,6 @@ export default function GobiernoDelitosPage() {
       .finally(() => setLoading(false));
   }, [anio, tipoDelito]);
 
-  // Derived KPIs
   const kpis = useMemo(() => {
     if (!stats) return {};
     const byTipo = {};
@@ -289,7 +304,6 @@ export default function GobiernoDelitosPage() {
     };
   }, [stats]);
 
-  // Aggregate porTipo for chart (sum across years)
   const porTipoAgg = useMemo(() => {
     if (!stats) return [];
     const map = {};
@@ -301,29 +315,27 @@ export default function GobiernoDelitosPage() {
       .sort((a, b) => b.total - a.total);
   }, [stats]);
 
-  // Normalize porDia to fixed order
   const porDiaSorted = useMemo(() => {
     if (!stats) return [];
     const map = {};
     stats.porDia.forEach(r => { map[r.dia_semana] = +r.total; });
-    return DAY_ORDER.map(d => ({ dia: d.slice(0, 3), total: map[d] || 0 }));
+    return DAY_ORDER.map(d => ({ dia: DAY_SHORT[d] || d.slice(0, 3), total: map[d] || 0 }));
   }, [stats]);
 
   return (
     <div className="del-page">
-      {/* ── Header ── */}
+      {/* -- Header -- */}
       <header className="del-header">
         <div className="del-header-left">
           <img src="/logos/logocolombia.png" alt="Colombia" className="del-logo" />
-          <img src="/logos/alcaldia.png" alt="Alcaldía" className="del-logo" />
+          <img src="/logos/alcaldia.png" alt="Alcaldia" className="del-logo" />
           <div className="del-header-text">
-            <span className="del-header-entity">Alcaldía Municipal · Santander de Quilichao</span>
+            <span className="del-header-entity">Alcaldia Municipal - Santander de Quilichao</span>
             <span className="del-header-title">Observatorio de Seguridad y Convivencia</span>
           </div>
         </div>
 
         <div className="del-header-right">
-          {/* Year pills */}
           <div className="del-pills">
             {YEAR_OPTIONS.map(opt => (
               <button key={opt.value}
@@ -333,47 +345,47 @@ export default function GobiernoDelitosPage() {
             ))}
           </div>
 
-          {/* Type filter */}
           <select className="del-select" value={tipoDelito} onChange={e => setTipoDelito(e.target.value)}>
             <option value="">Todos los delitos</option>
             {tipos.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
 
-          <button className="del-btn-back" onClick={() => navigate('/portal/gobierno')}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
-            Portal
-          </button>
+          <div className="del-header-actions">
+            <button className="del-btn-back" onClick={() => navigate('/portal/gobierno')} title="Portal">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+              <span className="del-btn-text">Portal</span>
+            </button>
 
-          <button className="del-btn-map" onClick={() => navigate('/mapa/gobierno')}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="9"/><path d="M3.6 9h16.8M3.6 15h16.8"/></svg>
-            Geovisor
-          </button>
+            <button className="del-btn-map" onClick={() => navigate('/mapa/gobierno')} title="Geovisor">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="9"/><path d="M3.6 9h16.8M3.6 15h16.8"/></svg>
+              <span className="del-btn-text">Geovisor</span>
+            </button>
 
-          {user && (
-            <span className="del-user-badge">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="7" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-              {user.username}
-            </span>
-          )}
+            {user && (
+              <span className="del-user-badge">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="7" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                <span className="del-user-name">{user.username}</span>
+              </span>
+            )}
 
-          <button className="btn-logout" onClick={logout}>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
-            </svg>
-            Cerrar sesión
-          </button>
+            <button className="btn-logout" onClick={logout} title="Cerrar sesion">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+              </svg>
+              <span className="del-btn-text">Salir</span>
+            </button>
+          </div>
         </div>
       </header>
 
-      {/* ── Red accent band ── */}
       <div className="del-band" />
 
-      {/* ── Scroll container ── */}
+      {/* -- Scroll container -- */}
       <div className="del-scroll">
         {loading ? <Skeleton /> : stats && (
           <div className="del-content">
 
-            {/* ── KPI Row ── */}
+            {/* -- KPI Row -- */}
             <section className="del-kpi-row">
               <KpiCard label="Total hechos" value={kpis.total} accent="#DC2626"
                 icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0112 2a8 8 0 018 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>} />
@@ -387,11 +399,9 @@ export default function GobiernoDelitosPage() {
                 icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>} />
             </section>
 
-            {/* ── Charts Grid ── */}
+            {/* -- Charts Grid -- */}
             <div className="del-grid-2">
-
-              {/* Delitos por tipo */}
-              <section className="del-card del-card--wide">
+              <section className="del-card">
                 <h3 className="del-card-title">
                   <span className="del-card-dot" />
                   Hechos por tipo de delito
@@ -400,23 +410,22 @@ export default function GobiernoDelitosPage() {
                   colorFn={tipo => TIPO_COLORS[tipo] || '#6B7280'} />
               </section>
 
-              {/* Zona + Género */}
               <div className="del-col-stack">
                 <section className="del-card">
                   <h3 className="del-card-title"><span className="del-card-dot" />Por zona</h3>
                   <DonutChart data={stats.porZona} labelKey="zona" valueKey="total" />
                 </section>
                 <section className="del-card">
-                  <h3 className="del-card-title"><span className="del-card-dot" />Por género</h3>
+                  <h3 className="del-card-title"><span className="del-card-dot" />Por genero</h3>
                   <DonutChart data={stats.porGenero} labelKey="genero" valueKey="total" />
                 </section>
               </div>
             </div>
 
-            {/* ── Day + Hour ── */}
-            <div className="del-grid-2">
+            {/* -- Day + Hour -- */}
+            <div className="del-grid-2 del-grid-2--equal">
               <section className="del-card">
-                <h3 className="del-card-title"><span className="del-card-dot" />Por día de la semana</h3>
+                <h3 className="del-card-title"><span className="del-card-dot" />Por dia de la semana</h3>
                 <VBarChart data={porDiaSorted} labelKey="dia" valueKey="total" color="#DC2626" />
               </section>
               <section className="del-card">
@@ -425,16 +434,16 @@ export default function GobiernoDelitosPage() {
               </section>
             </div>
 
-            {/* ── Monthly trend ── */}
+            {/* -- Monthly trend -- */}
             <section className="del-card">
               <h3 className="del-card-title"><span className="del-card-dot" />Tendencia mensual</h3>
               <MonthlyChart data={stats.porMes} />
             </section>
 
-            {/* ── Top barrios + Edad ── */}
+            {/* -- Top barrios + Edad -- */}
             <div className="del-grid-2">
               <section className="del-card">
-                <h3 className="del-card-title"><span className="del-card-dot" />Barrios con más hechos (zona urbana)</h3>
+                <h3 className="del-card-title"><span className="del-card-dot" />Barrios con mas hechos (zona urbana)</h3>
                 <HBarChart data={stats.porBarrio} labelKey="barrio_hecho" valueKey="total"
                   colorFn={() => '#DC2626'} maxItems={20} />
               </section>
@@ -443,16 +452,16 @@ export default function GobiernoDelitosPage() {
                   <h3 className="del-card-title"><span className="del-card-dot" />Por grupo de edad</h3>
                   <VBarChart data={stats.porEdad} labelKey="grupo_edad" valueKey="total" color="#2563EB" />
                 </section>
-                <RankedList title="Modalidades más frecuentes" data={stats.porModalidad} labelKey="modalidad" valueKey="total" />
+                <RankedList title="Modalidades mas frecuentes" data={stats.porModalidad} labelKey="modalidad" valueKey="total" />
                 <RankedList title="Armas / medios utilizados" data={stats.porArma} labelKey="arma_medio" valueKey="total" />
               </div>
             </div>
 
-            {/* ── Footer ── */}
+            {/* -- Footer -- */}
             <footer className="del-footer">
               <div className="del-footer-line" />
-              <p>Fuente: Policía Nacional — Secretaría de Gobierno, Paz y Convivencia</p>
-              <p>Alcaldía Municipal de Santander de Quilichao · Sistema de Información Geográfica QuiliData</p>
+              <p>Fuente: Policia Nacional - Secretaria de Gobierno, Paz y Convivencia</p>
+              <p>Alcaldia Municipal de Santander de Quilichao - Sistema de Informacion Geografica QuiliData</p>
             </footer>
           </div>
         )}
