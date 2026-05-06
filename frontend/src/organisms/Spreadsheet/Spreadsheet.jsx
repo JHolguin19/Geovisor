@@ -27,35 +27,14 @@ function avFisAnioFn(year) {
   };
 }
 
-// 4-year overall — mirrors the stored avance_fisico formula:
-//   Acumulativo  → GREATEST(cap_y) / mc  (cumulative: last year holds the full progress)
-//   No-acumulativo → SUM(cap_y) / SUM(pdm_y)  (independent years; denominator = total planned)
+// 4-year overall = SUM(J + N + R + V), capped at 100%.
+// Same logic for all types: sum the 4 annual contributions already capped per year.
 function avFisFn(row) {
-  const YEARS = [2024, 2025, 2026, 2027];
-  const mc = parseFloat(row.meta_cuatrienio);
-  const tipo = row.tipo_ponderado;
-
-  const caps = YEARS.map(y => {
-    const fis = parseFloat(row[`meta_fisica_${y}`]);
-    const pdm = parseFloat(row[`meta_pdm_${y}`]);
-    if (isNaN(fis)) return null;
-    return pdm > 0 ? Math.min(fis, pdm) : fis;
-  });
-
-  if (tipo === 'Acumulativo') {
-    if (!mc) return null;
-    const validCaps = caps.filter(v => v !== null);
-    if (!validCaps.length) return null;
-    return Math.min(Math.max(...validCaps) / mc * 100, 100);
-  } else {
-    const sumPdm = YEARS.reduce((s, y) => {
-      const v = parseFloat(row[`meta_pdm_${y}`]);
-      return s + (isNaN(v) ? 0 : v);
-    }, 0);
-    if (!sumPdm) return null;
-    const sumCap = caps.reduce((s, v) => s + (v ?? 0), 0);
-    return Math.min(sumCap / sumPdm * 100, 100);
-  }
+  const vals = [2024, 2025, 2026, 2027]
+    .map(y => avFisAnioFn(y)(row))
+    .filter(v => v !== null);
+  if (!vals.length) return null;
+  return Math.min(vals.reduce((a, b) => a + b, 0), 100);
 }
 
 // Financial execution % = comprometido / apropiacion × 100
