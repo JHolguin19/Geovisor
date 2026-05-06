@@ -39,17 +39,13 @@ function efFn(y) {
   };
 }
 
-// Annual Physical Progress per year — always relative to meta_cuatrienio (mc).
-// cap(fis, pdm) = min(fis, pdm) when pdm > 0, else fis (no plan = no cap).
-// Result is the capped contribution of this year expressed as % of the 4-year goal.
+// Annual Physical Progress per year = realizado / Meta 4A × 100, capped at 100%.
 function avFisAnioFn(year) {
   return row => {
     const fis = toNum(row[`meta_fisica_${year}`]);
     const mc  = toNum(row.meta_cuatrienio);
-    const pdm = toNum(row[`meta_pdm_${year}`]);
     if (!mc || isNaN(fis)) return null;
-    const cap = pdm > 0 ? Math.min(fis, pdm) : fis;
-    return Math.min(cap / mc, 1) * 100;
+    return Math.min(fis / mc, 1) * 100;
   };
 }
 
