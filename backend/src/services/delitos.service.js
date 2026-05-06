@@ -48,14 +48,39 @@ export async function getStats({ anio, tipo_delito } = {}) {
     ORDER BY total DESC
   `, params);
 
-  // Por barrio (top 20)
+  // Por barrio urbano (top 20)
   const porBarrio = await pool.query(`
     SELECT barrio_hecho, COUNT(*) AS total
     FROM gobierno_delitos
-    ${where ? where + ' AND' : 'WHERE'} barrio_hecho IS NOT NULL
+    ${where ? where + ' AND' : 'WHERE'} barrio_hecho IS NOT NULL AND zona = 'URBANA'
     GROUP BY barrio_hecho
     ORDER BY total DESC
     LIMIT 20
+  `, params);
+
+  // Por zona rural — veredas/barrios rurales (top 20)
+  const porBarrioRural = await pool.query(`
+    SELECT barrio_hecho, COUNT(*) AS total
+    FROM gobierno_delitos
+    ${where ? where + ' AND' : 'WHERE'} barrio_hecho IS NOT NULL AND zona = 'RURAL'
+    GROUP BY barrio_hecho
+    ORDER BY total DESC
+    LIMIT 20
+  `, params);
+
+  // Barrios sin match con capa barriosurbanos (para identificar zonas no mapeadas)
+  const aliasedConditions = conditions.map(c => `d.${c}`);
+  const sinMatchWhere = aliasedConditions.length
+    ? 'WHERE ' + aliasedConditions.join(' AND ') + ' AND d.barrio_hecho IS NOT NULL AND b.gid IS NULL'
+    : 'WHERE d.barrio_hecho IS NOT NULL AND b.gid IS NULL';
+  const barriosSinMatch = await pool.query(`
+    SELECT d.barrio_hecho, d.zona, COUNT(*) AS total
+    FROM gobierno_delitos d
+    LEFT JOIN barriosurbanos b ON UPPER(TRIM(d.barrio_hecho)) = UPPER(TRIM(b.nombre))
+    ${sinMatchWhere}
+    GROUP BY d.barrio_hecho, d.zona
+    ORDER BY total DESC
+    LIMIT 30
   `, params);
 
   // Por mes
@@ -117,6 +142,8 @@ export async function getStats({ anio, tipo_delito } = {}) {
     porHora: porHora.rows,
     porZona: porZona.rows,
     porBarrio: porBarrio.rows,
+    porBarrioRural: porBarrioRural.rows,
+    barriosSinMatch: barriosSinMatch.rows,
     porMes: porMes.rows,
     porGenero: porGenero.rows,
     porEdad: porEdad.rows,

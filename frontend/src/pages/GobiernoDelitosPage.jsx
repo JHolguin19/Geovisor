@@ -79,13 +79,15 @@ function VBarChart({ data, labelKey, valueKey, color = 'var(--del-accent)' }) {
   const rotateLabels = maxLabelLen > 4;
   const padL = rotateLabels ? 36 : 14;
   const padR = 16;
+  const padTop = 24;
   const w = padL + n * (barW + gap) + padR;
   const chartH = 170;
   const labelAreaH = rotateLabels ? 100 : 44;
+  const totalH = padTop + chartH + labelAreaH;
 
   return (
     <div className="del-chart-scroll">
-      <svg viewBox={`0 0 ${w} ${chartH + labelAreaH}`} className="del-chart-svg" width={w} height={chartH + labelAreaH}
+      <svg viewBox={`0 0 ${w} ${totalH}`} className="del-chart-svg" width={w} height={totalH}
         preserveAspectRatio="xMinYMin meet" style={{ minWidth: `${Math.min(w, 360)}px` }}>
         {data.map((d, i) => {
           const h = (+d[valueKey] / max) * chartH;
@@ -94,21 +96,21 @@ function VBarChart({ data, labelKey, valueKey, color = 'var(--del-accent)' }) {
           const lbl = d[labelKey] != null ? String(d[labelKey]) : 'N/D';
           return (
             <g key={i}>
-              <rect x={x} y={chartH - h} width={barW} height={Math.max(h, 1)} rx="3" fill={color} opacity=".82" />
+              <rect x={x} y={padTop + chartH - h} width={barW} height={Math.max(h, 1)} rx="3" fill={color} opacity=".82" />
               {+d[valueKey] > 0 && (
-                <text x={cx} y={chartH - h - 4} textAnchor="middle" className="del-chart-val-sm">{+d[valueKey]}</text>
+                <text x={cx} y={padTop + chartH - h - 6} textAnchor="middle" className="del-chart-val-sm">{+d[valueKey]}</text>
               )}
               {rotateLabels ? (
                 <text
                   x={cx}
-                  y={chartH + 18}
+                  y={padTop + chartH + 18}
                   textAnchor="end"
-                  transform={`rotate(-40, ${cx}, ${chartH + 18})`}
+                  transform={`rotate(-40, ${cx}, ${padTop + chartH + 18})`}
                   style={{ fontSize: '11px' }}
                   className="del-chart-xlabel"
                 >{lbl}</text>
               ) : (
-                <text x={cx} y={chartH + 30} textAnchor="middle" className="del-chart-xlabel">{lbl}</text>
+                <text x={cx} y={padTop + chartH + 30} textAnchor="middle" className="del-chart-xlabel">{lbl}</text>
               )}
             </g>
           );
@@ -175,14 +177,16 @@ function MonthlyChart({ data }) {
   const years = Object.keys(byYear).sort();
   const barW = 22, groupGap = 14, monthW = years.length * barW + groupGap;
   const w = MES_ORDER.length * monthW + 50;
+  const padTop = 22;
   const chartH = 160;
   const max = Math.max(...data.map(d => +d.total), 1);
   const yearColors = { '2024': '#2563EB', '2025': '#DC2626' };
+  const totalH = padTop + chartH + 38;
 
   return (
     <div>
       <div className="del-chart-scroll">
-        <svg viewBox={`0 0 ${w} ${chartH + 38}`} className="del-chart-svg" width={w} height={chartH + 38}
+        <svg viewBox={`0 0 ${w} ${totalH}`} className="del-chart-svg" width={w} height={totalH}
           preserveAspectRatio="xMinYMin meet" style={{ minWidth: `${Math.min(w, 580)}px` }}>
           {MES_ORDER.map((mes, mi) => {
             const gx = mi * monthW + 20;
@@ -194,15 +198,15 @@ function MonthlyChart({ data }) {
                   const x = gx + yi * barW;
                   return (
                     <g key={yr}>
-                      <rect x={x} y={chartH - h} width={barW - 4} height={Math.max(h, 0)} rx="3"
+                      <rect x={x} y={padTop + chartH - h} width={barW - 4} height={Math.max(h, 0)} rx="3"
                         fill={yearColors[yr] || '#6B7280'} opacity=".8" />
                       {val > 0 && (
-                        <text x={x + (barW - 3) / 2} y={chartH - h - 4} textAnchor="middle" className="del-chart-val-xs">{val}</text>
+                        <text x={x + (barW - 3) / 2} y={padTop + chartH - h - 6} textAnchor="middle" className="del-chart-val-xs">{val}</text>
                       )}
                     </g>
                   );
                 })}
-                <text x={gx + (years.length * barW) / 2} y={chartH + 18} textAnchor="middle" className="del-chart-xlabel">{MES_LABELS[mes]}</text>
+                <text x={gx + (years.length * barW) / 2} y={padTop + chartH + 18} textAnchor="middle" className="del-chart-xlabel">{MES_LABELS[mes]}</text>
               </g>
             );
           })}
@@ -471,6 +475,36 @@ export default function GobiernoDelitosPage() {
                 <RankedList title="Modalidades mas frecuentes" data={stats.porModalidad} labelKey="modalidad" valueKey="total" />
                 <RankedList title="Armas / medios utilizados" data={stats.porArma} labelKey="arma_medio" valueKey="total" />
               </div>
+            </div>
+
+            {/* -- Zona Rural + Barrios sin match -- */}
+            <div className="del-grid-2 del-grid-2--equal">
+              {stats.porBarrioRural && stats.porBarrioRural.length > 0 && (
+                <section className="del-card">
+                  <h3 className="del-card-title"><span className="del-card-dot" style={{ background: '#059669' }} />Veredas / zonas rurales con mas hechos</h3>
+                  <HBarChart data={stats.porBarrioRural} labelKey="barrio_hecho" valueKey="total"
+                    colorFn={() => '#059669'} maxItems={20} />
+                </section>
+              )}
+              {stats.barriosSinMatch && stats.barriosSinMatch.length > 0 && (
+                <section className="del-card">
+                  <h3 className="del-card-title"><span className="del-card-dot" style={{ background: '#F59E0B' }} />Barrios/zonas sin capa geografica</h3>
+                  <div className="del-sinmatch-table">
+                    <div className="del-sinmatch-header">
+                      <span>Lugar</span>
+                      <span>Zona</span>
+                      <span>Hechos</span>
+                    </div>
+                    {stats.barriosSinMatch.map((d, i) => (
+                      <div key={i} className="del-sinmatch-row">
+                        <span className="del-sinmatch-name">{d.barrio_hecho}</span>
+                        <span className={`del-sinmatch-zona del-sinmatch-zona--${(d.zona || '').toLowerCase()}`}>{d.zona || 'N/D'}</span>
+                        <span className="del-sinmatch-num">{(+d.total).toLocaleString()}</span>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
             </div>
 
             {/* -- Footer -- */}
