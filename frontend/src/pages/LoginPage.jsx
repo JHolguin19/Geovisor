@@ -23,6 +23,8 @@ export default function LoginPage() {
       const { role, secretaria } = result.user;
       if (role === 'admin' || role === 'editor_geo') {
         navigate('/dashboard');
+      } else if (role === 'lector' && secretaria) {
+        navigate(`/portal/${secretaria}`);
       } else {
         navigate(`/mapa/${secretaria || 'sig'}`);
       }
