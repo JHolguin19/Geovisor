@@ -186,14 +186,6 @@ export async function getYearOverview(year) {
   // Avance físico: capped at MIN(meta_fisica_Y, meta_pdm_Y) / meta_cuatrienio.
   // Guarantees over-achievement doesn't inflate indicators.
   const { rows } = await pool.query(`
-    WITH caps AS (
-      SELECT *,
-        LEAST(COALESCE(meta_fisica_2024::numeric,0), CASE WHEN COALESCE(meta_pdm_2024::numeric,0)>0 THEN meta_pdm_2024::numeric ELSE COALESCE(meta_fisica_2024::numeric,0) END) AS c24,
-        LEAST(COALESCE(meta_fisica_2025::numeric,0), CASE WHEN COALESCE(meta_pdm_2025::numeric,0)>0 THEN meta_pdm_2025::numeric ELSE COALESCE(meta_fisica_2025::numeric,0) END) AS c25,
-        LEAST(COALESCE(meta_fisica_2026::numeric,0), CASE WHEN COALESCE(meta_pdm_2026::numeric,0)>0 THEN meta_pdm_2026::numeric ELSE COALESCE(meta_fisica_2026::numeric,0) END) AS c26,
-        LEAST(COALESCE(meta_fisica_2027::numeric,0), CASE WHEN COALESCE(meta_pdm_2027::numeric,0)>0 THEN meta_pdm_2027::numeric ELSE COALESCE(meta_fisica_2027::numeric,0) END) AS c27
-      FROM pdm_metas
-    )
     SELECT
       COUNT(*)                                                              AS total_metas,
       COUNT(*) FILTER (WHERE meta_pdm_${y} IS NOT NULL)                    AS programadas,
@@ -213,11 +205,8 @@ export async function getYearOverview(year) {
 
       ROUND(AVG(LEAST(eficiencia_${y}, 1.0)) FILTER (WHERE eficiencia_${y} IS NOT NULL) * 100, 1) AS eficiencia_promedio,
 
-      -- avance_fisico_pct: SUM(all capped years) / SUM(meta_cuatrienio), global cap at 100%
-      ROUND(
-        LEAST(SUM(c24+c25+c26+c27), SUM(COALESCE(meta_cuatrienio::numeric,0)))
-        / NULLIF(SUM(COALESCE(meta_cuatrienio::numeric,0)), 0) * 100, 1
-      ) AS avance_fisico_pct,
+      -- avance_fisico_pct: uses stored per-row avance_fisico (already handles Acumulativo/No-acumulativo correctly)
+      ROUND(AVG(LEAST(avance_fisico, 1.0)) * 100, 1) AS avance_fisico_pct,
 
       -- avance_fisico_anio_pct: AVG(min(realizado_Y/meta_cuatrienio, 1)) × 100 — matches Spreadsheet col R
       LEAST(ROUND(
@@ -255,7 +244,7 @@ export async function getYearOverview(year) {
       COUNT(*) FILTER (WHERE eficiencia_${y} IS NOT NULL AND eficiencia_${y} >= 0.5 AND eficiencia_${y} < 0.8)  AS semaforo_amarillo,
       COUNT(*) FILTER (WHERE eficiencia_${y} IS NOT NULL AND eficiencia_${y} < 0.5)                              AS semaforo_rojo,
       COUNT(*) FILTER (WHERE eficiencia_${y} IS NULL AND meta_pdm_${y} IS NOT NULL)                              AS semaforo_sin_dato
-    FROM caps
+    FROM pdm_metas
   `);
 
   return rows[0];
@@ -273,18 +262,7 @@ export async function getYearBySecretaria(year) {
       COUNT(*) FILTER (WHERE meta_pdm_${y} IS NOT NULL)                    AS programadas,
       COUNT(*) FILTER (WHERE meta_pdm_${y} IS NULL)                        AS no_programadas,
       ROUND(AVG(LEAST(eficiencia_${y}, 1.0)) FILTER (WHERE eficiencia_${y} IS NOT NULL) * 100, 1) AS eficiencia_promedio,
-      -- avance_fisico cuatrienio: SUM(capped all years) / SUM(mc), capped at 100%
-      ROUND(
-        LEAST(
-          SUM(
-            LEAST(COALESCE(meta_fisica_2024::numeric,0), CASE WHEN COALESCE(meta_pdm_2024::numeric,0)>0 THEN meta_pdm_2024::numeric ELSE COALESCE(meta_fisica_2024::numeric,0) END) +
-            LEAST(COALESCE(meta_fisica_2025::numeric,0), CASE WHEN COALESCE(meta_pdm_2025::numeric,0)>0 THEN meta_pdm_2025::numeric ELSE COALESCE(meta_fisica_2025::numeric,0) END) +
-            LEAST(COALESCE(meta_fisica_2026::numeric,0), CASE WHEN COALESCE(meta_pdm_2026::numeric,0)>0 THEN meta_pdm_2026::numeric ELSE COALESCE(meta_fisica_2026::numeric,0) END) +
-            LEAST(COALESCE(meta_fisica_2027::numeric,0), CASE WHEN COALESCE(meta_pdm_2027::numeric,0)>0 THEN meta_pdm_2027::numeric ELSE COALESCE(meta_fisica_2027::numeric,0) END)
-          ),
-          SUM(COALESCE(meta_cuatrienio::numeric,0))
-        ) / NULLIF(SUM(COALESCE(meta_cuatrienio::numeric,0)), 0) * 100, 1
-      ) AS avance_fisico_pct,
+      ROUND(AVG(LEAST(avance_fisico, 1.0)) * 100, 1) AS avance_fisico_pct,
       -- avance_fisico año: AVG(min(realizado_Y/mc, 1)) × 100 — matches Spreadsheet col R
       LEAST(ROUND(
         AVG(LEAST(COALESCE(meta_fisica_${y}::numeric,0) / NULLIF(meta_cuatrienio::numeric,0), 1.0))
@@ -318,18 +296,7 @@ export async function getYearByPilar(year) {
       COUNT(*) FILTER (WHERE meta_pdm_${y} IS NOT NULL)                    AS programadas,
       COUNT(*) FILTER (WHERE meta_pdm_${y} IS NULL)                        AS no_programadas,
       ROUND(AVG(LEAST(eficiencia_${y}, 1.0)) FILTER (WHERE eficiencia_${y} IS NOT NULL) * 100, 1) AS eficiencia_promedio,
-      -- avance_fisico cuatrienio: SUM(capped all years) / SUM(mc), capped at 100%
-      ROUND(
-        LEAST(
-          SUM(
-            LEAST(COALESCE(meta_fisica_2024::numeric,0), CASE WHEN COALESCE(meta_pdm_2024::numeric,0)>0 THEN meta_pdm_2024::numeric ELSE COALESCE(meta_fisica_2024::numeric,0) END) +
-            LEAST(COALESCE(meta_fisica_2025::numeric,0), CASE WHEN COALESCE(meta_pdm_2025::numeric,0)>0 THEN meta_pdm_2025::numeric ELSE COALESCE(meta_fisica_2025::numeric,0) END) +
-            LEAST(COALESCE(meta_fisica_2026::numeric,0), CASE WHEN COALESCE(meta_pdm_2026::numeric,0)>0 THEN meta_pdm_2026::numeric ELSE COALESCE(meta_fisica_2026::numeric,0) END) +
-            LEAST(COALESCE(meta_fisica_2027::numeric,0), CASE WHEN COALESCE(meta_pdm_2027::numeric,0)>0 THEN meta_pdm_2027::numeric ELSE COALESCE(meta_fisica_2027::numeric,0) END)
-          ),
-          SUM(COALESCE(meta_cuatrienio::numeric,0))
-        ) / NULLIF(SUM(COALESCE(meta_cuatrienio::numeric,0)), 0) * 100, 1
-      ) AS avance_fisico_pct,
+      ROUND(AVG(LEAST(avance_fisico, 1.0)) * 100, 1) AS avance_fisico_pct,
       -- avance_fisico año: AVG(min(realizado_Y/mc, 1)) × 100 — matches Spreadsheet col R
       LEAST(ROUND(
         AVG(LEAST(COALESCE(meta_fisica_${y}::numeric,0) / NULLIF(meta_cuatrienio::numeric,0), 1.0))
@@ -1059,25 +1026,25 @@ export async function exportYearExcel(year) {
         COUNT(*) FILTER (WHERE meta_pdm_${y} IS NOT NULL) AS programadas,
         COUNT(*) FILTER (WHERE meta_pdm_${y} IS NULL) AS no_programadas,
         COUNT(*) FILTER (WHERE meta_pdm_${y} IS NOT NULL AND (meta_fisica_${y} IS NULL OR meta_fisica_${y} = 0)) AS sin_ejecucion,
-        ROUND(AVG(eficiencia_${y}) FILTER (WHERE eficiencia_${y} IS NOT NULL) * 100, 1) AS eficiencia_promedio,
+        ROUND(AVG(LEAST(eficiencia_${y}, 1.0)) FILTER (WHERE eficiencia_${y} IS NOT NULL) * 100, 1) AS eficiencia_promedio,
         ROUND(SUM(COALESCE((presupuesto_${y}->>'total_apropiacion')::numeric,0))/1000000, 0) AS apropiacion_m,
         ROUND(SUM(COALESCE((presupuesto_${y}->>'neto_registros')::numeric,0))/1000000, 0) AS comprometido_m,
         ROUND(SUM(COALESCE((presupuesto_${y}->>'total_obligacion')::numeric,0))/1000000, 0) AS obligado_m,
-        COUNT(*) FILTER (WHERE eficiencia_${y} >= 0.8) AS semaforo_verde,
-        COUNT(*) FILTER (WHERE eficiencia_${y} >= 0.5 AND eficiencia_${y} < 0.8) AS semaforo_amarillo,
-        COUNT(*) FILTER (WHERE eficiencia_${y} < 0.5 AND eficiencia_${y} IS NOT NULL) AS semaforo_rojo
+        COUNT(*) FILTER (WHERE LEAST(eficiencia_${y}, 1.0) >= 0.8) AS semaforo_verde,
+        COUNT(*) FILTER (WHERE LEAST(eficiencia_${y}, 1.0) >= 0.5 AND LEAST(eficiencia_${y}, 1.0) < 0.8) AS semaforo_amarillo,
+        COUNT(*) FILTER (WHERE eficiencia_${y} IS NOT NULL AND LEAST(eficiencia_${y}, 1.0) < 0.5) AS semaforo_rojo
       FROM pdm_metas
     `),
     pool.query(`
       SELECT secretaria,
         COUNT(*) FILTER (WHERE meta_pdm_${y} IS NOT NULL) AS programadas,
-        ROUND(AVG(eficiencia_${y}) FILTER (WHERE eficiencia_${y} IS NOT NULL)*100,1) AS eficiencia_pct,
+        ROUND(AVG(LEAST(eficiencia_${y}, 1.0)) FILTER (WHERE eficiencia_${y} IS NOT NULL)*100,1) AS eficiencia_pct,
         ROUND(SUM(COALESCE((presupuesto_${y}->>'total_apropiacion')::numeric,0))/1000000,0) AS apropiacion_m,
         ROUND(SUM(COALESCE((presupuesto_${y}->>'neto_registros')::numeric,0))/1000000,0) AS comprometido_m,
         ROUND(SUM(COALESCE((presupuesto_${y}->>'total_obligacion')::numeric,0))/1000000,0) AS obligado_m,
-        COUNT(*) FILTER (WHERE eficiencia_${y} >= 0.8) AS verde,
-        COUNT(*) FILTER (WHERE eficiencia_${y} >= 0.5 AND eficiencia_${y} < 0.8) AS amarillo,
-        COUNT(*) FILTER (WHERE eficiencia_${y} < 0.5 AND eficiencia_${y} IS NOT NULL) AS rojo
+        COUNT(*) FILTER (WHERE LEAST(eficiencia_${y}, 1.0) >= 0.8) AS verde,
+        COUNT(*) FILTER (WHERE LEAST(eficiencia_${y}, 1.0) >= 0.5 AND LEAST(eficiencia_${y}, 1.0) < 0.8) AS amarillo,
+        COUNT(*) FILTER (WHERE eficiencia_${y} IS NOT NULL AND LEAST(eficiencia_${y}, 1.0) < 0.5) AS rojo
       FROM pdm_metas
       GROUP BY secretaria ORDER BY apropiacion_m DESC NULLS LAST
     `),
@@ -1085,7 +1052,7 @@ export async function exportYearExcel(year) {
       SELECT meta_num, secretaria, nom_pilar, descripcion_meta,
         meta_pdm_${y} AS meta_pdm,
         meta_fisica_${y} AS meta_fisica,
-        ROUND(eficiencia_${y}*100,1) AS eficiencia_pct,
+        ROUND(LEAST(eficiencia_${y}, 1.0)*100,1) AS eficiencia_pct,
         ROUND(COALESCE((presupuesto_${y}->>'total_apropiacion')::numeric,0)/1000000,2) AS apropiacion_m,
         ROUND(COALESCE((presupuesto_${y}->>'neto_registros')::numeric,0)/1000000,2) AS comprometido_m,
         ROUND(COALESCE((presupuesto_${y}->>'total_obligacion')::numeric,0)/1000000,2) AS obligado_m,

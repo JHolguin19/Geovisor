@@ -251,7 +251,7 @@
 }
 
 .del-kpi-val {
-  font-size: 26px;
+  font-size: 28px;
   font-weight: 800;
   letter-spacing: -.5px;
   color: var(--del-text);
@@ -260,7 +260,7 @@
 }
 
 .del-kpi-label {
-  font-size: 10.5px;
+  font-size: 11.5px;
   color: var(--del-text-muted);
   font-weight: 600;
   text-transform: uppercase;
@@ -281,14 +281,13 @@
   border-radius: 10px;
   padding: 18px 20px;
   min-width: 0;
-  overflow: hidden;
 }
 
 .del-card-title {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13.5px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--del-text);
   margin-bottom: 14px;
@@ -326,10 +325,9 @@
 
 .del-chart-scroll {
   overflow-x: auto;
-  overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
   margin: 0 -4px;
-  padding: 0 4px 4px;
+  padding: 0 4px 8px;
 }
 
 /* -- SVG Chart styles -------------------------------------------------- */
@@ -342,35 +340,35 @@
 }
 
 .del-chart-label {
-  font-size: 10px;
+  font-size: 11.5px;
   fill: var(--del-text-muted);
   font-family: 'DM Sans', sans-serif;
   font-weight: 500;
 }
 
 .del-chart-val {
-  font-size: 10px;
+  font-size: 11.5px;
   fill: var(--del-text);
   font-family: 'DM Sans', sans-serif;
   font-weight: 700;
 }
 
 .del-chart-val-sm {
-  font-size: 9px;
+  font-size: 10px;
   fill: var(--del-text);
   font-family: 'DM Sans', sans-serif;
   font-weight: 700;
 }
 
 .del-chart-val-xs {
-  font-size: 7.5px;
+  font-size: 9px;
   fill: var(--del-text-muted);
   font-family: 'DM Sans', sans-serif;
   font-weight: 600;
 }
 
 .del-chart-xlabel {
-  font-size: 9px;
+  font-size: 10.5px;
   fill: var(--del-text-muted);
   font-family: 'DM Sans', sans-serif;
   font-weight: 600;
@@ -419,7 +417,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 11.5px;
+  font-size: 13px;
   color: var(--del-text);
   min-width: 0;
 }
@@ -442,7 +440,7 @@
 .del-legend-num {
   font-weight: 700;
   color: var(--del-text-muted);
-  font-size: 10.5px;
+  font-size: 11.5px;
   margin-left: auto;
   flex-shrink: 0;
   white-space: nowrap;
@@ -467,7 +465,7 @@
 }
 
 .del-ranked-title {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   margin-bottom: 10px;
   color: var(--del-text);
@@ -494,7 +492,7 @@
 
 .del-ranked-pos {
   width: 18px;
-  font-size: 10.5px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--del-text-muted);
   text-align: center;
@@ -502,7 +500,7 @@
 }
 
 .del-ranked-name {
-  font-size: 11px;
+  font-size: 12.5px;
   font-weight: 500;
   color: var(--del-text);
   flex: 0 1 auto;
@@ -531,7 +529,7 @@
 }
 
 .del-ranked-num {
-  font-size: 11px;
+  font-size: 12.5px;
   font-weight: 700;
   color: var(--del-text);
   min-width: 28px;
@@ -546,7 +544,7 @@
   text-align: center;
   padding: 20px 0 8px;
   color: var(--del-text-muted);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
 }
 

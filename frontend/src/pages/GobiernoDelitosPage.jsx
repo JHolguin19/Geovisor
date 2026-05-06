@@ -77,11 +77,11 @@ function VBarChart({ data, labelKey, valueKey, color = 'var(--del-accent)' }) {
 
   const maxLabelLen = Math.max(...data.map(d => String(d[labelKey] ?? '').length), 0);
   const rotateLabels = maxLabelLen > 4;
-  const padL = rotateLabels ? 22 : 8;
-  const padR = 10;
+  const padL = rotateLabels ? 30 : 10;
+  const padR = 12;
   const w = padL + n * (barW + gap) + padR;
   const chartH = 130;
-  const labelAreaH = rotateLabels ? 54 : 24;
+  const labelAreaH = rotateLabels ? 90 : 38;
 
   return (
     <div className="del-chart-scroll">
@@ -101,14 +101,14 @@ function VBarChart({ data, labelKey, valueKey, color = 'var(--del-accent)' }) {
               {rotateLabels ? (
                 <text
                   x={cx}
-                  y={chartH + 10}
-                  textAnchor="middle"
-                  transform={`rotate(-45, ${cx}, ${chartH + 10})`}
-                  style={{ fontSize: '7px' }}
+                  y={chartH + 16}
+                  textAnchor="end"
+                  transform={`rotate(-40, ${cx}, ${chartH + 16})`}
+                  style={{ fontSize: '9px' }}
                   className="del-chart-xlabel"
                 >{lbl}</text>
               ) : (
-                <text x={cx} y={chartH + 16} textAnchor="middle" className="del-chart-xlabel">{lbl}</text>
+                <text x={cx} y={chartH + 26} textAnchor="middle" className="del-chart-xlabel">{lbl}</text>
               )}
             </g>
           );
