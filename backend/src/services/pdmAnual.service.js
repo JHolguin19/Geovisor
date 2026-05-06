@@ -208,13 +208,18 @@ export async function getYearOverview(year) {
       -- avance_fisico_pct: uses stored per-row avance_fisico (already handles Acumulativo/No-acumulativo correctly)
       ROUND(AVG(LEAST(avance_fisico, 1.0)) * 100, 1) AS avance_fisico_pct,
 
-      -- avance_fisico_anio_pct: AVG(min(realizado_Y/meta_cuatrienio, 1)) × 100 — matches Spreadsheet col R
+      -- avance_fisico_anio_pct: AVG(min(capped_Y / meta_cuatrienio, 1)) × 100
+      -- REGLA: meta_fisica se capea a meta_pdm (sobre-ejecución no infla indicadores)
       LEAST(ROUND(
-        AVG(LEAST(COALESCE(meta_fisica_${y}::numeric,0) / NULLIF(meta_cuatrienio::numeric,0), 1.0))
+        AVG(LEAST(
+          LEAST(COALESCE(meta_fisica_${y}::numeric,0), CASE WHEN COALESCE(meta_pdm_${y}::numeric,0) > 0 THEN meta_pdm_${y}::numeric ELSE COALESCE(meta_fisica_${y}::numeric,0) END)
+          / NULLIF(meta_cuatrienio::numeric,0), 1.0))
         FILTER (WHERE meta_cuatrienio::numeric > 0) * 100, 1
       ), 100) AS avg_ponderado_anio,
       LEAST(ROUND(
-        AVG(LEAST(COALESCE(meta_fisica_${y}::numeric,0) / NULLIF(meta_cuatrienio::numeric,0), 1.0))
+        AVG(LEAST(
+          LEAST(COALESCE(meta_fisica_${y}::numeric,0), CASE WHEN COALESCE(meta_pdm_${y}::numeric,0) > 0 THEN meta_pdm_${y}::numeric ELSE COALESCE(meta_fisica_${y}::numeric,0) END)
+          / NULLIF(meta_cuatrienio::numeric,0), 1.0))
         FILTER (WHERE meta_cuatrienio::numeric > 0) * 100, 1
       ), 100) AS avance_fisico_anio_pct,
 
@@ -263,9 +268,11 @@ export async function getYearBySecretaria(year) {
       COUNT(*) FILTER (WHERE meta_pdm_${y} IS NULL)                        AS no_programadas,
       ROUND(AVG(LEAST(eficiencia_${y}, 1.0)) FILTER (WHERE eficiencia_${y} IS NOT NULL) * 100, 1) AS eficiencia_promedio,
       ROUND(AVG(LEAST(avance_fisico, 1.0)) * 100, 1) AS avance_fisico_pct,
-      -- avance_fisico año: AVG(min(realizado_Y/mc, 1)) × 100 — matches Spreadsheet col R
+      -- avance_fisico año: capped at meta_pdm (sobre-ejecución no infla indicadores)
       LEAST(ROUND(
-        AVG(LEAST(COALESCE(meta_fisica_${y}::numeric,0) / NULLIF(meta_cuatrienio::numeric,0), 1.0))
+        AVG(LEAST(
+          LEAST(COALESCE(meta_fisica_${y}::numeric,0), CASE WHEN COALESCE(meta_pdm_${y}::numeric,0) > 0 THEN meta_pdm_${y}::numeric ELSE COALESCE(meta_fisica_${y}::numeric,0) END)
+          / NULLIF(meta_cuatrienio::numeric,0), 1.0))
         FILTER (WHERE meta_cuatrienio::numeric > 0) * 100, 1
       ), 100) AS avance_fisico_anio_pct,
       ROUND(SUM(COALESCE((presupuesto_${y}->>'total_apropiacion')::numeric, 0)) / 1000000, 0) AS apropiacion_m,
@@ -297,9 +304,11 @@ export async function getYearByPilar(year) {
       COUNT(*) FILTER (WHERE meta_pdm_${y} IS NULL)                        AS no_programadas,
       ROUND(AVG(LEAST(eficiencia_${y}, 1.0)) FILTER (WHERE eficiencia_${y} IS NOT NULL) * 100, 1) AS eficiencia_promedio,
       ROUND(AVG(LEAST(avance_fisico, 1.0)) * 100, 1) AS avance_fisico_pct,
-      -- avance_fisico año: AVG(min(realizado_Y/mc, 1)) × 100 — matches Spreadsheet col R
+      -- avance_fisico año: capped at meta_pdm (sobre-ejecución no infla indicadores)
       LEAST(ROUND(
-        AVG(LEAST(COALESCE(meta_fisica_${y}::numeric,0) / NULLIF(meta_cuatrienio::numeric,0), 1.0))
+        AVG(LEAST(
+          LEAST(COALESCE(meta_fisica_${y}::numeric,0), CASE WHEN COALESCE(meta_pdm_${y}::numeric,0) > 0 THEN meta_pdm_${y}::numeric ELSE COALESCE(meta_fisica_${y}::numeric,0) END)
+          / NULLIF(meta_cuatrienio::numeric,0), 1.0))
         FILTER (WHERE meta_cuatrienio::numeric > 0) * 100, 1
       ), 100) AS avance_fisico_anio_pct,
       ROUND(SUM(COALESCE((presupuesto_${y}->>'total_apropiacion')::numeric, 0)) / 1000000, 0) AS apropiacion_m,
