@@ -307,6 +307,8 @@ export default function GobiernoDelitosPage() {
       .finally(() => setLoading(false));
   }, [anio, tipoDelito]);
 
+  const POBLACION = 130000;
+
   const kpis = useMemo(() => {
     if (!stats) return {};
     const byTipo = {};
@@ -321,6 +323,28 @@ export default function GobiernoDelitosPage() {
               (byTipo['HURTO MOTOCICLETAS'] || 0) + (byTipo['HURTO CELULARES'] || 0),
       lesiones: byTipo['LESIONES PERSONALES'] || 0,
       vif: byTipo['VIOLENCIA INTRAFAMILIAR'] || 0,
+    };
+  }, [stats]);
+
+  const tasas = useMemo(() => {
+    if (!stats) return {};
+    const byTipo = {};
+    stats.porTipo.forEach(r => {
+      byTipo[r.tipo_delito] = (byTipo[r.tipo_delito] || 0) + (+r.total);
+    });
+    const calcTasa = (n) => ((n / POBLACION) * 100000).toFixed(1);
+    const hurtos = (byTipo['HURTO A PERSONAS'] || 0) + (byTipo['HURTO A COMERCIO'] || 0) +
+                   (byTipo['HURTO A RESIDENCIAS'] || 0) + (byTipo['HURTO AUTOMOTORES'] || 0) +
+                   (byTipo['HURTO MOTOCICLETAS'] || 0) + (byTipo['HURTO CELULARES'] || 0);
+    return {
+      total: calcTasa(stats.total),
+      homicidios: calcTasa(byTipo['HOMICIDIO'] || 0),
+      hurtoPersonas: calcTasa(byTipo['HURTO A PERSONAS'] || 0),
+      hurtos: calcTasa(hurtos),
+      lesiones: calcTasa(byTipo['LESIONES PERSONALES'] || 0),
+      vif: calcTasa(byTipo['VIOLENCIA INTRAFAMILIAR'] || 0),
+      sexuales: calcTasa(byTipo['DELITOS SEXUALES'] || 0),
+      extorsion: calcTasa(byTipo['EXTORSION'] || 0),
     };
   }, [stats]);
 
@@ -417,6 +441,49 @@ export default function GobiernoDelitosPage() {
                 icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 00-3-3.87"/></svg>} />
               <KpiCard label="Violencia intrafamiliar" value={kpis.vif} accent="#DB2777"
                 icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>} />
+            </section>
+
+            {/* -- Tasas por 100mil hab -- */}
+            <section className="del-card del-tasas-card">
+              <h3 className="del-card-title">
+                <span className="del-card-dot" style={{ background: '#7C3AED' }} />
+                Tasa de delitos por 100.000 habitantes
+                <span className="del-tasas-pop">Poblacion: {POBLACION.toLocaleString()} hab.</span>
+              </h3>
+              <div className="del-tasas-grid">
+                <div className="del-tasa-item">
+                  <span className="del-tasa-value">{tasas.total}</span>
+                  <span className="del-tasa-label">Total delitos</span>
+                </div>
+                <div className="del-tasa-item del-tasa-item--danger">
+                  <span className="del-tasa-value">{tasas.homicidios}</span>
+                  <span className="del-tasa-label">Homicidios</span>
+                </div>
+                <div className="del-tasa-item">
+                  <span className="del-tasa-value">{tasas.hurtos}</span>
+                  <span className="del-tasa-label">Hurtos (todos)</span>
+                </div>
+                <div className="del-tasa-item">
+                  <span className="del-tasa-value">{tasas.hurtoPersonas}</span>
+                  <span className="del-tasa-label">Hurto a personas</span>
+                </div>
+                <div className="del-tasa-item">
+                  <span className="del-tasa-value">{tasas.lesiones}</span>
+                  <span className="del-tasa-label">Lesiones personales</span>
+                </div>
+                <div className="del-tasa-item">
+                  <span className="del-tasa-value">{tasas.vif}</span>
+                  <span className="del-tasa-label">Violencia intrafamiliar</span>
+                </div>
+                <div className="del-tasa-item">
+                  <span className="del-tasa-value">{tasas.sexuales}</span>
+                  <span className="del-tasa-label">Delitos sexuales</span>
+                </div>
+                <div className="del-tasa-item">
+                  <span className="del-tasa-value">{tasas.extorsion}</span>
+                  <span className="del-tasa-label">Extorsion</span>
+                </div>
+              </div>
             </section>
 
             {/* -- Charts Grid -- */}
