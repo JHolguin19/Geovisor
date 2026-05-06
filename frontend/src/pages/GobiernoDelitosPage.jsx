@@ -37,20 +37,25 @@ const MES_LABELS = { ene:'Ene',feb:'Feb',mar:'Mar',abr:'Abr',may:'May',jun:'Jun'
 function HBarChart({ data, labelKey, valueKey, colorFn, maxItems = 15 }) {
   const items = data.slice(0, maxItems);
   const max = Math.max(...items.map(d => +d[valueKey]), 1);
-  const barH = 28, gap = 4;
+  const barH = 26, gap = 4;
+  const labelW = 175;
+  const barMaxW = 230;
+  const svgW = labelW + barMaxW + 60;
   const h = items.length * (barH + gap);
 
   return (
-    <svg viewBox={`0 0 520 ${h}`} className="del-chart-svg" preserveAspectRatio="xMinYMin meet">
+    <svg viewBox={`0 0 ${svgW} ${h}`} className="del-chart-svg" preserveAspectRatio="xMinYMin meet">
       {items.map((d, i) => {
-        const w = (+d[valueKey] / max) * 250;
+        const w = (+d[valueKey] / max) * barMaxW;
         const y = i * (barH + gap);
         const color = colorFn ? colorFn(d[labelKey]) : 'var(--del-accent)';
+        const rawLabel = d[labelKey] || 'Sin dato';
+        const label = rawLabel.length > 24 ? rawLabel.slice(0, 22) + '…' : rawLabel;
         return (
           <g key={i}>
-            <text x="0" y={y + barH / 2 + 4} className="del-chart-label">{d[labelKey] || 'Sin dato'}</text>
-            <rect x="165" y={y + 2} width={w} height={barH - 4} rx="3" fill={color} opacity=".85" />
-            <text x={170 + w} y={y + barH / 2 + 4} className="del-chart-val">{(+d[valueKey]).toLocaleString()}</text>
+            <text x={labelW - 8} y={y + barH / 2 + 4} textAnchor="end" className="del-chart-label">{label}</text>
+            <rect x={labelW} y={y + 2} width={w} height={barH - 4} rx="3" fill={color} opacity=".85" />
+            <text x={labelW + w + 6} y={y + barH / 2 + 4} className="del-chart-val">{(+d[valueKey]).toLocaleString()}</text>
           </g>
         );
       })}
@@ -60,19 +65,22 @@ function HBarChart({ data, labelKey, valueKey, colorFn, maxItems = 15 }) {
 
 function VBarChart({ data, labelKey, valueKey, color = 'var(--del-accent)' }) {
   const max = Math.max(...data.map(d => +d[valueKey]), 1);
-  const barW = 44, gap = 6;
-  const w = data.length * (barW + gap);
+  const n = data.length;
+  const barW = n > 10 ? 30 : 44;
+  const gap = n > 10 ? 4 : 6;
+  const padL = 10;
+  const w = padL + n * (barW + gap);
   const chartH = 140;
 
   return (
-    <svg viewBox={`0 0 ${w} ${chartH + 30}`} className="del-chart-svg" preserveAspectRatio="xMinYMin meet">
+    <svg viewBox={`0 0 ${w} ${chartH + 34}`} className="del-chart-svg" preserveAspectRatio="xMinYMin meet">
       {data.map((d, i) => {
         const h = (+d[valueKey] / max) * chartH;
-        const x = i * (barW + gap);
+        const x = padL + i * (barW + gap);
         return (
           <g key={i}>
-            <rect x={x} y={chartH - h} width={barW} height={h} rx="3" fill={color} opacity=".82" />
-            <text x={x + barW / 2} y={chartH - h - 5} textAnchor="middle" className="del-chart-val-sm">{+d[valueKey]}</text>
+            <rect x={x} y={chartH - h} width={barW} height={Math.max(h, 1)} rx="3" fill={color} opacity=".82" />
+            {+d[valueKey] > 0 && <text x={x + barW / 2} y={chartH - h - 4} textAnchor="middle" className="del-chart-val-sm">{+d[valueKey]}</text>}
             <text x={x + barW / 2} y={chartH + 16} textAnchor="middle" className="del-chart-xlabel">{d[labelKey]}</text>
           </g>
         );
@@ -110,7 +118,7 @@ function DonutChart({ data, labelKey, valueKey }) {
 
   return (
     <div className="del-donut-wrap">
-      <svg viewBox="0 0 160 160" width="160" height="160">
+      <svg viewBox="0 0 160 160" width="140" height="140" className="del-donut-svg">
         {arcs}
         <circle cx="80" cy="80" r="35" fill="var(--del-card-bg)" />
         <text x="80" y="76" textAnchor="middle" className="del-donut-total">{total.toLocaleString()}</text>

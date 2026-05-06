@@ -28,6 +28,9 @@ export function useLayerManager(mapRef, sisbenHeatmapRef) {
 
     // Agregar capas nuevas
     activeLayers.forEach(layerId => {
+      // Las capas delitos_* son gestionadas por useDelitosLayer (panel dinámico)
+      if (layerId.startsWith('delitos_')) return;
+
       if (!currentIds.has(layerId)) {
         const layerConfig = getLayerById(layerId);
         if (!layerConfig) {

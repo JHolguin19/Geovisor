@@ -15,7 +15,7 @@ export function MapProvider({ children }) {
   const [sisbenBarriosFeatures, setSisbenBarriosFeatures] = useState(null);
   const [delitosConfig, setDelitosConfig] = useState({
     anio: null,        // null = Todos, 2024 o 2025
-    tipoDeLito: null,  // null = Todos, o tipo específico string
+    tipoDelito: null,  // null = Todos, o tipo específico string
     vizMode: 'heatmap' // 'heatmap' | 'categorized'
   });
 

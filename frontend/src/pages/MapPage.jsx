@@ -28,14 +28,30 @@ function MapPageInner() {
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [searchOpen, setSearchOpen] = useState(false);
-  const { activeLayers, setActiveLayers, selectionResults, setSelectionResults, clearTools } = useContext(MapContext);
+  const { activeLayers, setActiveLayers, setDelitosConfig, selectionResults, setSelectionResults, clearTools } = useContext(MapContext);
 
   // Auto-activar capa de delitos al entrar en /mapa/gobierno
   useEffect(() => {
     if (secretariaId === 'gobierno' && !activeLayers.has('delitos_barrios_2025')) {
       setActiveLayers(prev => new Set([...prev, 'delitos_barrios_2025']));
+      setDelitosConfig({ anio: '2025', tipoDelito: null, vizMode: 'heatmap' });
     }
   }, [secretariaId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Sincronizar delitosConfig cuando cambia la capa activa de delitos
+  useEffect(() => {
+    const arr = [...activeLayers];
+    const delitosActive = arr.filter(id => id.startsWith('delitos_'));
+    if (delitosActive.length === 0) return;
+    const last = delitosActive[delitosActive.length - 1];
+    if (last === 'delitos_barrios_2024') {
+      setDelitosConfig(prev => ({ ...prev, anio: '2024', tipoDelito: null }));
+    } else if (last === 'delitos_barrios_2025') {
+      setDelitosConfig(prev => ({ ...prev, anio: '2025', tipoDelito: null }));
+    } else if (last === 'delitos_homicidios') {
+      setDelitosConfig(prev => ({ ...prev, anio: null, tipoDelito: 'HOMICIDIO' }));
+    }
+  }, [activeLayers, setDelitosConfig]);
 
   const toggleSidebar  = useCallback(() => setSidebarOpen(p => !p), []);
   const closeSidebar   = useCallback(() => setSidebarOpen(false), []);

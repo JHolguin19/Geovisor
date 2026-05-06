@@ -260,6 +260,10 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: .4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
 }
 
 /* ── Cards ─────────────────────────────────────────────────────────────── */
@@ -270,6 +274,7 @@
   border-radius: 10px;
   padding: 20px 22px;
   overflow-x: auto;
+  min-width: 0;
 }
 
 .del-card--wide {
@@ -358,9 +363,13 @@
 
 .del-donut-wrap {
   display: flex;
-  align-items: center;
-  gap: 20px;
+  align-items: flex-start;
+  gap: 16px;
   flex-wrap: wrap;
+}
+
+.del-donut-svg {
+  flex-shrink: 0;
 }
 
 .del-donut-total {
@@ -383,6 +392,8 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .del-legend-item {
@@ -391,6 +402,7 @@
   gap: 7px;
   font-size: 12px;
   color: var(--del-text);
+  min-width: 0;
 }
 
 .del-legend-dot {
@@ -400,8 +412,8 @@
   flex-shrink: 0;
 }
 
-.del-legend-text { font-weight: 500; }
-.del-legend-num { font-weight: 700; color: var(--del-text-muted); font-size: 11px; margin-left: auto; }
+.del-legend-text { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.del-legend-num { font-weight: 700; color: var(--del-text-muted); font-size: 11px; margin-left: auto; flex-shrink: 0; white-space: nowrap; }
 
 /* ── Monthly legend ────────────────────────────────────────────────────── */
 
@@ -459,8 +471,12 @@
   font-size: 11.5px;
   font-weight: 500;
   color: var(--del-text);
-  min-width: 120px;
+  width: 120px;
+  min-width: 80px;
   flex-shrink: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .del-ranked-bar-bg {

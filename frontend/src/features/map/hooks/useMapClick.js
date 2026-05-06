@@ -82,7 +82,22 @@ export function useMapClick(mapRef, overlayRef, popupContentRef) {
       });
     }
 
-    // 6. Prioridades vectoriales
+    // 6. Capa dinámica delitos_panel (controlada por DelitosPanel)
+    if (!contenido) {
+      const hasDelitosActive = [...activeLayers].some(id => id.startsWith('delitos_'));
+      if (hasDelitosActive) {
+        const panelEntry = QUERY_PRIORITY.find(e => e.id === 'delitos_panel');
+        if (panelEntry) {
+          map.forEachFeatureAtPixel(event.pixel, (feature, layer) => {
+            if (contenido) return;
+            if (layer?.get('name') !== 'delitos_panel') return;
+            contenido = panelEntry.props(feature.getProperties());
+          }, { hitTolerance: 5 });
+        }
+      }
+    }
+
+    // 7. Prioridades vectoriales
     if (!contenido) {
       for (const { id, props } of QUERY_PRIORITY) {
         if (!activeLayers.has(id)) continue;
@@ -96,7 +111,7 @@ export function useMapClick(mapRef, overlayRef, popupContentRef) {
       }
     }
 
-    // 7. Fallback: predios urbanos (siempre activo)
+    // 8. Fallback: predios urbanos (siempre activo)
     if (!contenido) {
       map.forEachFeatureAtPixel(event.pixel, (feature, layer) => {
         if (contenido) return;
