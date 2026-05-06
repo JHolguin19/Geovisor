@@ -26,13 +26,13 @@ function avFisAnioFn(year) {
   };
 }
 
-// 4-year overall = average of the 4 annual Av.Fís.Año% values (non-null only)
+// 4-year overall = SUM of the 4 annual Av.Fís.Año% values (columns J + N + R + V)
 function avFisFn(row) {
   const vals = [2024, 2025, 2026, 2027]
     .map(y => avFisAnioFn(y)(row))
     .filter(v => v !== null);
   if (!vals.length) return null;
-  return vals.reduce((a, b) => a + b, 0) / vals.length;
+  return vals.reduce((a, b) => a + b, 0);
 }
 
 // Financial execution % = comprometido / apropiacion × 100
@@ -109,7 +109,7 @@ export const COLUMNS = [
 
   // ── Resumen ──────────────────────────────────────────────────────────────────
   { key: '_av_fis', label: 'Av. Físico', width: 76, editable: false, group: 'Resumen',
-    title: 'Promedio del Av. Físico Año de los 4 años',
+    title: 'Sumatoria del Av. Físico Año de los 4 años (J + N + R + V)',
     computed: avFisFn, format: 'pct1',
     cellStyle: (_, v) => ({ background: effColor(v), fontWeight: 700 }) },
   { key: 'cumplimiento_cuatrienio', label: 'Cumpl. 4A', width: 76, editable: false, group: 'Resumen',
