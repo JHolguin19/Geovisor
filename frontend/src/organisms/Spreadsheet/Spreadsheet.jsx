@@ -14,15 +14,18 @@ function efFn(y) {
 }
 
 // Annual Physical Progress — capped at MIN(planned_share, 100%)
-// "planned_share" = meta_pdm_Y / meta_cuatrienio. If no plan for the year, cap at 100%.
+// cap = min(meta_pdm_Y / meta_cuatrienio, 1.0)  →  never exceeds 100%
+// If a goal is over-achieved beyond what was planned, it is capped at the planned share.
 function avFisAnioFn(year) {
   return row => {
     const fis = parseFloat(row[`meta_fisica_${year}`]);
     const mc  = parseFloat(row.meta_cuatrienio);
     const pdm = parseFloat(row[`meta_pdm_${year}`]);
     if (!mc || isNaN(fis)) return null;
-    const planShare = pdm > 0 ? pdm / mc : 1.0;
-    return Math.min(fis / mc, planShare, 1.0) * 100;
+    // Planned share of the 4-year goal for this year, capped at 100%
+    const cap = pdm > 0 ? Math.min(pdm / mc, 1.0) : 1.0;
+    // Actual contribution capped at the planned share → result always in [0, 100]
+    return Math.min(fis / mc, cap) * 100;
   };
 }
 
