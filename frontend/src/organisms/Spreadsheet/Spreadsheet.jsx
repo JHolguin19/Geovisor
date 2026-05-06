@@ -13,29 +13,49 @@ function efFn(y) {
   };
 }
 
-// Annual Physical Progress — capped at MIN(planned_share, 100%)
-// cap = min(meta_pdm_Y / meta_cuatrienio, 1.0)  →  never exceeds 100%
-// If a goal is over-achieved beyond what was planned, it is capped at the planned share.
+// Annual Physical Progress per year — always relative to meta_cuatrienio (mc).
+// cap(fis, pdm) = min(fis, pdm) when pdm > 0, else fis (no plan = no cap).
+// Result is the capped contribution of this year expressed as % of the 4-year goal.
 function avFisAnioFn(year) {
   return row => {
     const fis = parseFloat(row[`meta_fisica_${year}`]);
     const mc  = parseFloat(row.meta_cuatrienio);
     const pdm = parseFloat(row[`meta_pdm_${year}`]);
     if (!mc || isNaN(fis)) return null;
-    // Planned share of the 4-year goal for this year, capped at 100%
-    const cap = pdm > 0 ? Math.min(pdm / mc, 1.0) : 1.0;
-    // Actual contribution capped at the planned share → result always in [0, 100]
-    return Math.min(fis / mc, cap) * 100;
+    const cap = pdm > 0 ? Math.min(fis, pdm) : fis;
+    return Math.min(cap / mc, 1) * 100;
   };
 }
 
-// 4-year overall = SUM of the 4 annual Av.Fís.Año% values (columns J + N + R + V)
+// 4-year overall — mirrors the stored avance_fisico formula:
+//   Acumulativo  → GREATEST(cap_y) / mc  (cumulative: last year holds the full progress)
+//   No-acumulativo → SUM(cap_y) / SUM(pdm_y)  (independent years; denominator = total planned)
 function avFisFn(row) {
-  const vals = [2024, 2025, 2026, 2027]
-    .map(y => avFisAnioFn(y)(row))
-    .filter(v => v !== null);
-  if (!vals.length) return null;
-  return vals.reduce((a, b) => a + b, 0);
+  const YEARS = [2024, 2025, 2026, 2027];
+  const mc = parseFloat(row.meta_cuatrienio);
+  const tipo = row.tipo_ponderado;
+
+  const caps = YEARS.map(y => {
+    const fis = parseFloat(row[`meta_fisica_${y}`]);
+    const pdm = parseFloat(row[`meta_pdm_${y}`]);
+    if (isNaN(fis)) return null;
+    return pdm > 0 ? Math.min(fis, pdm) : fis;
+  });
+
+  if (tipo === 'Acumulativo') {
+    if (!mc) return null;
+    const validCaps = caps.filter(v => v !== null);
+    if (!validCaps.length) return null;
+    return Math.min(Math.max(...validCaps) / mc * 100, 100);
+  } else {
+    const sumPdm = YEARS.reduce((s, y) => {
+      const v = parseFloat(row[`meta_pdm_${y}`]);
+      return s + (isNaN(v) ? 0 : v);
+    }, 0);
+    if (!sumPdm) return null;
+    const sumCap = caps.reduce((s, v) => s + (v ?? 0), 0);
+    return Math.min(sumCap / sumPdm * 100, 100);
+  }
 }
 
 // Financial execution % = comprometido / apropiacion × 100
