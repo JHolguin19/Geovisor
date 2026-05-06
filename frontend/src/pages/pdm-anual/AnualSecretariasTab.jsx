@@ -8,12 +8,6 @@ function fmtM(val) {
   return `$${parseInt(n).toLocaleString('es-CO')} M`;
 }
 
-function fmtNum(val) {
-  const n = parseFloat(val);
-  if (isNaN(n)) return '—';
-  return n.toLocaleString('es-CO', { maximumFractionDigits: 1 });
-}
-
 export default function AnualSecretariasTab({ data, year, onSecretariaClick }) {
   if (!data || !data.length) return <div className="pdm-loading-full">Sin datos de secretarías para {year}</div>;
 
@@ -32,7 +26,6 @@ export default function AnualSecretariasTab({ data, year, onSecretariaClick }) {
               <th className="th-c">NP</th>
               <th style={{ minWidth: 120 }}>Avance físico</th>
               <th style={{ minWidth: 120 }}>Eficiencia {year}</th>
-              <th className="th-c" style={{ minWidth: 140 }}>Físico {year} (prog./real.)</th>
               <th className="th-r">Total Apropiación</th>
               <th className="th-r">Neto Registros</th>
               <th className="th-c" style={{ color: 'var(--pdm-blue)' }}>% Registro</th>
@@ -43,13 +36,6 @@ export default function AnualSecretariasTab({ data, year, onSecretariaClick }) {
             {data.map(s => {
               const avFisico = parseFloat(s.avance_fisico_pct) || 0;
               const eff = parseFloat(s.eficiencia_promedio) || 0;
-              const pdm = parseFloat(s.sum_meta_pdm) || 0;
-              const fisica = parseFloat(s.sum_meta_fisica) || 0;
-              const programadas = parseInt(s.programadas) || 0;
-              // (Actual / Planned) × 100 / number of goals in the department
-              const pctFisico = (pdm > 0 && programadas > 0)
-                ? Math.min(parseFloat((fisica / pdm * 100 / programadas).toFixed(1)), 100)
-                : 0;
               const apropia = parseFloat(s.apropiacion_m) || 0;
               const registro = parseFloat(s.comprometido_m) || 0;
               const pctReg = apropia > 0 ? Math.round(registro / apropia * 100) : 0;
@@ -65,12 +51,6 @@ export default function AnualSecretariasTab({ data, year, onSecretariaClick }) {
                   <td>
                     <BarPct value={eff} height={7} />
                     <span className="pdm-bar-caption" style={{ color: colorPct(eff) }}>{pct(eff)}</span>
-                  </td>
-                  <td className="th-c" style={{ fontSize: 12 }}>
-                    <span style={{ color: 'var(--pdm-muted)' }}>{fmtNum(pdm)}</span>
-                    {' / '}
-                    <strong style={{ color: colorPct(pctFisico) }}>{fmtNum(fisica)}</strong>
-                    <div style={{ fontSize: 11, color: colorPct(pctFisico), fontWeight: 700 }}>{pctFisico}%</div>
                   </td>
                   <td className="th-r td-money">{fmtM(s.apropiacion_m)}</td>
                   <td className="th-r td-money">{fmtM(s.comprometido_m)}</td>

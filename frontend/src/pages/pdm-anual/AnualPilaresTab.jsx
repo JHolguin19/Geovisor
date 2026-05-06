@@ -8,12 +8,6 @@ function fmtM(val) {
   return `$${parseInt(n).toLocaleString('es-CO')} M`;
 }
 
-function fmtNum(val) {
-  const n = parseFloat(val);
-  if (isNaN(n)) return '—';
-  return n.toLocaleString('es-CO', { maximumFractionDigits: 1 });
-}
-
 export default function AnualPilaresTab({ data, year }) {
   if (!data || !data.length) return <div className="pdm-loading-full">Sin datos de pilares para {year}</div>;
 
@@ -24,13 +18,6 @@ export default function AnualPilaresTab({ data, year }) {
         {data.map(p => {
           const avFisico = parseFloat(p.avance_fisico_pct) || 0;
           const eff = parseFloat(p.eficiencia_promedio) || 0;
-          const pdm = parseFloat(p.sum_meta_pdm) || 0;
-          const fisica = parseFloat(p.sum_meta_fisica) || 0;
-          const programadas = parseInt(p.programadas) || 0;
-          // (Actual / Planned) × 100 / number of goals in the pilar
-          const pctFisico = (pdm > 0 && programadas > 0)
-            ? Math.min(parseFloat((fisica / pdm * 100 / programadas).toFixed(1)), 100)
-            : 0;
           const apropia = parseFloat(p.apropiacion_m) || 0;
           const registro = parseFloat(p.comprometido_m) || 0;
           const pctReg = apropia > 0 ? Math.round(registro / apropia * 100) : 0;
@@ -54,14 +41,6 @@ export default function AnualPilaresTab({ data, year }) {
                   <span>Eficiencia {year}</span>
                   <BarPct value={eff} height={10} />
                   <b style={{ color: colorPct(eff) }}>{pct(eff)}</b>
-                </div>
-                <div className="pdm-pilar-bar-row">
-                  <span>Físico {year}</span>
-                  <BarPct value={pctFisico} height={10} />
-                  <b style={{ color: colorPct(pctFisico) }}>{pctFisico}%</b>
-                </div>
-                <div className="pdm-pilar-bar-row" style={{ fontSize: 11, color: 'var(--pdm-muted)', marginTop: 2 }}>
-                  <span style={{ flex: 1 }}>prog. <strong>{fmtNum(pdm)}</strong> / real. <strong style={{ color: colorPct(pctFisico) }}>{fmtNum(fisica)}</strong></span>
                 </div>
                 <div className="pdm-pilar-bar-row" style={{ marginTop: 6 }}>
                   <span>Neto Reg. / Apropia.</span>

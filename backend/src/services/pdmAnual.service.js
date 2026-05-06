@@ -219,9 +219,9 @@ export async function getYearOverview(year) {
         / NULLIF(SUM(COALESCE(meta_cuatrienio::numeric,0)), 0) * 100, 1
       ) AS avance_fisico_pct,
 
-      -- avance_fisico_anio_pct: SUM(capped year Y) / SUM(meta_cuatrienio), capped at 100%
-      LEAST(ROUND(SUM(c${y % 100}) / NULLIF(SUM(COALESCE(meta_cuatrienio::numeric,0)), 0) * 100, 1), 100) AS avg_ponderado_anio,
-      LEAST(ROUND(SUM(c${y % 100}) / NULLIF(SUM(COALESCE(meta_cuatrienio::numeric,0)), 0) * 100, 1), 100) AS avance_fisico_anio_pct,
+      -- avance_fisico_anio_pct: SUM(realizado año Y) / SUM(meta_cuatrienio), capped at 100%
+      LEAST(ROUND(SUM(COALESCE(meta_fisica_${y}::numeric,0)) / NULLIF(SUM(COALESCE(meta_cuatrienio::numeric,0)), 0) * 100, 1), 100) AS avg_ponderado_anio,
+      LEAST(ROUND(SUM(COALESCE(meta_fisica_${y}::numeric,0)) / NULLIF(SUM(COALESCE(meta_cuatrienio::numeric,0)), 0) * 100, 1), 100) AS avance_fisico_anio_pct,
 
       -- % del cuatrienio esperado para este año (usa incremento para acumulativas)
       ROUND(
@@ -279,9 +279,9 @@ export async function getYearBySecretaria(year) {
           SUM(COALESCE(meta_cuatrienio::numeric,0))
         ) / NULLIF(SUM(COALESCE(meta_cuatrienio::numeric,0)), 0) * 100, 1
       ) AS avance_fisico_pct,
-      -- avance_fisico año: SUM(capped year Y) / SUM(mc), capped at 100%
+      -- avance_fisico año: SUM(realizado año Y) / SUM(mc), capped at 100%
       LEAST(ROUND(
-        SUM(LEAST(COALESCE(meta_fisica_${y}::numeric,0), CASE WHEN COALESCE(meta_pdm_${y}::numeric,0)>0 THEN meta_pdm_${y}::numeric ELSE COALESCE(meta_fisica_${y}::numeric,0) END))
+        SUM(COALESCE(meta_fisica_${y}::numeric,0))
         / NULLIF(SUM(COALESCE(meta_cuatrienio::numeric,0)), 0) * 100, 1
       ), 100) AS avance_fisico_anio_pct,
       ROUND(SUM(COALESCE((presupuesto_${y}->>'total_apropiacion')::numeric, 0)) / 1000000, 0) AS apropiacion_m,
@@ -324,9 +324,9 @@ export async function getYearByPilar(year) {
           SUM(COALESCE(meta_cuatrienio::numeric,0))
         ) / NULLIF(SUM(COALESCE(meta_cuatrienio::numeric,0)), 0) * 100, 1
       ) AS avance_fisico_pct,
-      -- avance_fisico año: SUM(capped year Y) / SUM(mc), capped at 100%
+      -- avance_fisico año: SUM(realizado año Y) / SUM(mc), capped at 100%
       LEAST(ROUND(
-        SUM(LEAST(COALESCE(meta_fisica_${y}::numeric,0), CASE WHEN COALESCE(meta_pdm_${y}::numeric,0)>0 THEN meta_pdm_${y}::numeric ELSE COALESCE(meta_fisica_${y}::numeric,0) END))
+        SUM(COALESCE(meta_fisica_${y}::numeric,0))
         / NULLIF(SUM(COALESCE(meta_cuatrienio::numeric,0)), 0) * 100, 1
       ), 100) AS avance_fisico_anio_pct,
       ROUND(SUM(COALESCE((presupuesto_${y}->>'total_apropiacion')::numeric, 0)) / 1000000, 0) AS apropiacion_m,
