@@ -29,7 +29,7 @@ export default function AnualPilaresTab({ data, year }) {
           const programadas = parseInt(p.programadas) || 0;
           // (Actual / Planned) × 100 / number of goals in the pilar
           const pctFisico = (pdm > 0 && programadas > 0)
-            ? parseFloat((fisica / pdm * 100 / programadas).toFixed(1))
+            ? Math.min(parseFloat((fisica / pdm * 100 / programadas).toFixed(1)), 100)
             : 0;
           const apropia = parseFloat(p.apropiacion_m) || 0;
           const registro = parseFloat(p.comprometido_m) || 0;

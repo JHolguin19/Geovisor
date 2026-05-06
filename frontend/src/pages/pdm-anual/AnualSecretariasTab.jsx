@@ -48,7 +48,7 @@ export default function AnualSecretariasTab({ data, year, onSecretariaClick }) {
               const programadas = parseInt(s.programadas) || 0;
               // (Actual / Planned) × 100 / number of goals in the department
               const pctFisico = (pdm > 0 && programadas > 0)
-                ? parseFloat((fisica / pdm * 100 / programadas).toFixed(1))
+                ? Math.min(parseFloat((fisica / pdm * 100 / programadas).toFixed(1)), 100)
                 : 0;
               const apropia = parseFloat(s.apropiacion_m) || 0;
               const registro = parseFloat(s.comprometido_m) || 0;
