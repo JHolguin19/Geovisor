@@ -26,18 +26,13 @@ function avFisAnioFn(year) {
   };
 }
 
-// 4-year total = SUM of capped annual values, total capped at 100%
+// 4-year overall = average of the 4 annual Av.Fís.Año% values (non-null only)
 function avFisFn(row) {
-  const mc = parseFloat(row.meta_cuatrienio);
-  if (!mc) return null;
-  const sum = [2024, 2025, 2026, 2027].reduce((acc, y) => {
-    const fis = parseFloat(row[`meta_fisica_${y}`]);
-    const pdm = parseFloat(row[`meta_pdm_${y}`]);
-    if (isNaN(fis)) return acc;
-    const planShare = pdm > 0 ? pdm / mc : 1.0;
-    return acc + Math.min(fis / mc, planShare, 1.0);
-  }, 0);
-  return Math.min(sum, 1.0) * 100;
+  const vals = [2024, 2025, 2026, 2027]
+    .map(y => avFisAnioFn(y)(row))
+    .filter(v => v !== null);
+  if (!vals.length) return null;
+  return vals.reduce((a, b) => a + b, 0) / vals.length;
 }
 
 // Financial execution % = comprometido / apropiacion × 100
@@ -114,6 +109,7 @@ export const COLUMNS = [
 
   // ── Resumen ──────────────────────────────────────────────────────────────────
   { key: '_av_fis', label: 'Av. Físico', width: 76, editable: false, group: 'Resumen',
+    title: 'Promedio del Av. Físico Año de los 4 años',
     computed: avFisFn, format: 'pct1',
     cellStyle: (_, v) => ({ background: effColor(v), fontWeight: 700 }) },
   { key: 'cumplimiento_cuatrienio', label: 'Cumpl. 4A', width: 76, editable: false, group: 'Resumen',

@@ -97,8 +97,8 @@ export default function AnualOverviewTab({ data, year, divergencia, comparativo,
           {/* Big KPI: Avance físico year */}
           <div className="pdm-main-kpi" style={{ borderColor: colorPct(d.avance_fisico_anio_pct) }}>
             <div className="pdm-main-kpi-val" style={{ color: colorPct(d.avance_fisico_anio_pct) }}>{d.avance_fisico_anio_pct != null ? `${d.avance_fisico_anio_pct}%` : '—'}</div>
-            <div className="pdm-main-kpi-label">Avance físico {year}</div>
-            <div className="pdm-main-kpi-sub">Contribución de {year} al cuatrienio (máx. 100%)</div>
+            <div className="pdm-main-kpi-label">Av. Físico {year}</div>
+            <div className="pdm-main-kpi-sub">SUM(realizado {year}) / SUM(meta cuatrienio) × 100</div>
           </div>
           {/* Big KPI: Avance cuatrienio */}
           <div className="pdm-main-kpi" style={{ borderColor: colorPct(d.avance_fisico_pct) }}>
@@ -174,7 +174,8 @@ export default function AnualOverviewTab({ data, year, divergencia, comparativo,
           </div>
           <div className="pdm-anio-kpi" style={{ borderLeftColor: colorPct(d.avance_fisico_anio_pct) }}>
             <div style={{ color: colorPct(d.avance_fisico_anio_pct), fontSize: 22, fontWeight: 800 }}>{d.avance_fisico_anio_pct != null ? `${d.avance_fisico_anio_pct}%` : '—'}</div>
-            <div style={{ fontSize: 12, fontWeight: 600, marginTop: 4 }}>Avance físico realizado en {year}</div>
+            <div style={{ fontSize: 12, fontWeight: 600, marginTop: 4 }}>Av. físico realizado {year}</div>
+            <div style={{ fontSize: 11, color: 'var(--pdm-muted)', marginTop: 2 }}>SUM(realizado) / SUM(meta cuatrienio)</div>
           </div>
         </div>
         <ComparativoChart comparativo={comparativo} year={year} />
