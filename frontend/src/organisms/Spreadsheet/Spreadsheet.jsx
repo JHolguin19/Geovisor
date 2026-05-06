@@ -29,30 +29,21 @@ function avFisAnioFn(year) {
 
 // 4-year overall — two formulas depending on type:
 //   Acumulativo    → SUM(J + N + R + V), capped at 100%
-//   No-acumulativo → SUM(cap_y) / SUM(pdm_y) × 100  (mirrors columna X / cumplimiento_cuatrienio)
+//   No-acumulativo → valor almacenado en columna X (cumplimiento_cuatrienio)
 function avFisFn(row) {
-  const YEARS = [2024, 2025, 2026, 2027];
-  const tipo  = row.tipo_ponderado;
+  const tipo = row.tipo_ponderado;
 
   if (tipo === 'Acumulativo') {
-    const vals = YEARS.map(y => avFisAnioFn(y)(row)).filter(v => v !== null);
+    const vals = [2024, 2025, 2026, 2027]
+      .map(y => avFisAnioFn(y)(row))
+      .filter(v => v !== null);
     if (!vals.length) return null;
     return Math.min(vals.reduce((a, b) => a + b, 0), 100);
   }
 
-  // No-acumulativo: same denominator as cumplimiento_cuatrienio (SUM of planned years)
-  const sumPdm = YEARS.reduce((s, y) => {
-    const v = parseFloat(row[`meta_pdm_${y}`]);
-    return s + (isNaN(v) || v < 0 ? 0 : v);
-  }, 0);
-  if (!sumPdm) return null;
-  const sumCap = YEARS.reduce((s, y) => {
-    const fis = parseFloat(row[`meta_fisica_${y}`]);
-    const pdm = parseFloat(row[`meta_pdm_${y}`]);
-    if (isNaN(fis)) return s;
-    return s + (pdm > 0 ? Math.min(fis, pdm) : fis);
-  }, 0);
-  return Math.min(sumCap / sumPdm * 100, 100);
+  // No-acumulativo: read cumplimiento_cuatrienio (col X) directly
+  const v = parseFloat(row.cumplimiento_cuatrienio);
+  return isNaN(v) ? null : Math.min(v, 100);
 }
 
 // Financial execution % = comprometido / apropiacion × 100
