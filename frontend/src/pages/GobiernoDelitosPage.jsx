@@ -72,25 +72,28 @@ function VBarChart({ data, labelKey, valueKey, color = 'var(--del-accent)' }) {
   if (!data || data.length === 0) return null;
   const max = Math.max(...data.map(d => +d[valueKey]), 1);
   const n = data.length;
-  const barW = n > 10 ? 28 : 40;
+  const barW = n > 10 ? 24 : 36;
   const gap = n > 10 ? 3 : 5;
-  const padL = 8;
-  const w = padL + n * (barW + gap) + 8;
-  const chartH = 130;
 
-  const maxLabelLen = Math.max(...data.map(d => String(d[labelKey] || '').length));
+  const maxLabelLen = Math.max(...data.map(d => String(d[labelKey] ?? '').length), 0);
   const rotateLabels = maxLabelLen > 4;
-  const labelAreaH = rotateLabels ? 58 : 26;
+  // Extra left padding when rotating so the first bar's label doesn't clip outside the viewBox
+  const padL = rotateLabels ? 22 : 8;
+  const padR = 10;
+  const w = padL + n * (barW + gap) + padR;
+  const chartH = 100;
+  const labelAreaH = rotateLabels ? 54 : 24;
 
   return (
     <div className="del-chart-scroll">
       <svg viewBox={`0 0 ${w} ${chartH + labelAreaH}`} className="del-chart-svg" width={w} height={chartH + labelAreaH}
-        preserveAspectRatio="xMinYMin meet" style={{ minWidth: `${Math.min(w, 300)}px` }}>
+        preserveAspectRatio="xMinYMin meet" style={{ minWidth: `${Math.min(w, 260)}px` }}>
         {data.map((d, i) => {
           const h = (+d[valueKey] / max) * chartH;
           const x = padL + i * (barW + gap);
           const cx = x + barW / 2;
-          const lbl = String(d[labelKey] || '');
+          // Show 'N/D' for null labels so all bars have a visible label
+          const lbl = d[labelKey] != null ? String(d[labelKey]) : 'N/D';
           return (
             <g key={i}>
               <rect x={x} y={chartH - h} width={barW} height={Math.max(h, 1)} rx="3" fill={color} opacity=".82" />
@@ -99,9 +102,11 @@ function VBarChart({ data, labelKey, valueKey, color = 'var(--del-accent)' }) {
               )}
               {rotateLabels ? (
                 <text
-                  x={cx} y={chartH + 10}
-                  textAnchor="end"
-                  transform={`rotate(-42, ${cx}, ${chartH + 10})`}
+                  x={cx}
+                  y={chartH + 10}
+                  textAnchor="middle"
+                  transform={`rotate(-45, ${cx}, ${chartH + 10})`}
+                  style={{ fontSize: '7px' }}
                   className="del-chart-xlabel"
                 >{lbl}</text>
               ) : (
