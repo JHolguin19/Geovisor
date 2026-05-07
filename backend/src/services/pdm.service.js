@@ -43,7 +43,7 @@ export async function getOverview() {
     pool.query(`
       SELECT
         COUNT(*)                                         AS total_metas,
-        ROUND(AVG(LEAST(avance_fisico, 1.0)) * 100, 1)              AS avance_fisico_pct,
+        ROUND(AVG(avance_fisico) * 100, 1)              AS avance_fisico_pct,
         ${FINANCIERO_SQL}                                AS avance_financiero_pct,
         ROUND(
           SUM(
@@ -78,9 +78,9 @@ export async function getOverview() {
         COUNT(*) FILTER (WHERE meta_fisica_2025 > meta_pdm_2025 AND meta_pdm_2025 IS NOT NULL) AS metas_superaron,
         COUNT(*) FILTER (WHERE meta_pdm_2025 IS NULL)   AS metas_np_2025,
         COUNT(*) FILTER (WHERE avance_financiero > avance_fisico + 0.1) AS brecha_financiero_mayor,
-        ROUND(AVG(LEAST(eficiencia_2025, 1.0)) FILTER (WHERE eficiencia_2025 IS NOT NULL) * 100, 1) AS eficiencia_2025_pct,
-        ROUND(AVG(LEAST(eficiencia_2024, 1.0)) FILTER (WHERE eficiencia_2024 IS NOT NULL) * 100, 1) AS eficiencia_2024_pct,
-        ROUND(AVG(LEAST(avance_fisico, 1.0)) * 100, 1)    AS cumplimiento_cuatrienio_pct
+        ROUND(AVG(eficiencia_2025) FILTER (WHERE eficiencia_2025 IS NOT NULL) * 100, 1) AS eficiencia_2025_pct,
+        ROUND(AVG(eficiencia_2024) FILTER (WHERE eficiencia_2024 IS NOT NULL) * 100, 1) AS eficiencia_2024_pct,
+        ROUND(AVG(avance_fisico) * 100, 1)    AS cumplimiento_cuatrienio_pct
       FROM pdm_metas
     `),
 
@@ -88,7 +88,7 @@ export async function getOverview() {
       SELECT
         num_pilar, nom_pilar,
         COUNT(*)                                         AS total_metas,
-        ROUND(AVG(LEAST(avance_fisico, 1.0)) * 100, 1)              AS avance_fisico_pct,
+        ROUND(AVG(avance_fisico) * 100, 1)              AS avance_fisico_pct,
         ${FINANCIERO_SQL}                                AS avance_financiero_pct,
         COUNT(*) FILTER (WHERE avance_fisico >= 0.8)    AS en_meta,
         COUNT(*) FILTER (WHERE avance_fisico >= 0.5 AND avance_fisico < 0.8) AS en_proceso,
@@ -141,9 +141,9 @@ export async function getSecretarias() {
     SELECT
       secretaria,
       COUNT(*)                                         AS total_metas,
-      ROUND(AVG(LEAST(avance_fisico, 1.0)) * 100, 1)              AS avance_fisico_pct,
+      ROUND(AVG(avance_fisico) * 100, 1)              AS avance_fisico_pct,
       ${FINANCIERO_SQL}                                AS avance_financiero_pct,
-      ROUND(AVG(LEAST(avance_fisico, 1.0)) * 100, 1)    AS cumplimiento_pct,
+      ROUND(AVG(avance_fisico) * 100, 1)    AS cumplimiento_pct,
       COUNT(*) FILTER (WHERE avance_fisico >= 0.8)    AS metas_en_meta,
       COUNT(*) FILTER (WHERE avance_fisico >= 0.5 AND avance_fisico < 0.8) AS metas_en_proceso,
       COUNT(*) FILTER (WHERE avance_fisico < 0.5)     AS metas_rezagadas,
@@ -186,10 +186,10 @@ export async function getResumen({ secretaria, pilar }) {
   const { rows } = await pool.query(`
     SELECT
       COUNT(*)                                         AS total_metas,
-      ROUND(AVG(LEAST(avance_fisico, 1.0)) * 100, 1)              AS avance_fisico_pct,
+      ROUND(AVG(avance_fisico) * 100, 1)              AS avance_fisico_pct,
       ${FINANCIERO_SQL}                                AS avance_financiero_pct,
-      ROUND(AVG(LEAST(avance_fisico, 1.0)) * 100, 1)    AS cumplimiento_pct,
-      ROUND(AVG(LEAST(eficiencia_2025, 1.0)) FILTER (WHERE eficiencia_2025 IS NOT NULL) * 100, 1) AS eficiencia_2025_pct,
+      ROUND(AVG(avance_fisico) * 100, 1)    AS cumplimiento_pct,
+      ROUND(AVG(eficiencia_2025) FILTER (WHERE eficiencia_2025 IS NOT NULL) * 100, 1) AS eficiencia_2025_pct,
       COUNT(*) FILTER (WHERE avance_fisico >= 0.8)    AS metas_en_meta,
       COUNT(*) FILTER (WHERE avance_fisico >= 0.5 AND avance_fisico < 0.8) AS metas_en_proceso,
       COUNT(*) FILTER (WHERE avance_fisico < 0.5)     AS metas_rezagadas,

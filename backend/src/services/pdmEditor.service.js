@@ -90,51 +90,33 @@ export async function saveChanges(changes) {
       }
     }
 
-    // Recalcular todos los campos derivados con capping
+    // Recalcular eficiencia (sin cap)
     await client.query(`
       UPDATE pdm_metas
       SET
-        eficiencia_2024 = LEAST(meta_fisica_2024::numeric / NULLIF(meta_pdm_2024::numeric,0), 1.0),
-        eficiencia_2025 = LEAST(meta_fisica_2025::numeric / NULLIF(meta_pdm_2025::numeric,0), 1.0),
-        eficiencia_2026 = LEAST(meta_fisica_2026::numeric / NULLIF(meta_pdm_2026::numeric,0), 1.0),
-        eficiencia_2027 = LEAST(meta_fisica_2027::numeric / NULLIF(meta_pdm_2027::numeric,0), 1.0)
+        eficiencia_2024 = meta_fisica_2024::numeric / NULLIF(meta_pdm_2024::numeric,0),
+        eficiencia_2025 = meta_fisica_2025::numeric / NULLIF(meta_pdm_2025::numeric,0),
+        eficiencia_2026 = meta_fisica_2026::numeric / NULLIF(meta_pdm_2026::numeric,0),
+        eficiencia_2027 = meta_fisica_2027::numeric / NULLIF(meta_pdm_2027::numeric,0)
       WHERE meta_num IN (${[...new Set(changes.map(c => c.meta_num))].join(',')})
         AND (meta_pdm_2024 IS NOT NULL OR meta_pdm_2025 IS NOT NULL
           OR meta_pdm_2026 IS NOT NULL OR meta_pdm_2027 IS NOT NULL)
     `);
 
-    // Recalcular avance_fisico + cumplimiento
-    const cap = (f, p) =>
-      `LEAST(COALESCE(${f}::numeric,0), CASE WHEN ${p} IS NOT NULL AND ${p}::numeric>0 THEN ${p}::numeric ELSE COALESCE(${f}::numeric,0) END)`;
-    const c24 = cap('meta_fisica_2024', 'meta_pdm_2024');
-    const c25 = cap('meta_fisica_2025', 'meta_pdm_2025');
-    const c26 = cap('meta_fisica_2026', 'meta_pdm_2026');
-    const c27 = cap('meta_fisica_2027', 'meta_pdm_2027');
-
+    // Recalcular avance_fisico + cumplimiento (sin cap)
     await client.query(`
       UPDATE pdm_metas
       SET
-        avance_fisico = LEAST(CASE
-          WHEN tipo_ponderado = 'Acumulativo'
-            THEN GREATEST(${c24},${c25},${c26},${c27})::numeric / NULLIF(meta_cuatrienio::numeric,0)
-          ELSE
-            (${c24}+${c25}+${c26}+${c27})::numeric
-            / NULLIF((COALESCE(meta_pdm_2024::numeric,0)+COALESCE(meta_pdm_2025::numeric,0)
-                     +COALESCE(meta_pdm_2026::numeric,0)+COALESCE(meta_pdm_2027::numeric,0)),0)
-        END, 1.0),
-        cumplimiento_cuatrienio = LEAST(CASE
-          WHEN tipo_ponderado = 'Acumulativo'
-            THEN GREATEST(${c24},${c25},${c26},${c27})::numeric / NULLIF(meta_cuatrienio::numeric,0)*100
-          ELSE
-            (${c24}+${c25}+${c26}+${c27})::numeric
-            / NULLIF((COALESCE(meta_pdm_2024::numeric,0)+COALESCE(meta_pdm_2025::numeric,0)
-                     +COALESCE(meta_pdm_2026::numeric,0)+COALESCE(meta_pdm_2027::numeric,0)),0)*100
-        END, 100)
+        avance_fisico = (
+          COALESCE(meta_fisica_2024::numeric,0)+COALESCE(meta_fisica_2025::numeric,0)+
+          COALESCE(meta_fisica_2026::numeric,0)+COALESCE(meta_fisica_2027::numeric,0)
+        ) / NULLIF(meta_cuatrienio::numeric, 0),
+        cumplimiento_cuatrienio = (
+          COALESCE(meta_fisica_2024::numeric,0)+COALESCE(meta_fisica_2025::numeric,0)+
+          COALESCE(meta_fisica_2026::numeric,0)+COALESCE(meta_fisica_2027::numeric,0)
+        ) / NULLIF(meta_cuatrienio::numeric, 0) * 100
       WHERE meta_num IN (${[...new Set(changes.map(c => c.meta_num))].join(',')})
-        AND ((tipo_ponderado='Acumulativo' AND meta_cuatrienio IS NOT NULL AND meta_cuatrienio::numeric!=0)
-          OR (tipo_ponderado!='Acumulativo' AND
-              COALESCE(meta_pdm_2024::numeric,0)+COALESCE(meta_pdm_2025::numeric,0)+
-              COALESCE(meta_pdm_2026::numeric,0)+COALESCE(meta_pdm_2027::numeric,0)>0))
+        AND meta_cuatrienio IS NOT NULL AND meta_cuatrienio::numeric != 0
     `);
 
     await client.query('COMMIT');

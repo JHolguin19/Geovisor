@@ -33,7 +33,7 @@ export async function recopilarDatosAnuales(year) {
         COUNT(*) FILTER (WHERE meta_pdm_${y} IS NULL)                                        AS no_programadas,
         COUNT(*) FILTER (WHERE meta_pdm_${y} IS NOT NULL
                            AND (meta_fisica_${y} IS NULL OR meta_fisica_${y} = 0))           AS sin_ejecucion,
-        ROUND(AVG(LEAST(eficiencia_${y}, 1.0)) FILTER (WHERE eficiencia_${y} IS NOT NULL) * 100, 1)  AS eficiencia_promedio,
+        ROUND(AVG(eficiencia_${y}) FILTER (WHERE eficiencia_${y} IS NOT NULL) * 100, 1)  AS eficiencia_promedio,
         ROUND(AVG(ponderado_avance_${y})       FILTER (WHERE ponderado_avance_${y} IS NOT NULL) * 100, 1) AS avg_ponderado_avance,
         ROUND(AVG(avance_fisico)               FILTER (WHERE avance_fisico IS NOT NULL) * 100, 1)   AS avance_fisico_cuatrienio,
         ROUND(SUM(COALESCE((presupuesto_${y}->>'total_apropiacion')::numeric, 0)), 0)        AS total_apropiacion,
@@ -52,7 +52,7 @@ export async function recopilarDatosAnuales(year) {
         COUNT(*) FILTER (WHERE meta_pdm_${y} IS NOT NULL)                                    AS programadas,
         COUNT(*) FILTER (WHERE meta_pdm_${y} IS NOT NULL
                            AND (meta_fisica_${y} IS NULL OR meta_fisica_${y} = 0))           AS sin_ejecucion,
-        ROUND(AVG(LEAST(eficiencia_${y}, 1.0)) FILTER (WHERE eficiencia_${y} IS NOT NULL) * 100, 1) AS eficiencia_promedio,
+        ROUND(AVG(eficiencia_${y}) FILTER (WHERE eficiencia_${y} IS NOT NULL) * 100, 1) AS eficiencia_promedio,
         ROUND(AVG(ponderado_avance_${y})       FILTER (WHERE ponderado_avance_${y} IS NOT NULL) * 100, 1) AS avg_ponderado,
         ROUND(SUM(COALESCE((presupuesto_${y}->>'total_apropiacion')::numeric, 0)) / 1000000, 0) AS apropiacion_m,
         ROUND(SUM(COALESCE((presupuesto_${y}->>'neto_registros')::numeric,    0)) / 1000000, 0) AS neto_registros_m,
@@ -70,7 +70,7 @@ export async function recopilarDatosAnuales(year) {
     pool.query(`
       SELECT num_pilar, nom_pilar,
         COUNT(*)                                                                                    AS total_metas,
-        ROUND(AVG(LEAST(eficiencia_${y}, 1.0)) FILTER (WHERE eficiencia_${y} IS NOT NULL) * 100, 1) AS eficiencia_promedio,
+        ROUND(AVG(eficiencia_${y}) FILTER (WHERE eficiencia_${y} IS NOT NULL) * 100, 1) AS eficiencia_promedio,
         ROUND(SUM(COALESCE((presupuesto_${y}->>'total_apropiacion')::numeric, 0)) / 1000000, 0)    AS apropiacion_m
       FROM pdm_metas
       WHERE num_pilar IS NOT NULL

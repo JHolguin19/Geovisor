@@ -35,22 +35,22 @@ function efFn(y) {
     const fis = toNum(row[`meta_fisica_${y}`]);
     const pdm = toNum(row[`meta_pdm_${y}`]);
     if (!pdm || isNaN(fis)) return null;
-    return Math.min(fis / pdm, 1) * 100;
+    return (fis / pdm) * 100;
   };
 }
 
-// Annual Physical Progress per year = realizado / Meta 4A × 100, capped at 100%.
+// Annual Physical Progress per year = realizado / Meta 4A × 100
 function avFisAnioFn(year) {
   return row => {
     const fis = toNum(row[`meta_fisica_${year}`]);
     const mc  = toNum(row.meta_cuatrienio);
     if (!mc || isNaN(fis)) return null;
-    return Math.min(fis / mc, 1) * 100;
+    return (fis / mc) * 100;
   };
 }
 
 // 4-year overall — two formulas depending on type:
-//   Acumulativo    → SUM(J + N + R + V), capped at 100%
+//   Acumulativo    → SUM(J + N + R + V)
 //   No-acumulativo → valor almacenado en columna X (cumplimiento_cuatrienio)
 function avFisFn(row) {
   const tipo = row.tipo_ponderado;
@@ -60,12 +60,12 @@ function avFisFn(row) {
       .map(y => avFisAnioFn(y)(row))
       .filter(v => v !== null);
     if (!vals.length) return null;
-    return Math.min(vals.reduce((a, b) => a + b, 0), 100);
+    return vals.reduce((a, b) => a + b, 0);
   }
 
   // No-acumulativo: read cumplimiento_cuatrienio (col X) directly
   const v = parseFloat(row.cumplimiento_cuatrienio);
-  return isNaN(v) ? null : Math.min(v, 100);
+  return isNaN(v) ? null : v;
 }
 
 // Financial execution % = comprometido / apropiacion × 100
@@ -74,7 +74,7 @@ function finPctFn(year) {
     const a = parseFloat(row[`apropiacion_${year}`]);
     const c = parseFloat(row[`comprometido_${year}`]);
     if (!a || isNaN(c)) return null;
-    return Math.min(c / a * 100, 100);
+    return (c / a) * 100;
   };
 }
 

@@ -264,7 +264,7 @@ export function fmtCell(value, type) {
   switch (type) {
     case 'pct':    return `${Math.round(n * 100)}%`;
     case 'pct1':   return `${n.toFixed(1)}%`;
-    case 'pct100': return `${Math.min(Math.round(n * 100), 100)}%`;
+    case 'pct100': return `${Math.round(n * 100)}%`;
     case 'int':    return n.toLocaleString('es-CO', { maximumFractionDigits: 0 });
     case 'num2':   return n.toLocaleString('es-CO', { maximumFractionDigits: 2 });
     case 'money_m': {
