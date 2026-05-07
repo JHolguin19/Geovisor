@@ -182,7 +182,7 @@ export default function AnualOverviewTab({ data, year, divergencia, comparativo,
         <h2 className="pdm-section-h">Esperado vs Realizado — todos los años</h2>
         <div className="pdm-anio-kpis">
           <div className="pdm-anio-kpi" style={{ borderLeftColor: 'var(--pdm-blue)' }}>
-            <div style={{ color: 'var(--pdm-blue)', fontSize: 22, fontWeight: 800 }}>{d.pct_programado_del_cuatrienio != null ? `${d.pct_programado_del_cuatrienio}%` : '—'}</div>
+            <div style={{ color: 'var(--pdm-blue)', fontSize: 22, fontWeight: 800 }}>{comparativo.find(r => r.year == year)?.pct_esperado ?? '—'}%</div>
             <div style={{ fontSize: 12, fontWeight: 600, marginTop: 4 }}>Esperado del cuatrienio en {year}</div>
             <div style={{ fontSize: 11, color: 'var(--pdm-muted)', marginTop: 2 }}>Fracción del cuatrienio planeada para {year}</div>
           </div>
