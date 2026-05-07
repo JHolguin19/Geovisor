@@ -542,18 +542,17 @@ export async function getComparativoAnual() {
         )::numeric, 0)
         * 100, 1) AS pct_esperado,
 
-      ROUND(
-        SUM(CASE yr.year
-          WHEN 2024 THEN COALESCE(m.meta_fisica_2024, 0)
-          WHEN 2025 THEN COALESCE(m.meta_fisica_2025, 0)
-          WHEN 2026 THEN COALESCE(m.meta_fisica_2026, 0)
-          WHEN 2027 THEN COALESCE(m.meta_fisica_2027, 0)
-        END)::numeric /
-        NULLIF(SUM(
-          COALESCE(m.meta_pdm_2024, 0) + COALESCE(m.meta_pdm_2025, 0) +
-          COALESCE(m.meta_pdm_2026, 0) + COALESCE(m.meta_pdm_2027, 0)
-        )::numeric, 0)
-        * 100, 1) AS pct_realizado,
+      ROUND(AVG(CASE yr.year
+        WHEN 2024 THEN m.ponderado_avance_2024
+        WHEN 2025 THEN m.ponderado_avance_2025
+        WHEN 2026 THEN m.ponderado_avance_2026
+        WHEN 2027 THEN m.ponderado_avance_2027
+      END) FILTER (WHERE CASE yr.year
+        WHEN 2024 THEN m.ponderado_avance_2024
+        WHEN 2025 THEN m.ponderado_avance_2025
+        WHEN 2026 THEN m.ponderado_avance_2026
+        WHEN 2027 THEN m.ponderado_avance_2027
+      END IS NOT NULL) * 100, 1) AS pct_realizado,
 
       ROUND(AVG(CASE yr.year
         WHEN 2024 THEN m.eficiencia_2024
@@ -790,19 +789,18 @@ export async function getComparativoFinanciero() {
           WHEN 2027 THEN (m.presupuesto_2027->>'total_apropiacion')::numeric
         END > 0) AS con_presupuesto,
 
-        -- Avance físico del año: misma fórmula que "Realizado" en Esperado vs Realizado
-        ROUND(
-          SUM(CASE yr.year
-            WHEN 2024 THEN COALESCE(m.meta_fisica_2024::numeric, 0)
-            WHEN 2025 THEN COALESCE(m.meta_fisica_2025::numeric, 0)
-            WHEN 2026 THEN COALESCE(m.meta_fisica_2026::numeric, 0)
-            WHEN 2027 THEN COALESCE(m.meta_fisica_2027::numeric, 0)
-          END)::numeric /
-          NULLIF(SUM(
-            COALESCE(m.meta_pdm_2024::numeric, 0) + COALESCE(m.meta_pdm_2025::numeric, 0) +
-            COALESCE(m.meta_pdm_2026::numeric, 0) + COALESCE(m.meta_pdm_2027::numeric, 0)
-          )::numeric, 0) * 100, 1
-        ) AS avance_fisico_pct
+        -- Avance físico del año: usa ponderado_avance (mismo que Realizado en Esperado vs Realizado)
+        ROUND(AVG(CASE yr.year
+          WHEN 2024 THEN m.ponderado_avance_2024
+          WHEN 2025 THEN m.ponderado_avance_2025
+          WHEN 2026 THEN m.ponderado_avance_2026
+          WHEN 2027 THEN m.ponderado_avance_2027
+        END) FILTER (WHERE CASE yr.year
+          WHEN 2024 THEN m.ponderado_avance_2024
+          WHEN 2025 THEN m.ponderado_avance_2025
+          WHEN 2026 THEN m.ponderado_avance_2026
+          WHEN 2027 THEN m.ponderado_avance_2027
+        END IS NOT NULL) * 100, 1) AS avance_fisico_pct
 
       FROM pdm_metas m
       CROSS JOIN (VALUES (2024),(2025),(2026),(2027)) AS yr(year)
