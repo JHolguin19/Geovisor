@@ -667,34 +667,24 @@
   border-radius: 10px;
   padding: 20px 18px;
   text-align: center;
-  position: relative;
 }
-.pdm-main-kpi:hover .pdm-kpi-tooltip {
-  opacity: 1;
-  pointer-events: auto;
-  transform: translateY(0);
-}
-.pdm-kpi-tooltip {
-  position: absolute;
-  bottom: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%) translateY(4px);
+.pdm-kpi-tooltip-fixed {
+  position: fixed;
+  transform: translateX(-50%) translateY(-100%);
   background: #1e293b;
   color: #f1f5f9;
   font-size: 11.5px;
-  line-height: 1.5;
-  padding: 8px 12px;
+  line-height: 1.55;
+  padding: 9px 13px;
   border-radius: 7px;
-  white-space: normal;
-  width: 220px;
+  width: 230px;
   text-align: left;
-  opacity: 0;
   pointer-events: none;
-  transition: opacity 0.18s ease, transform 0.18s ease;
-  z-index: 100;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+  z-index: 9999;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.3);
+  margin-top: -6px;
 }
-.pdm-kpi-tooltip::after {
+.pdm-kpi-tooltip-fixed::after {
   content: '';
   position: absolute;
   top: 100%;
