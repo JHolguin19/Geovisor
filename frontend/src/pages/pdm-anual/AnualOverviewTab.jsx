@@ -116,9 +116,13 @@ export default function AnualOverviewTab({ data, year, divergencia, comparativo,
             borderColor={colorPct(eficiencia_cap)}
             tooltip={`Promedio de (meta física realizada ÷ meta programada) entre metas activas en ${year}. Mide qué tan bien se ejecutó lo que se planificó ese año.`} />
           <KpiCard value={d.avance_fisico_anio_pct} label={`Av. Físico ${year}`}
-            sub={`Ponderado anual ÷ meta cuatrienio — metas activas ${year}`}
+            sub={`Ponderado ÷ cuatrienio — metas activas ${year}`}
             borderColor={colorPct(d.avance_fisico_anio_pct)}
-            tooltip={`Promedio de (meta física ${year} ÷ meta cuatrienio) entre metas programadas en ${year}. Indica el aporte de ${year} al cumplimiento total del cuatrienio.`} />
+            tooltip={`Promedio de (ponderado_avance_${year} ÷ meta cuatrienio) entre las metas programadas en ${year}. Divide por el número de metas activas ese año (excluye NP). Útil para ver el rendimiento de las metas que sí tenían programación.`} />
+          <KpiCard value={d.aporte_cuatrienio_pct} label={`Aporte al cuatrienio ${year}`}
+            sub={`COALESCE — todas las metas (NP = 0)`}
+            borderColor={colorPct(d.aporte_cuatrienio_pct)}
+            tooltip={`Contribución real de ${year} al cuatrienio. Usa el mismo denominador para todos los años (total de metas con avance_fisico), tratando las NP como 0. La suma de los 4 años equivale al avance del cuatrienio (~39.7%).`} />
           <KpiCard value={d.avance_fisico_pct} label="Avance físico cuatrienio"
             sub="Progreso acumulado 2024–2027"
             borderColor={colorPct(d.avance_fisico_pct)}

@@ -208,9 +208,11 @@ export async function getYearOverview(year) {
       -- avance_fisico_pct: solo metas programadas ese año (NP excluidas)
       ROUND(AVG(avance_fisico) FILTER (WHERE meta_pdm_${y} IS NOT NULL) * 100, 1) AS avance_fisico_pct,
 
-      -- avance_fisico_anio_pct: usa ponderado_avance precalculado desde Excel (solo metas programadas)
+      -- avance_fisico_anio_pct: promedio solo entre metas activas ese año (N = activas)
       ROUND(AVG(ponderado_avance_${y}) FILTER (WHERE ponderado_avance_${y} IS NOT NULL) * 100, 1) AS avg_ponderado_anio,
       ROUND(AVG(ponderado_avance_${y}) FILTER (WHERE ponderado_avance_${y} IS NOT NULL) * 100, 1) AS avance_fisico_anio_pct,
+      -- aporte_cuatrienio_pct: aporte real al cuatrienio (N = todas las metas, NP=0)
+      ROUND(SUM(COALESCE(ponderado_avance_${y}::numeric, 0)) / NULLIF(COUNT(*) FILTER (WHERE avance_fisico IS NOT NULL), 0) * 100, 1) AS aporte_cuatrienio_pct,
 
       -- % del cuatrienio esperado para este año
       ROUND(
