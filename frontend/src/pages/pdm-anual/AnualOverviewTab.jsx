@@ -183,12 +183,13 @@ export default function AnualOverviewTab({ data, year, divergencia, comparativo,
         <div className="pdm-anio-kpis">
           <div className="pdm-anio-kpi" style={{ borderLeftColor: 'var(--pdm-blue)' }}>
             <div style={{ color: 'var(--pdm-blue)', fontSize: 22, fontWeight: 800 }}>{d.pct_programado_del_cuatrienio != null ? `${d.pct_programado_del_cuatrienio}%` : '—'}</div>
-            <div style={{ fontSize: 12, fontWeight: 600, marginTop: 4 }}>% cuatrienio programado en {year}</div>
+            <div style={{ fontSize: 12, fontWeight: 600, marginTop: 4 }}>Esperado del cuatrienio en {year}</div>
+            <div style={{ fontSize: 11, color: 'var(--pdm-muted)', marginTop: 2 }}>Fracción del cuatrienio planeada para {year}</div>
           </div>
-          <div className="pdm-anio-kpi" style={{ borderLeftColor: colorPct(d.avance_fisico_anio_pct) }}>
-            <div style={{ color: colorPct(d.avance_fisico_anio_pct), fontSize: 22, fontWeight: 800 }}>{d.avance_fisico_anio_pct != null ? `${d.avance_fisico_anio_pct}%` : '—'}</div>
-            <div style={{ fontSize: 12, fontWeight: 600, marginTop: 4 }}>Av. físico realizado {year}</div>
-            <div style={{ fontSize: 11, color: 'var(--pdm-muted)', marginTop: 2 }}>MIN(realizado, planificado) / meta cuatrienio</div>
+          <div className="pdm-anio-kpi" style={{ borderLeftColor: colorPct(d.aporte_cuatrienio_pct) }}>
+            <div style={{ color: colorPct(d.aporte_cuatrienio_pct), fontSize: 22, fontWeight: 800 }}>{d.aporte_cuatrienio_pct != null ? `${d.aporte_cuatrienio_pct}%` : '—'}</div>
+            <div style={{ fontSize: 12, fontWeight: 600, marginTop: 4 }}>Avance físico {year}</div>
+            <div style={{ fontSize: 11, color: 'var(--pdm-muted)', marginTop: 2 }}>Fracción del cuatrienio lograda en {year}</div>
           </div>
         </div>
         <ComparativoChart comparativo={comparativo} year={year} />
