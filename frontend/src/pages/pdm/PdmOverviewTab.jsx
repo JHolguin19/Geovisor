@@ -11,7 +11,7 @@ export default function PdmOverviewTab({ overview, onAlertaClick }) {
       {/* Gauges principales */}
       <section className="pdm-section pdm-gauges-section">
         <div className="pdm-gauges-row">
-          <Gauge value={g.avance_fisico_pct} label="Avance Físico" sub="Promedio de las 200 metas" />
+          <Gauge value={g.avance_fisico_pct} label="Avance Físico" sub="Promedio de las 204 metas" />
           <div className="pdm-gauge-divider" />
           <Gauge value={g.avance_financiero_pct} label="Avance Financiero" color="var(--pdm-blue)"
             sub="Neto Registros 2024+2025 / Apropiación 4 años" />
