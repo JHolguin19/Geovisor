@@ -530,17 +530,17 @@ export async function getComparativoAnual() {
     SELECT
       yr.year,
 
-      ROUND(AVG(CASE yr.year
-        WHEN 2024 THEN m.meta_pdm_2024::numeric / NULLIF(m.meta_cuatrienio::numeric, 0)
-        WHEN 2025 THEN m.meta_pdm_2025::numeric / NULLIF(m.meta_cuatrienio::numeric, 0)
-        WHEN 2026 THEN m.meta_pdm_2026::numeric / NULLIF(m.meta_cuatrienio::numeric, 0)
-        WHEN 2027 THEN m.meta_pdm_2027::numeric / NULLIF(m.meta_cuatrienio::numeric, 0)
-      END) FILTER (WHERE CASE yr.year
-        WHEN 2024 THEN m.meta_pdm_2024
-        WHEN 2025 THEN m.meta_pdm_2025
-        WHEN 2026 THEN m.meta_pdm_2026
-        WHEN 2027 THEN m.meta_pdm_2027
-      END IS NOT NULL) * 100, 1) AS pct_esperado,
+      ROUND(
+        SUM(CASE yr.year
+          WHEN 2024 THEN COALESCE(m.meta_pdm_2024::numeric, 0)
+          WHEN 2025 THEN COALESCE(m.meta_pdm_2025::numeric, 0)
+          WHEN 2026 THEN COALESCE(m.meta_pdm_2026::numeric, 0)
+          WHEN 2027 THEN COALESCE(m.meta_pdm_2027::numeric, 0)
+        END) /
+        NULLIF(SUM(
+          COALESCE(m.meta_pdm_2024::numeric,0) + COALESCE(m.meta_pdm_2025::numeric,0) +
+          COALESCE(m.meta_pdm_2026::numeric,0) + COALESCE(m.meta_pdm_2027::numeric,0)
+        ), 0) * 100, 1) AS pct_esperado,
 
       ROUND(AVG(CASE yr.year
         WHEN 2024 THEN m.ponderado_avance_2024
