@@ -332,6 +332,9 @@ export async function getYearMetas(year, { secretaria, pilar, semaforo, busqueda
   if (semaforo === 'programada_sin_presupuesto') filters.push(
     `meta_pdm_${y} IS NOT NULL AND (presupuesto_${y} IS NULL OR COALESCE((presupuesto_${y}->>'total_apropiacion')::numeric, 0) = 0)`
   );
+  if (semaforo === 'supero_plan') filters.push(
+    `(meta_fisica_2024 > meta_pdm_2024 OR meta_fisica_2025 > meta_pdm_2025 OR meta_fisica_2026 > meta_pdm_2026)`
+  );
 
   const where = filters.length ? `WHERE ${filters.join(' AND ')}` : '';
   const offset = (parseInt(page) - 1) * parseInt(limit);
@@ -345,7 +348,11 @@ export async function getYearMetas(year, { secretaria, pilar, semaforo, busqueda
         COALESCE(eficiencia_${y}, 0)                                                 AS eficiencia,
         presupuesto_${y}                                                             AS presupuesto,
         observaciones_${y}                                                           AS observaciones,
-        compromisos_${y}                                                             AS compromisos
+        compromisos_${y}                                                             AS compromisos,
+        -- Años donde la meta superó lo planeado
+        meta_pdm_2024, meta_fisica_2024,
+        meta_pdm_2025, meta_fisica_2025,
+        meta_pdm_2026, meta_fisica_2026
       FROM pdm_metas ${where}
       ORDER BY meta_num ASC NULLS LAST
       LIMIT $${params.length + 1} OFFSET $${params.length + 2}

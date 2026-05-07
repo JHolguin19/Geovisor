@@ -91,6 +91,7 @@ export default function AnualMetasTab({
               <option value="sin_programar">Sin programar ({year})</option>
               <option value="sin_presupuesto">Sin presupuesto ({year})</option>
               <option value="programada_sin_presupuesto">Programadas sin presupuesto ({year})</option>
+              <option value="supero_plan">Superó el plan (cualquier año)</option>
             </optgroup>
           </select>
         </div>
@@ -112,6 +113,7 @@ export default function AnualMetasTab({
             {semaforoFiltro === 'sin_programar'             && <span className="ma-filter-badge ma-filter-badge--np"> · Sin programar</span>}
             {semaforoFiltro === 'sin_presupuesto'            && <span className="ma-filter-badge ma-filter-badge--nb"> · Sin presupuesto</span>}
             {semaforoFiltro === 'programada_sin_presupuesto' && <span className="ma-filter-badge ma-filter-badge--nb"> · Programadas sin presupuesto</span>}
+            {semaforoFiltro === 'supero_plan' && <span className="ma-filter-badge ma-filter-badge--sp"> · Superó el plan</span>}
           </span>
           <span className="pdm-table-hint">Clic en una fila para ver detalle</span>
         </div>
@@ -127,13 +129,14 @@ export default function AnualMetasTab({
                 <th style={{ minWidth: 120 }}>Eficiencia</th>
                 <th className="th-r">Apropiación</th>
                 <th>Semáforo</th>
+                <th>Superó plan</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={8} className="pdm-empty-row">Cargando…</td></tr>
+                <tr><td colSpan={9} className="pdm-empty-row">Cargando…</td></tr>
               ) : metas.length === 0 ? (
-                <tr><td colSpan={8} className="pdm-empty-row">Sin resultados para {year}.</td></tr>
+                <tr><td colSpan={9} className="pdm-empty-row">Sin resultados para {year}.</td></tr>
               ) : metas.map(m => {
                 const eff = m.eficiencia != null ? Math.round(parseFloat(m.eficiencia) * 100) : null;
                 const effColor = eff != null ? colorPct(eff) : 'var(--pdm-gray)';
@@ -167,6 +170,15 @@ export default function AnualMetasTab({
                         : `$${Number(aprop).toLocaleString('es-CO')}`}
                     </td>
                     <td><span className={`pdm-estado ${semCls}`}>{semLabel}</span></td>
+                    <td className="td-supero">
+                      {[2024, 2025, 2026].map(yr => {
+                        const fis = parseFloat(m[`meta_fisica_${yr}`]);
+                        const pdm = parseFloat(m[`meta_pdm_${yr}`]);
+                        if (!isNaN(fis) && !isNaN(pdm) && pdm > 0 && fis > pdm)
+                          return <span key={yr} className="badge-supero">{yr}</span>;
+                        return null;
+                      })}
+                    </td>
                   </tr>
                 );
               })}

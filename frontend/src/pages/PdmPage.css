@@ -628,6 +628,21 @@
 }
 .ma-filter-badge--np { background: #fef3c7; color: #92400e; }
 .ma-filter-badge--nb { background: #fee2e2; color: #991b1b; }
+.ma-filter-badge--sp { background: #d1fae5; color: #065f46; }
+
+/* ── "Superó plan" column ─────────────────────────────────────────────────── */
+.td-supero { white-space: nowrap; }
+.badge-supero {
+  display: inline-block;
+  margin-right: 3px;
+  padding: 1px 6px;
+  border-radius: 9px;
+  font-size: 10.5px;
+  font-weight: 700;
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #6ee7b7;
+}
 
 /* ── Alerts section (AnualMetasTab) ───────────────────────────────────────── */
 
