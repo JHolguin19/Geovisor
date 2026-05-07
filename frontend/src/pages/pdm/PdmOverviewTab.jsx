@@ -14,18 +14,18 @@ export default function PdmOverviewTab({ overview, onAlertaClick }) {
           <Gauge value={g.avance_fisico_pct} label="Avance Físico" sub="Promedio de las 204 metas" />
           <div className="pdm-gauge-divider" />
           <Gauge value={g.avance_financiero_pct} label="Avance Financiero" color="var(--pdm-blue)"
-            sub="Neto Registros 2024+2025 / Apropiación 4 años" />
+            sub="Neto Registros 2024+2025+2026 / Apropiación 4 años" />
           <div className="pdm-gauge-divider" />
           <Gauge value={g.avance_obligacion_pct} label="Desembolsado" color="var(--pdm-purple)"
-            sub="Obligaciones 2024+2025 / Apropiación 4 años" />
+            sub="Obligaciones 2024+2025+2026 / Apropiación 4 años" />
         </div>
         <div className="pdm-formula-nota">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
           </svg>
           <span>
-            <strong>Avance financiero</strong> = Neto Registros (2024+2025) ÷ Total Apropiación (4 años) ·
-            <strong> Desembolsado</strong> = Obligaciones (2024+2025) ÷ Total Apropiación (4 años)
+            <strong>Avance financiero</strong> = Neto Registros (2024+2025+2026) ÷ Total Apropiación (4 años) ·
+            <strong> Desembolsado</strong> = Obligaciones (2024+2025+2026) ÷ Total Apropiación (4 años)
           </span>
         </div>
       </section>
@@ -47,7 +47,7 @@ export default function PdmOverviewTab({ overview, onAlertaClick }) {
             <div className="pdm-bc-body">
               <div className="pdm-bc-label">Neto Registros (comprometido)</div>
               <div className="pdm-bc-value">{fmtB(g.comprometido_b)}</div>
-              <div className="pdm-bc-sub">2024 + 2025 — comprometido sin desembolsar</div>
+              <div className="pdm-bc-sub">2024 + 2025 + 2026 — comprometido sin desembolsar</div>
               <BarPct value={g.avance_financiero_pct} color="var(--pdm-blue)" height={6} />
               <div className="pdm-bc-pct" style={{ color: 'var(--pdm-blue)' }}>{pct(g.avance_financiero_pct)} del total 4 años</div>
             </div>
@@ -57,7 +57,7 @@ export default function PdmOverviewTab({ overview, onAlertaClick }) {
             <div className="pdm-bc-body">
               <div className="pdm-bc-label">Obligaciones (desembolsado)</div>
               <div className="pdm-bc-value">{fmtB(g.desembolsado_b)}</div>
-              <div className="pdm-bc-sub">2024 + 2025 — dinero ya pagado</div>
+              <div className="pdm-bc-sub">2024 + 2025 + 2026 — dinero ya pagado</div>
               <BarPct value={g.avance_obligacion_pct} color="var(--pdm-purple)" height={6} />
               <div className="pdm-bc-pct" style={{ color: 'var(--pdm-purple)' }}>{pct(g.avance_obligacion_pct)} del total 4 años</div>
             </div>
@@ -67,7 +67,7 @@ export default function PdmOverviewTab({ overview, onAlertaClick }) {
             <div className="pdm-bc-body">
               <div className="pdm-bc-label">Pendiente por comprometer</div>
               <div className="pdm-bc-value">{fmtB(parseFloat(g.presupuesto_total_b) - parseFloat(g.comprometido_b))}</div>
-              <div className="pdm-bc-sub">Apropiación 2026–2027 + saldos</div>
+              <div className="pdm-bc-sub">Apropiación 2027 + saldos</div>
             </div>
           </div>
         </div>
@@ -97,8 +97,8 @@ export default function PdmOverviewTab({ overview, onAlertaClick }) {
               { val: g.metas_superaron,            label: 'metas superaron su objetivo físico en 2025',                    color: 'var(--pdm-green)',  icon: '↑' },
               { val: g.metas_np_2025,              label: 'metas no programadas (NP) en 2025',                             color: 'var(--pdm-amber)',  icon: '⊘' },
               { val: g.brecha_financiero_mayor,    label: 'metas donde el gasto supera el avance físico (brecha >10%)',    color: 'var(--pdm-blue)',   icon: '↔' },
-              { val: `${g.eficiencia_2025_pct}%`,  label: 'eficiencia promedio en 2025 (avance vs meta programada)',       color: 'var(--pdm-purple)', icon: '◎' },
-              { val: `${g.cumplimiento_cuatrienio_pct}%`, label: 'cumplimiento cuatrienio (2 de 4 años transcurridos)',    color: colorPct(g.cumplimiento_cuatrienio_pct), icon: '⬡' },
+              { val: `${g.eficiencia_2026_pct ?? g.eficiencia_2025_pct}%`,  label: `eficiencia promedio en ${g.eficiencia_2026_pct ? '2026' : '2025'} (avance vs meta programada)`,       color: 'var(--pdm-purple)', icon: '◎' },
+              { val: `${g.cumplimiento_cuatrienio_pct}%`, label: 'cumplimiento cuatrienio (3 de 4 años transcurridos)',    color: colorPct(g.cumplimiento_cuatrienio_pct), icon: '⬡' },
             ].map(({ val, label, color, icon }) => (
               <div key={label} className="pdm-dato-row">
                 <span className="pdm-dato-icon" style={{ color }}>{icon}</span>

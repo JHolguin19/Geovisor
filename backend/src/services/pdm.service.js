@@ -7,17 +7,18 @@
  *   Total Obligación   = dinero ya desembolsado
  *
  * Fórmula avance financiero:
- *   (neto_registros_2024 + neto_registros_2025) / total_apropiacion_4_años
+ *   (neto_registros_2024 + neto_registros_2025 + neto_registros_2026) / total_apropiacion_4_años
  */
 
 import pool from '../db/pool.js';
 
-// Fragmento SQL reutilizable: avance financiero
+// Fragmento SQL reutilizable: avance financiero (incluye 2026 ejecución)
 const FINANCIERO_SQL = `
   ROUND(
     SUM(
       COALESCE((presupuesto_2024->>'neto_registros')::numeric, 0) +
-      COALESCE((presupuesto_2025->>'neto_registros')::numeric, 0)
+      COALESCE((presupuesto_2025->>'neto_registros')::numeric, 0) +
+      COALESCE((presupuesto_2026->>'neto_registros')::numeric, 0)
     ) / NULLIF(
       SUM(
         COALESCE((presupuesto_2024->>'total_apropiacion')::numeric, 0) +
@@ -48,7 +49,8 @@ export async function getOverview() {
         ROUND(
           SUM(
             COALESCE((presupuesto_2024->>'total_obligacion')::numeric, 0) +
-            COALESCE((presupuesto_2025->>'total_obligacion')::numeric, 0)
+            COALESCE((presupuesto_2025->>'total_obligacion')::numeric, 0) +
+            COALESCE((presupuesto_2026->>'total_obligacion')::numeric, 0)
           ) / NULLIF(
             SUM(
               COALESCE((presupuesto_2024->>'total_apropiacion')::numeric, 0) +
@@ -66,11 +68,13 @@ export async function getOverview() {
         ) / 1000000000, 2)                              AS presupuesto_total_B,
         ROUND(SUM(
           COALESCE((presupuesto_2024->>'neto_registros')::numeric,0) +
-          COALESCE((presupuesto_2025->>'neto_registros')::numeric,0)
+          COALESCE((presupuesto_2025->>'neto_registros')::numeric,0) +
+          COALESCE((presupuesto_2026->>'neto_registros')::numeric,0)
         ) / 1000000000, 2)                              AS comprometido_B,
         ROUND(SUM(
           COALESCE((presupuesto_2024->>'total_obligacion')::numeric,0) +
-          COALESCE((presupuesto_2025->>'total_obligacion')::numeric,0)
+          COALESCE((presupuesto_2025->>'total_obligacion')::numeric,0) +
+          COALESCE((presupuesto_2026->>'total_obligacion')::numeric,0)
         ) / 1000000000, 2)                              AS desembolsado_B,
         COUNT(*) FILTER (WHERE avance_fisico >= 0.8)    AS metas_en_meta,
         COUNT(*) FILTER (WHERE avance_fisico >= 0.5 AND avance_fisico < 0.8) AS metas_en_proceso,
@@ -80,6 +84,7 @@ export async function getOverview() {
         COUNT(*) FILTER (WHERE avance_financiero > avance_fisico + 0.1) AS brecha_financiero_mayor,
         ROUND(AVG(eficiencia_2025) FILTER (WHERE eficiencia_2025 IS NOT NULL) * 100, 1) AS eficiencia_2025_pct,
         ROUND(AVG(eficiencia_2024) FILTER (WHERE eficiencia_2024 IS NOT NULL) * 100, 1) AS eficiencia_2024_pct,
+        ROUND(AVG(eficiencia_2026) FILTER (WHERE eficiencia_2026 IS NOT NULL) * 100, 1) AS eficiencia_2026_pct,
         ROUND(AVG(avance_fisico) * 100, 1)    AS cumplimiento_cuatrienio_pct
       FROM pdm_metas
     `),
@@ -155,7 +160,8 @@ export async function getSecretarias() {
       ) / 1000000, 0)                                 AS presupuesto_M,
       ROUND(SUM(
         COALESCE((presupuesto_2024->>'neto_registros')::numeric,0) +
-        COALESCE((presupuesto_2025->>'neto_registros')::numeric,0)
+        COALESCE((presupuesto_2025->>'neto_registros')::numeric,0) +
+        COALESCE((presupuesto_2026->>'neto_registros')::numeric,0)
       ) / 1000000, 0)                                 AS comprometido_M
     FROM pdm_metas
     GROUP BY secretaria
@@ -202,11 +208,13 @@ export async function getResumen({ secretaria, pilar }) {
       ) / 1000000, 0)                                 AS presupuesto_M,
       ROUND(SUM(
         COALESCE((presupuesto_2024->>'neto_registros')::numeric,0) +
-        COALESCE((presupuesto_2025->>'neto_registros')::numeric,0)
+        COALESCE((presupuesto_2025->>'neto_registros')::numeric,0) +
+        COALESCE((presupuesto_2026->>'neto_registros')::numeric,0)
       ) / 1000000, 0)                                 AS comprometido_M,
       ROUND(SUM(
         COALESCE((presupuesto_2024->>'total_obligacion')::numeric,0) +
-        COALESCE((presupuesto_2025->>'total_obligacion')::numeric,0)
+        COALESCE((presupuesto_2025->>'total_obligacion')::numeric,0) +
+        COALESCE((presupuesto_2026->>'total_obligacion')::numeric,0)
       ) / 1000000, 0)                                 AS desembolsado_M
     FROM pdm_metas ${where}
   `, params);

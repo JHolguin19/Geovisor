@@ -517,40 +517,9 @@ export async function uploadPdmExcel(filePath, year) {
       }
     }
 
-    // ── Recálculo de métricas derivadas (sin caps — los cálculos ya vienen hechos del Excel) ──
-
-    // 1. Eficiencia del año: meta_fisica / meta_pdm (sin cap)
-    await client.query(`
-      UPDATE pdm_metas
-      SET eficiencia_${y} = meta_fisica_${y}::numeric / NULLIF(meta_pdm_${y}::numeric, 0)
-      WHERE meta_pdm_${y} IS NOT NULL AND meta_pdm_${y} != 0
-    `);
-
-    // 2. Ponderado avance del año: meta_fisica / meta_cuatrienio (sin cap)
-    await client.query(`
-      UPDATE pdm_metas
-      SET ponderado_avance_${y} = COALESCE(meta_fisica_${y}::numeric, 0) / NULLIF(meta_cuatrienio::numeric, 0)
-      WHERE meta_cuatrienio IS NOT NULL AND meta_cuatrienio::numeric != 0
-    `);
-
-    // 3. Avance cuatrienal, ponderado cuatrienal y cumplimiento (sin caps)
-    await client.query(`
-      UPDATE pdm_metas
-      SET
-        avance_fisico = (
-          COALESCE(meta_fisica_2024::numeric,0) + COALESCE(meta_fisica_2025::numeric,0) +
-          COALESCE(meta_fisica_2026::numeric,0) + COALESCE(meta_fisica_2027::numeric,0)
-        ) / NULLIF(meta_cuatrienio::numeric, 0),
-        ponderado_cuatrienio = (
-          COALESCE(meta_fisica_2024::numeric,0) + COALESCE(meta_fisica_2025::numeric,0) +
-          COALESCE(meta_fisica_2026::numeric,0) + COALESCE(meta_fisica_2027::numeric,0)
-        ) / NULLIF(meta_cuatrienio::numeric, 0),
-        cumplimiento_cuatrienio = (
-          COALESCE(meta_fisica_2024::numeric,0) + COALESCE(meta_fisica_2025::numeric,0) +
-          COALESCE(meta_fisica_2026::numeric,0) + COALESCE(meta_fisica_2027::numeric,0)
-        ) / NULLIF(meta_cuatrienio::numeric, 0) * 100
-      WHERE meta_cuatrienio IS NOT NULL AND meta_cuatrienio::numeric != 0
-    `);
+    // ── NO recalcular métricas derivadas ──
+    // Todos los cálculos (eficiencia, ponderado_avance, avance_fisico, cumplimiento)
+    // ya vienen hechos desde el Excel. Se insertan tal cual, sin caps ni ajustes.
 
     await client.query('COMMIT');
   } catch (err) {
