@@ -90,33 +90,38 @@ export default function AnualOverviewTab({ data, year, divergencia, comparativo,
         <div className="pdm-a-main-metrics">
           {/* Big KPI: Eficiencia year */}
           <div className="pdm-main-kpi" style={{ borderColor: colorPct(eficiencia_cap) }}>
+            <div className="pdm-kpi-tooltip">Promedio de (meta física realizada ÷ meta programada) solo entre metas activas en {year}. Mide qué tan bien se ejecutó lo que se planificó ese año.</div>
             <div className="pdm-main-kpi-val" style={{ color: colorPct(eficiencia_cap) }}>{eficiencia_cap != null ? `${eficiencia_cap}%` : '—'}</div>
             <div className="pdm-main-kpi-label">Eficiencia física {year}</div>
-            <div className="pdm-main-kpi-sub">Promedio meta_fisica / meta_pdm (máx. 100%)</div>
+            <div className="pdm-main-kpi-sub">Realizado ÷ programado — metas activas {year}</div>
           </div>
           {/* Big KPI: Avance físico year */}
           <div className="pdm-main-kpi" style={{ borderColor: colorPct(d.avance_fisico_anio_pct) }}>
+            <div className="pdm-kpi-tooltip">Promedio de (meta física {year} ÷ meta cuatrienio) entre metas programadas en {year}. Indica el aporte de {year} al cumplimiento total del cuatrienio, solo considerando las metas activas ese año.</div>
             <div className="pdm-main-kpi-val" style={{ color: colorPct(d.avance_fisico_anio_pct) }}>{d.avance_fisico_anio_pct != null ? `${d.avance_fisico_anio_pct}%` : '—'}</div>
             <div className="pdm-main-kpi-label">Av. Físico {year}</div>
-            <div className="pdm-main-kpi-sub">MIN(realizado, planificado) / meta cuatrienio × 100</div>
+            <div className="pdm-main-kpi-sub">Ponderado anual ÷ meta cuatrienio — metas activas {year}</div>
           </div>
           {/* Big KPI: Avance cuatrienio */}
           <div className="pdm-main-kpi" style={{ borderColor: colorPct(d.avance_fisico_pct) }}>
+            <div className="pdm-kpi-tooltip">Promedio del avance físico acumulado de todas las metas con programación. Refleja el progreso total del PDM 2024–2027 a la fecha, considerando metas programadas en ese año.</div>
             <div className="pdm-main-kpi-val" style={{ color: colorPct(d.avance_fisico_pct) }}>{d.avance_fisico_pct != null ? `${d.avance_fisico_pct}%` : '—'}</div>
             <div className="pdm-main-kpi-label">Avance físico cuatrienio</div>
             <div className="pdm-main-kpi-sub">Progreso acumulado 2024–2027</div>
           </div>
           {/* Big KPI: Avance financiero comprometido */}
           <div className="pdm-main-kpi" style={{ borderColor: colorPct(d.avance_financiero_comprometido_pct) }}>
+            <div className="pdm-kpi-tooltip">Neto de registros (dinero comprometido) en {year} dividido entre la apropiación total de {year}. Incluye recursos comprometidos pero aún no desembolsados.</div>
             <div className="pdm-main-kpi-val" style={{ color: colorPct(d.avance_financiero_comprometido_pct) }}>{d.avance_financiero_comprometido_pct != null ? `${d.avance_financiero_comprometido_pct}%` : '—'}</div>
             <div className="pdm-main-kpi-label">Avance financiero {year}</div>
-            <div className="pdm-main-kpi-sub">Comprometido / Apropiación</div>
+            <div className="pdm-main-kpi-sub">Neto registros ÷ apropiación {year}</div>
           </div>
           {/* Big KPI: Avance financiero obligado */}
           <div className="pdm-main-kpi" style={{ borderColor: colorPct(d.avance_financiero_obligado_pct) }}>
+            <div className="pdm-kpi-tooltip">Total de obligaciones (dinero efectivamente pagado) en {year} dividido entre la apropiación total de {year}. Representa los recursos ya desembolsados a contratistas y proveedores.</div>
             <div className="pdm-main-kpi-val" style={{ color: colorPct(d.avance_financiero_obligado_pct) }}>{d.avance_financiero_obligado_pct != null ? `${d.avance_financiero_obligado_pct}%` : '—'}</div>
             <div className="pdm-main-kpi-label">Ejecución obligado {year}</div>
-            <div className="pdm-main-kpi-sub">Obligado / Apropiación</div>
+            <div className="pdm-main-kpi-sub">Total obligaciones ÷ apropiación {year}</div>
           </div>
         </div>
         {/* Metas chips row */}
