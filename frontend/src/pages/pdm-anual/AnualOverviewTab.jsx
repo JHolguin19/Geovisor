@@ -28,7 +28,7 @@ function ComparativoChart({ comparativo, year }) {
       {comparativo.map(d => {
         const esp = parseFloat(d.pct_esperado) || 0;
         const real = parseFloat(d.pct_realizado) || 0;
-        const pctCumpl = esp > 0 ? Math.min(Math.round(real / esp * 100), 999) : 0;
+        const pctCumpl = esp > 0 ? Math.round(real / esp * 100) : 0;
         const colReal = pctCumpl >= 80 ? 'var(--pdm-green)' : pctCumpl >= 50 ? 'var(--pdm-amber)' : 'var(--pdm-red)';
         const isActive = d.year === year;
 
