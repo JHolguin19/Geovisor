@@ -208,15 +208,9 @@ export async function getYearOverview(year) {
       -- avance_fisico_pct: stored per-row avance_fisico (as-is from Excel)
       ROUND(AVG(avance_fisico) * 100, 1) AS avance_fisico_pct,
 
-      -- avance_fisico_anio_pct: solo metas programadas ese año
-      ROUND(
-        AVG(COALESCE(meta_fisica_${y}::numeric,0) / NULLIF(meta_cuatrienio::numeric,0))
-        FILTER (WHERE meta_cuatrienio::numeric > 0 AND meta_pdm_${y} IS NOT NULL) * 100, 1
-      ) AS avg_ponderado_anio,
-      ROUND(
-        AVG(COALESCE(meta_fisica_${y}::numeric,0) / NULLIF(meta_cuatrienio::numeric,0))
-        FILTER (WHERE meta_cuatrienio::numeric > 0 AND meta_pdm_${y} IS NOT NULL) * 100, 1
-      ) AS avance_fisico_anio_pct,
+      -- avance_fisico_anio_pct: usa ponderado_avance precalculado desde Excel (solo metas programadas)
+      ROUND(AVG(ponderado_avance_${y}) FILTER (WHERE ponderado_avance_${y} IS NOT NULL) * 100, 1) AS avg_ponderado_anio,
+      ROUND(AVG(ponderado_avance_${y}) FILTER (WHERE ponderado_avance_${y} IS NOT NULL) * 100, 1) AS avance_fisico_anio_pct,
 
       -- % del cuatrienio esperado para este año
       ROUND(
@@ -261,10 +255,7 @@ export async function getYearBySecretaria(year) {
       COUNT(*) FILTER (WHERE meta_pdm_${y} IS NULL)                        AS no_programadas,
       ROUND(AVG(eficiencia_${y}) FILTER (WHERE eficiencia_${y} IS NOT NULL) * 100, 1) AS eficiencia_promedio,
       ROUND(AVG(avance_fisico) * 100, 1) AS avance_fisico_pct,
-      ROUND(
-        AVG(COALESCE(meta_fisica_${y}::numeric,0) / NULLIF(meta_cuatrienio::numeric,0))
-        FILTER (WHERE meta_cuatrienio::numeric > 0 AND meta_pdm_${y} IS NOT NULL) * 100, 1
-      ) AS avance_fisico_anio_pct,
+      ROUND(AVG(ponderado_avance_${y}) FILTER (WHERE ponderado_avance_${y} IS NOT NULL) * 100, 1) AS avance_fisico_anio_pct,
       ROUND(SUM(COALESCE((presupuesto_${y}->>'total_apropiacion')::numeric, 0)) / 1000000, 0) AS apropiacion_m,
       ROUND(SUM(COALESCE((presupuesto_${y}->>'neto_registros')::numeric, 0)) / 1000000, 0)    AS comprometido_m,
       ROUND(SUM(COALESCE((presupuesto_${y}->>'total_obligacion')::numeric, 0)) / 1000000, 0)  AS obligado_m,
@@ -294,10 +285,7 @@ export async function getYearByPilar(year) {
       COUNT(*) FILTER (WHERE meta_pdm_${y} IS NULL)                        AS no_programadas,
       ROUND(AVG(eficiencia_${y}) FILTER (WHERE eficiencia_${y} IS NOT NULL) * 100, 1) AS eficiencia_promedio,
       ROUND(AVG(avance_fisico) * 100, 1) AS avance_fisico_pct,
-      ROUND(
-        AVG(COALESCE(meta_fisica_${y}::numeric,0) / NULLIF(meta_cuatrienio::numeric,0))
-        FILTER (WHERE meta_cuatrienio::numeric > 0 AND meta_pdm_${y} IS NOT NULL) * 100, 1
-      ) AS avance_fisico_anio_pct,
+      ROUND(AVG(ponderado_avance_${y}) FILTER (WHERE ponderado_avance_${y} IS NOT NULL) * 100, 1) AS avance_fisico_anio_pct,
       ROUND(SUM(COALESCE((presupuesto_${y}->>'total_apropiacion')::numeric, 0)) / 1000000, 0) AS apropiacion_m,
       ROUND(SUM(COALESCE((presupuesto_${y}->>'neto_registros')::numeric, 0)) / 1000000, 0)    AS comprometido_m,
       ROUND(SUM(COALESCE((presupuesto_${y}->>'total_obligacion')::numeric, 0)) / 1000000, 0)  AS obligado_m,
