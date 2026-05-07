@@ -12,7 +12,7 @@ import csv
 from pathlib import Path
 
 INPUT_FILE = "PDM (1).xlsx"
-OUTPUT_SQL = "013_reload_pdm_may2026.sql"
+OUTPUT_SQL = "016_reload_pdm_full.sql"
 OUTPUT_PATH = Path(__file__).parent.parent / "backend" / "src" / "db" / "migrations" / OUTPUT_SQL
 VALID_YEARS = [2024, 2025, 2026, 2027]
 
