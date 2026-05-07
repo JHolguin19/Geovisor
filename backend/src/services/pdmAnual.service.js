@@ -535,91 +535,60 @@ export async function uploadPdmExcel(filePath, year) {
 // ── Comparativo esperado vs realizado (todos los años) ────────────────────
 
 export async function getComparativoAnual() {
-  // Para metas Acumulativas, meta_pdm_Y es acumulado → usamos INCREMENTO para que la suma ~100%.
-  //   incremento_Y = meta_pdm_Y - meta_pdm_{Y-1}  (2024 no tiene anterior → meta_pdm_2024).
-  // Para No acumulativas, meta_pdm_Y ya es independiente.
-  // Realizado se capea: meta_fisica no puede superar meta_pdm (sobre-ejecución = mala planeación).
+  // meta_pdm_Y son valores ANUALES. Denominador = SUM de los 4 meta_pdm para que esperado sume exactamente 100%.
+  // pct_realizado usa el mismo denominador para ser comparable.
   const { rows } = await pool.query(`
-    WITH metas_calc AS (
-      SELECT
-        m.*,
-        -- Incremento esperado por año (acumulativo → incremento, no-acum → meta_pdm directo)
-        CASE WHEN m.tipo_ponderado = 'Acumulativo'
-             THEN COALESCE(m.meta_pdm_2024, 0)
-             ELSE COALESCE(m.meta_pdm_2024, 0) END AS inc_pdm_2024,
-        CASE WHEN m.tipo_ponderado = 'Acumulativo'
-             THEN GREATEST(COALESCE(m.meta_pdm_2025, 0) - COALESCE(m.meta_pdm_2024, 0), 0)
-             ELSE COALESCE(m.meta_pdm_2025, 0) END AS inc_pdm_2025,
-        CASE WHEN m.tipo_ponderado = 'Acumulativo'
-             THEN GREATEST(COALESCE(m.meta_pdm_2026, 0) - COALESCE(m.meta_pdm_2025, 0), 0)
-             ELSE COALESCE(m.meta_pdm_2026, 0) END AS inc_pdm_2026,
-        CASE WHEN m.tipo_ponderado = 'Acumulativo'
-             THEN GREATEST(COALESCE(m.meta_pdm_2027, 0) - COALESCE(m.meta_pdm_2026, 0), 0)
-             ELSE COALESCE(m.meta_pdm_2027, 0) END AS inc_pdm_2027,
-        -- Realizado por año (valores directos del Excel, sin cap)
-        COALESCE(m.meta_fisica_2024,0) AS cap_fis_2024,
-        COALESCE(m.meta_fisica_2025,0) AS cap_fis_2025,
-        COALESCE(m.meta_fisica_2026,0) AS cap_fis_2026,
-        COALESCE(m.meta_fisica_2027,0) AS cap_fis_2027
-      FROM pdm_metas m
-    )
     SELECT
       yr.year,
 
-      -- % esperado: SUM(inc_Y) / SUM(total_inc) → garantiza que los 4 años sumen exactamente 100%
       ROUND(
         SUM(CASE yr.year
-          WHEN 2024 THEN mc.inc_pdm_2024
-          WHEN 2025 THEN mc.inc_pdm_2025
-          WHEN 2026 THEN mc.inc_pdm_2026
-          WHEN 2027 THEN mc.inc_pdm_2027
+          WHEN 2024 THEN COALESCE(m.meta_pdm_2024, 0)
+          WHEN 2025 THEN COALESCE(m.meta_pdm_2025, 0)
+          WHEN 2026 THEN COALESCE(m.meta_pdm_2026, 0)
+          WHEN 2027 THEN COALESCE(m.meta_pdm_2027, 0)
         END)::numeric /
-        NULLIF(SUM(mc.inc_pdm_2024 + mc.inc_pdm_2025 + mc.inc_pdm_2026 + mc.inc_pdm_2027)::numeric, 0)
+        NULLIF(SUM(
+          COALESCE(m.meta_pdm_2024, 0) + COALESCE(m.meta_pdm_2025, 0) +
+          COALESCE(m.meta_pdm_2026, 0) + COALESCE(m.meta_pdm_2027, 0)
+        )::numeric, 0)
         * 100, 1) AS pct_esperado,
 
-      -- % realizado: SUM(inc_realizado_Y) / SUM(total_inc) — misma base que pct_esperado
       ROUND(
-        SUM(CASE WHEN mc.tipo_ponderado = 'Acumulativo' THEN
-          CASE yr.year
-            WHEN 2024 THEN mc.cap_fis_2024
-            WHEN 2025 THEN GREATEST(mc.cap_fis_2025 - mc.cap_fis_2024, 0)
-            WHEN 2026 THEN GREATEST(mc.cap_fis_2026 - mc.cap_fis_2025, 0)
-            WHEN 2027 THEN GREATEST(mc.cap_fis_2027 - mc.cap_fis_2026, 0)
-          END
-        ELSE
-          CASE yr.year
-            WHEN 2024 THEN mc.cap_fis_2024
-            WHEN 2025 THEN mc.cap_fis_2025
-            WHEN 2026 THEN mc.cap_fis_2026
-            WHEN 2027 THEN mc.cap_fis_2027
-          END
+        SUM(CASE yr.year
+          WHEN 2024 THEN COALESCE(m.meta_fisica_2024, 0)
+          WHEN 2025 THEN COALESCE(m.meta_fisica_2025, 0)
+          WHEN 2026 THEN COALESCE(m.meta_fisica_2026, 0)
+          WHEN 2027 THEN COALESCE(m.meta_fisica_2027, 0)
         END)::numeric /
-        NULLIF(SUM(mc.inc_pdm_2024 + mc.inc_pdm_2025 + mc.inc_pdm_2026 + mc.inc_pdm_2027)::numeric, 0)
+        NULLIF(SUM(
+          COALESCE(m.meta_pdm_2024, 0) + COALESCE(m.meta_pdm_2025, 0) +
+          COALESCE(m.meta_pdm_2026, 0) + COALESCE(m.meta_pdm_2027, 0)
+        )::numeric, 0)
         * 100, 1) AS pct_realizado,
 
-      -- Eficiencia promedio del año (sin cap)
       ROUND(AVG(CASE yr.year
-        WHEN 2024 THEN mc.eficiencia_2024
-        WHEN 2025 THEN mc.eficiencia_2025
-        WHEN 2026 THEN mc.eficiencia_2026
-        WHEN 2027 THEN mc.eficiencia_2027
+        WHEN 2024 THEN m.eficiencia_2024
+        WHEN 2025 THEN m.eficiencia_2025
+        WHEN 2026 THEN m.eficiencia_2026
+        WHEN 2027 THEN m.eficiencia_2027
       END) FILTER (WHERE CASE yr.year
-        WHEN 2024 THEN mc.eficiencia_2024
-        WHEN 2025 THEN mc.eficiencia_2025
-        WHEN 2026 THEN mc.eficiencia_2026
-        WHEN 2027 THEN mc.eficiencia_2027
+        WHEN 2024 THEN m.eficiencia_2024
+        WHEN 2025 THEN m.eficiencia_2025
+        WHEN 2026 THEN m.eficiencia_2026
+        WHEN 2027 THEN m.eficiencia_2027
       END IS NOT NULL) * 100, 1) AS eficiencia_promedio,
 
-      -- Metas programadas ese año
       COUNT(*) FILTER (WHERE CASE yr.year
-        WHEN 2024 THEN mc.meta_pdm_2024
-        WHEN 2025 THEN mc.meta_pdm_2025
-        WHEN 2026 THEN mc.meta_pdm_2026
-        WHEN 2027 THEN mc.meta_pdm_2027
+        WHEN 2024 THEN m.meta_pdm_2024
+        WHEN 2025 THEN m.meta_pdm_2025
+        WHEN 2026 THEN m.meta_pdm_2026
+        WHEN 2027 THEN m.meta_pdm_2027
       END IS NOT NULL) AS programadas
 
-    FROM metas_calc mc
+    FROM pdm_metas m
     CROSS JOIN (VALUES (2024),(2025),(2026),(2027)) AS yr(year)
+    WHERE m.meta_cuatrienio IS NOT NULL AND m.meta_cuatrienio > 0
     GROUP BY yr.year
     ORDER BY yr.year
   `);
