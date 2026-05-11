@@ -725,6 +725,14 @@ export default function Spreadsheet({ rows: initialRows, onSave, saving }) {
                         style={{
                           ...(col.frozen ? { left: frozenLeft[ci], zIndex: 2 } : {}),
                           width: col.width, minWidth: col.width,
+                          // Wrap styles inline — beats any CSS cascade/specificity issue
+                          ...(col.wrap ? {
+                            whiteSpace: 'normal',
+                            wordBreak: 'break-word',
+                            height: 'auto',
+                            overflow: 'hidden',
+                            verticalAlign: 'top',
+                          } : {}),
                           ...extraStyle,
                         }}
                         onMouseDown={e => {
