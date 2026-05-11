@@ -75,7 +75,11 @@ function App() {
         <Route path="portal/:secretariaId" element={<SecretariaPortalPage />} />
         <Route path="portal/:secretariaId/upload" element={<UploadPage />} />
         <Route path="portal/:secretariaId/process/:uploadId" element={<ProcessingPage />} />
-        <Route path="portal/:secretariaId/datos" element={<DataExplorerPage />} />
+        <Route path="portal/:secretariaId/datos" element={
+          <PrivateRoute requiredRole="editor_geo">
+            <DataExplorerPage />
+          </PrivateRoute>
+        } />
 
         {/* Geovisor por secretaría */}
         <Route path="mapa/:secretariaId" element={<MapPage />} />

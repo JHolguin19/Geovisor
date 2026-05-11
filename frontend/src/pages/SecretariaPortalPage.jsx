@@ -277,7 +277,7 @@ export default function SecretariaPortalPage() {
             {(secretariaId === 'planeacion' ? [...MODULOS_PLANEACION, ...MODULOS]
               : secretariaId === 'gobierno' ? [...MODULOS_GOBIERNO, ...MODULOS]
               : MODULOS)
-            .filter(m => isAdmin || !['subir_datos', 'pipeline'].includes(m.id))
+            .filter(m => isAdmin || !['subir_datos', 'pipeline', 'explorar_datos'].includes(m.id))
             .map(m => (
               <ModuloCard
                 key={m.id}
