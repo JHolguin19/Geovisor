@@ -375,7 +375,7 @@ td.sps__cell--frozen:nth-child(4) {
 .sps__cell--wrap {
   white-space: normal !important;
   word-break: break-word;
-  overflow: visible;
+  overflow: hidden;
   text-overflow: clip;
   height: auto !important;
   min-height: 26px;
@@ -386,8 +386,9 @@ td.sps__cell--frozen:nth-child(4) {
   font-size: 12px;
 }
 
-/* descripcion_meta column — slightly distinct */
-.sps__cell.sps__cell--frozen.sps__cell--wrap {
+/* Frozen wrapped cells — clip overflow so sticky shadow stays clean */
+.sps__cell--frozen.sps__cell--wrap {
+  overflow: hidden;
   color: #1e293b;
   font-size: 11.5px;
   line-height: 1.45;

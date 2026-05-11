@@ -101,9 +101,9 @@ function effColor(v) {
 export const COLUMNS = [
   // ── Frozen ──────────────────────────────────────────────────────────────────
   { key: 'meta_num',         label: '#',          width: 46,  frozen: true, editable: false, group: '' },
-  { key: 'secretaria',       label: 'Secretaría', width: 118, frozen: true, editable: false, group: '' },
-  { key: 'nom_pilar',        label: 'Pilar',      width: 72,  frozen: true, editable: false, group: '' },
-  { key: 'descripcion_meta', label: 'Meta',       width: 230, frozen: true, editable: false, group: '', wrap: true },
+  { key: 'secretaria',       label: 'Secretaría', width: 118, frozen: true, editable: false, group: '', wrap: true },
+  { key: 'nom_pilar',        label: 'Pilar',      width: 82,  frozen: true, editable: false, group: '', wrap: true },
+  { key: 'descripcion_meta', label: 'Meta',       width: 240, frozen: true, editable: false, group: '', wrap: true },
 
   // ── General ─────────────────────────────────────────────────────────────────
   { key: 'tipo_ponderado',  label: 'Tipo',    width: 80, editable: false, group: 'General' },
@@ -243,10 +243,11 @@ export default function Spreadsheet({ rows: initialRows, onSave, saving }) {
   const [secFilter, setSecFilter]     = useState('');
   const [showFinancial, setShowFinancial] = useState(false);
 
-  const editInputRef = useRef(null);
-  const fbarRef      = useRef(null);
-  const tbodyRef     = useRef(null);
-  const isDragging   = useRef(false);
+  const editInputRef  = useRef(null);
+  const fbarRef       = useRef(null);
+  const tbodyRef      = useRef(null);
+  const gridWrapRef   = useRef(null);
+  const isDragging    = useRef(false);
 
   // Stop drag on global mouseup
   useEffect(() => {
@@ -629,6 +630,7 @@ export default function Spreadsheet({ rows: initialRows, onSave, saving }) {
 
       {/* ── Grid ── */}
       <div
+        ref={gridWrapRef}
         className="sps__grid-wrap"
         tabIndex={0}
         onKeyDown={handleKeyDown}
@@ -731,6 +733,8 @@ export default function Spreadsheet({ rows: initialRows, onSave, saving }) {
                           if (e.shiftKey) extendSelectionTo(ri, ci);
                           else selectCell(ri, ci);
                           isDragging.current = true;
+                          // Restore focus to grid so keyboard nav/edit works immediately
+                          gridWrapRef.current?.focus({ preventScroll: true });
                         }}
                         onMouseEnter={() => {
                           if (isDragging.current) extendSelectionTo(ri, ci);
