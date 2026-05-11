@@ -40,12 +40,16 @@ export async function getGrid() {
       -- Financial data extracted from JSONB columns (in millions)
       ROUND(COALESCE((presupuesto_2024->>'total_apropiacion')::numeric, 0) / 1000000, 2) AS apropiacion_2024,
       ROUND(COALESCE((presupuesto_2024->>'neto_registros')::numeric,    0) / 1000000, 2) AS comprometido_2024,
+      ROUND(COALESCE((presupuesto_2024->>'total_obligacion')::numeric,  0) / 1000000, 2) AS obligado_2024,
       ROUND(COALESCE((presupuesto_2025->>'total_apropiacion')::numeric, 0) / 1000000, 2) AS apropiacion_2025,
       ROUND(COALESCE((presupuesto_2025->>'neto_registros')::numeric,    0) / 1000000, 2) AS comprometido_2025,
+      ROUND(COALESCE((presupuesto_2025->>'total_obligacion')::numeric,  0) / 1000000, 2) AS obligado_2025,
       ROUND(COALESCE((presupuesto_2026->>'total_apropiacion')::numeric, 0) / 1000000, 2) AS apropiacion_2026,
       ROUND(COALESCE((presupuesto_2026->>'neto_registros')::numeric,    0) / 1000000, 2) AS comprometido_2026,
+      ROUND(COALESCE((presupuesto_2026->>'total_obligacion')::numeric,  0) / 1000000, 2) AS obligado_2026,
       ROUND(COALESCE((presupuesto_2027->>'total_apropiacion')::numeric, 0) / 1000000, 2) AS apropiacion_2027,
-      ROUND(COALESCE((presupuesto_2027->>'neto_registros')::numeric,    0) / 1000000, 2) AS comprometido_2027
+      ROUND(COALESCE((presupuesto_2027->>'neto_registros')::numeric,    0) / 1000000, 2) AS comprometido_2027,
+      ROUND(COALESCE((presupuesto_2027->>'total_obligacion')::numeric,  0) / 1000000, 2) AS obligado_2027
     FROM pdm_metas
     ORDER BY meta_num ASC NULLS LAST
   `);

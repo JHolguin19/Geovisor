@@ -6,6 +6,7 @@
   height: 100vh;
   background: #f1f5f9;
   overflow: hidden;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
 }
 
 /* ── Header ─────────────────────────────────────────────────────────────────── */
@@ -14,36 +15,53 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px;
-  height: 48px;
-  background: #1e3a5f;
+  padding: 0 18px;
+  height: 52px;
+  background: linear-gradient(135deg, #1e3a5f 0%, #1e40af 100%);
   flex-shrink: 0;
   gap: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
 .pdme__header-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
+  min-width: 0;
 }
 
 .pdme__header-right {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  flex-shrink: 0;
 }
 
 .pdme__back {
+  display: flex;
+  align-items: center;
   color: #93c5fd;
   text-decoration: none;
   font-size: 12px;
   font-weight: 500;
   white-space: nowrap;
+  padding: 4px 8px;
+  border-radius: 5px;
+  border: 1px solid rgba(147,197,253,0.25);
+  transition: background 0.15s, color 0.15s;
 }
 
 .pdme__back:hover {
+  background: rgba(255,255,255,0.1);
   color: #bfdbfe;
-  text-decoration: underline;
+  text-decoration: none;
+}
+
+.pdme__title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
 }
 
 .pdme__title {
@@ -52,20 +70,60 @@
   font-weight: 700;
   color: #f1f5f9;
   letter-spacing: 0.2px;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+.pdme__subtitle {
+  font-size: 10.5px;
+  color: #93c5fd;
+  font-weight: 400;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
 }
 
 .pdme__badge {
-  padding: 2px 8px;
-  background: #2563eb;
+  padding: 3px 9px;
+  background: rgba(37,99,235,0.6);
+  border: 1px solid rgba(147,197,253,0.3);
   border-radius: 10px;
   font-size: 11px;
-  font-weight: 600;
-  color: #fff;
+  font-weight: 700;
+  color: #bfdbfe;
+  white-space: nowrap;
 }
 
-.pdme__user {
+/* ── Keyboard shortcuts hint ─────────────────────────────────────────────────── */
+
+.pdme__shortcuts-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pdme__shortcuts-hint span {
+  font-size: 10px;
+  color: rgba(148,163,184,0.85);
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 4px;
+  padding: 2px 7px;
+  white-space: nowrap;
+}
+
+/* ── User pill ───────────────────────────────────────────────────────────────── */
+
+.pdme__user-pill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
   font-size: 12px;
   color: #94a3b8;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 20px;
+  padding: 3px 10px 3px 7px;
+  white-space: nowrap;
 }
 
 /* ── Body ───────────────────────────────────────────────────────────────────── */
@@ -83,19 +141,31 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 16px;
   flex: 1;
+  color: #64748b;
+}
+
+.pdme__loading-title {
   font-size: 14px;
-  color: #6b7280;
+  font-weight: 600;
+  color: #334155;
+}
+
+.pdme__loading-sub {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: 3px;
 }
 
 .pdme__spinner {
-  width: 22px;
-  height: 22px;
-  border: 3px solid #e5e7eb;
+  width: 26px;
+  height: 26px;
+  border: 3px solid #e2e8f0;
   border-top-color: #2563eb;
   border-radius: 50%;
   animation: pdme-spin 0.7s linear infinite;
+  flex-shrink: 0;
 }
 
 @keyframes pdme-spin {
@@ -105,33 +175,40 @@
 /* ── Error ──────────────────────────────────────────────────────────────────── */
 
 .pdme__error {
-  margin: 24px auto;
-  padding: 12px 20px;
-  background: #fee2e2;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 32px auto;
+  padding: 14px 20px;
+  background: #fef2f2;
   border: 1px solid #fca5a5;
+  border-left: 4px solid #dc2626;
   border-radius: 6px;
   color: #991b1b;
   font-size: 13px;
-  max-width: 500px;
+  max-width: 560px;
 }
 
 /* ── Toast ──────────────────────────────────────────────────────────────────── */
 
 .pdme__toast {
   position: fixed;
-  bottom: 24px;
-  right: 24px;
-  padding: 10px 20px;
-  border-radius: 6px;
+  bottom: 28px;
+  right: 28px;
+  padding: 11px 20px;
+  border-radius: 8px;
   font-size: 13px;
   font-weight: 500;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.18);
   z-index: 9999;
-  animation: pdme-fadein 0.2s ease;
+  animation: pdme-fadein 0.22s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 @keyframes pdme-fadein {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
@@ -148,4 +225,10 @@
 .pdme__toast--error {
   background: #dc2626;
   color: #fff;
+}
+
+/* ── Responsive: hide hints on small screens ───────────────────────────────── */
+@media (max-width: 900px) {
+  .pdme__shortcuts-hint { display: none; }
+  .pdme__subtitle { display: none; }
 }

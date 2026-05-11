@@ -78,6 +78,16 @@ function finPctFn(year) {
   };
 }
 
+// Obligado execution % = obligado / apropiacion × 100
+function obligPctFn(year) {
+  return row => {
+    const a = parseFloat(row[`apropiacion_${year}`]);
+    const o = parseFloat(row[`obligado_${year}`]);
+    if (!a || isNaN(o)) return null;
+    return (o / a) * 100;
+  };
+}
+
 // Color palette for % indicators
 function effColor(v) {
   if (v == null) return '';
@@ -158,10 +168,14 @@ export const COLUMNS = [
 // ── Financial columns (shown when showFinancial = true) ───────────────────────
 // Values in millions of COP (backend divides by 1,000,000)
 export const FIN_COLUMNS = [2024, 2025, 2026, 2027].flatMap(y => [
-  { key: `apropiacion_${y}`,  label: 'Apropia. (M$)',  width: 96, editable: false, format: 'money_m', group: `${y} Fin` },
-  { key: `comprometido_${y}`, label: 'Comprometido (M$)', width: 96, editable: false, format: 'money_m', group: `${y} Fin` },
-  { key: `_pctfin_${y}`,      label: '% Ejec.',        width: 58, editable: false, group: `${y} Fin`,
+  { key: `apropiacion_${y}`,  label: 'Apropiación (M$)',  width: 104, editable: false, format: 'money_m', group: `${y} Fin` },
+  { key: `comprometido_${y}`, label: 'Comprometido (M$)', width: 110, editable: false, format: 'money_m', group: `${y} Fin` },
+  { key: `_pctfin_${y}`,      label: '% Comp.',           width: 62,  editable: false, group: `${y} Fin`,
     computed: finPctFn(y), format: 'pct1',
+    cellStyle: (_, v) => ({ background: effColor(v), fontWeight: 600 }) },
+  { key: `obligado_${y}`,     label: 'Obligado (M$)',     width: 104, editable: false, format: 'money_m', group: `${y} Fin` },
+  { key: `_pctoblig_${y}`,    label: '% Oblig.',          width: 62,  editable: false, group: `${y} Fin`,
+    computed: obligPctFn(y), format: 'pct1',
     cellStyle: (_, v) => ({ background: effColor(v), fontWeight: 600 }) },
 ]);
 
@@ -584,7 +598,7 @@ export default function Spreadsheet({ rows: initialRows, onSave, saving }) {
         <div className="sps__toolbar-right">
           <input
             className="sps__filter"
-            placeholder="Buscar meta…"
+            placeholder="🔍 Buscar meta o secretaría…"
             value={filter}
             onChange={e => setFilter(e.target.value)}
           />
@@ -592,19 +606,21 @@ export default function Spreadsheet({ rows: initialRows, onSave, saving }) {
             <option value="">Todas las secretarías</option>
             {secretarias.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
+          <div className="sps__toolbar-divider" />
           <button
             className={`sps__btn ${showFinancial ? 'sps__btn--fin-active' : 'sps__btn--fin'}`}
             onClick={() => setShowFinancial(f => !f)}
-            title="Mostrar / ocultar columnas financieras por año (valores en millones de COP)"
+            title="Mostrar / ocultar columnas financieras por año — Apropiación, Comprometido, Obligado (valores en millones de COP)"
           >
-            {showFinancial ? '$ Ocultar financiero' : '$ Ver financiero'}
+            {showFinancial ? '$ Ocultar financiero' : '$ Ver presupuesto'}
           </button>
           {hasPending && (
             <>
-              <span className="sps__pending-badge">{pending.size} cambio{pending.size > 1 ? 's' : ''}</span>
-              <button className="sps__btn sps__btn--discard" onClick={handleDiscard}>Descartar</button>
-              <button className="sps__btn sps__btn--save" onClick={handleSave} disabled={saving}>
-                {saving ? 'Guardando…' : 'Guardar'}
+              <div className="sps__toolbar-divider" />
+              <span className="sps__pending-badge">✎ {pending.size} cambio{pending.size > 1 ? 's' : ''}</span>
+              <button className="sps__btn sps__btn--discard" onClick={handleDiscard} title="Descartar todos los cambios no guardados">Descartar</button>
+              <button className="sps__btn sps__btn--save" onClick={handleSave} disabled={saving} title="Guardar cambios en la base de datos">
+                {saving ? '⏳ Guardando…' : '💾 Guardar'}
               </button>
             </>
           )}
@@ -760,7 +776,7 @@ export default function Spreadsheet({ rows: initialRows, onSave, saving }) {
           </>
         )}
         {hasPending && <span className="sps__status--warn">{pending.size} cambio(s) pendiente(s)</span>}
-        <span className="sps__status--hint">Arrastrar / Shift+clic para rango · Ctrl+V pegar Excel</span>
+        <span className="sps__status--hint">↑↓←→ navegar · Enter / F2 editar · Tab avanzar · Shift+clic rango · Ctrl+V pegar Excel</span>
       </div>
     </div>
   );
