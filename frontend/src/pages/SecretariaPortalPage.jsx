@@ -276,7 +276,9 @@ export default function SecretariaPortalPage() {
           <div className="portal-grid">
             {(secretariaId === 'planeacion' ? [...MODULOS_PLANEACION, ...MODULOS]
               : secretariaId === 'gobierno' ? [...MODULOS_GOBIERNO, ...MODULOS]
-              : MODULOS).map(m => (
+              : MODULOS)
+            .filter(m => isAdmin || !['subir_datos', 'pipeline'].includes(m.id))
+            .map(m => (
               <ModuloCard
                 key={m.id}
                 modulo={m}

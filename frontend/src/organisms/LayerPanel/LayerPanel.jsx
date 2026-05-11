@@ -10,7 +10,6 @@ const LAYER_GROUPS = [
     id: 'planeacion',
     label: 'Secretaría de Planeación',
     accent: '#1A5F9B',
-    allowedSecretarias: ['sig', 'planeacion'],
     layers: [
       { id: 'veredas_salud', label: 'Veredas', dot: '#16A34A' },
     ],

@@ -18,16 +18,7 @@ export default function LoginPage() {
     const result = await login(username, password);
     setLoading(false);
     if (result.success) {
-      // Admin y editor_geo van al dashboard con todas las cards
-      // Secretaria y lector van directo a su geovisor
-      const { role, secretaria } = result.user;
-      if (role === 'admin' || role === 'editor_geo') {
-        navigate('/dashboard');
-      } else if (role === 'lector' && secretaria) {
-        navigate(`/portal/${secretaria}`);
-      } else {
-        navigate(`/mapa/${secretaria || 'sig'}`);
-      }
+      navigate('/dashboard');
     } else {
       setError(result.error);
     }
