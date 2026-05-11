@@ -126,10 +126,10 @@ export default function DashboardPage() {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  // Usuarios de secretaría van a su portal
+  // Usuarios con secretaría asignada van directo a su portal
   useEffect(() => {
-    if (user && user.role !== 'admin' && user.role !== 'editor_geo') {
-      navigate(`/portal/${user.secretaria || 'sig'}`, { replace: true });
+    if (user && user.role !== 'admin' && user.role !== 'editor_geo' && user.secretaria) {
+      navigate(`/portal/${user.secretaria}`, { replace: true });
     }
   }, [user, navigate]);
 
