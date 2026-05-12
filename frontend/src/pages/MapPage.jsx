@@ -29,21 +29,13 @@ function MapPageInner() {
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [searchOpen, setSearchOpen] = useState(false);
-  const { activeLayers, setActiveLayers, setDelitosConfig, setZonaRuralConfig, selectionResults, setSelectionResults, clearTools } = useContext(MapContext);
+  const { activeLayers, setActiveLayers, setDelitosConfig, selectionResults, setSelectionResults, clearTools } = useContext(MapContext);
 
   // Auto-activar capa de delitos al entrar en /mapa/gobierno
   useEffect(() => {
     if (secretariaId === 'gobierno' && !activeLayers.has('delitos_barrios_2025')) {
       setActiveLayers(prev => new Set([...prev, 'delitos_barrios_2025']));
       setDelitosConfig({ anio: '2025', tipoDelito: null, vizMode: 'heatmap' });
-    }
-  }, [secretariaId]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Auto-activar capa de zona rural al entrar en /mapa/planeacion
-  useEffect(() => {
-    if (secretariaId === 'planeacion' && !activeLayers.has('zonarural_avaluos')) {
-      setActiveLayers(prev => new Set([...prev, 'zonarural_avaluos']));
-      setZonaRuralConfig({ vereda: null, colorBy: 'impuesto' });
     }
   }, [secretariaId]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -89,14 +81,18 @@ function MapPageInner() {
           <MapToolbar onSearchToggle={() => setSearchOpen(p => !p)} />
           {searchOpen && <SearchPanel onClose={() => setSearchOpen(false)} />}
           <StatsPanel />
-          <SisbenPanel />
+          {/* Paneles contextuales (derecha) — flex vertical para no superponerse */}
+          <div className="map-context-panels">
+            <SisbenPanel />
+            <SisbenUbaPanel />
+            <AlumbradoPanel />
+            <VeredasPanel />
+            <DelitosPanel />
+            <ZonaRuralPanel />
+          </div>
+          {/* Paneles con posición propia (bottom-left, bottom-right) */}
           <SisbenHeatmapPanel />
-          <SisbenUbaPanel />
-          <AlumbradoPanel />
           <IpmLegendPanel />
-          <VeredasPanel />
-          <DelitosPanel />
-          <ZonaRuralPanel />
           <SelectionResults results={selectionResults} onClose={handleCloseSelection} />
         </main>
       </div>

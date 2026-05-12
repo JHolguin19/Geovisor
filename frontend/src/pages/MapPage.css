@@ -29,6 +29,36 @@
   height: 100%;
 }
 
+/* ── Contenedor de paneles contextuales (derecha) ── */
+.map-context-panels {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: calc(100vh - 115px);
+  overflow-y: auto;
+  pointer-events: none;
+}
+
+.map-context-panels > * {
+  pointer-events: auto;
+}
+
+/* Dentro del contenedor flex, los paneles pierden su position:absolute */
+.map-context-panels > .dp,
+.map-context-panels > .zrp,
+.map-context-panels > .sisben-panel,
+.map-context-panels > .suba-panel,
+.map-context-panels > .alum-panel,
+.map-context-panels > .veredas-panel {
+  position: static;
+  top: auto;
+  right: auto;
+}
+
 /* ── Backdrop para móvil ── */
 .sidebar-backdrop {
   display: none;

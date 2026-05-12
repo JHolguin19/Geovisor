@@ -30,6 +30,8 @@ export function useLayerManager(mapRef, sisbenHeatmapRef) {
     activeLayers.forEach(layerId => {
       // Las capas delitos_* son gestionadas por useDelitosLayer (panel dinámico)
       if (layerId.startsWith('delitos_')) return;
+      // zonarural_avaluos es gestionada por useZonaRuralLayer (panel dinámico)
+      if (layerId === 'zonarural_avaluos') return;
 
       if (!currentIds.has(layerId)) {
         const layerConfig = getLayerById(layerId);

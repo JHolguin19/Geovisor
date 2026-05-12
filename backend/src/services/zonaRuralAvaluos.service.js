@@ -246,7 +246,7 @@ export async function getPropertyGeoJSON({ vereda = null, colorBy = 'impuesto' }
         'type', 'Feature',
         'geometry', ST_AsGeoJSON(ST_Simplify(geom, 0.00005), 5)::jsonb,
         'properties', jsonb_build_object(
-          'codigo',          "CODIGO",
+          'codigo',          codigo,
           'vereda',          COALESCE(nombre, '(Sin nombre)'),
           'propietario',     propietario,
           'avaluo_nuevo',    avaluo_nuevo,

@@ -160,10 +160,10 @@ export const LAYERS_BY_SECRETARIA = {
         description: 'Unidad Barrial de Atención Centro'
       }),
       // Uso de Suelos
-      // Zona Rural — Avalúos (predios individuales con impuesto predial)
+      // Predios Rurales — avalúos IGAC con impuesto predial
       createWfsLayer({
         id: 'zonarural_avaluos',
-        name: 'Zona Rural — Avalúos',
+        name: 'Predios Rurales',
         tableName: 'planeacion_zonarural2025_avaluos',
         apiUrl: '/api/zonarural-avaluos/geojson/predios',
         visible: false,
