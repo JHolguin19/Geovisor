@@ -26,6 +26,7 @@ import etlRoutes from './routes/etl.routes.js';
 import tablesRoutes from './routes/tables.routes.js';
 import delitosRoutes from './routes/delitos.routes.js';
 import zonaRuralRoutes from './routes/zonaRural.routes.js';
+import zonaRuralAvaluosRoutes from './routes/zonaRuralAvaluos.routes.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 dotenv.config();
@@ -79,7 +80,8 @@ app.use('/api/geodata',    geodataLimiter);
 app.use('/api/catastro',  geodataLimiter);
 app.use('/api/vivienda',  geodataLimiter);
 app.use('/api/alumbrado', geodataLimiter);
-app.use('/api/zonarural', geodataLimiter);
+app.use('/api/zonarural',         geodataLimiter);
+app.use('/api/zonarural-avaluos', geodataLimiter);
 
 // ── Body parsers ──────────────────────────────────────────────────────────────
 app.use(express.json());
@@ -109,7 +111,8 @@ app.use('/api/alumbrado', alumbradoRoutes);
 app.use('/api/usuarios',  usuariosRoutes);
 app.use('/api/etl',       etlRoutes);
 app.use('/api/tables',    tablesRoutes);
-app.use('/api/zonarural', zonaRuralRoutes);
+app.use('/api/zonarural',         zonaRuralRoutes);
+app.use('/api/zonarural-avaluos', zonaRuralAvaluosRoutes);
 app.use('/api/delitos',   delitosRoutes);
 
 app.get('/api/health', (_req, res) => {

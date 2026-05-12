@@ -13,6 +13,7 @@ import PdmAnualPage from './pages/PdmAnualPage';
 import DashboardCatastro from './pages/Planeacion/Catastro/DashboardCatastro';
 import DashboardVivienda from './pages/Planeacion/Vivienda/DashboardVivienda';
 import DashboardZonaRural from './pages/Planeacion/ZonaRural/DashboardZonaRural';
+import AnalisisZonaRural from './pages/Planeacion/Catastro/AnalisisZonaRural';
 import PlaneacionMapPage from './pages/Planeacion/PlaneacionMapPage';
 import AdminUsuariosPage from './pages/AdminUsuariosPage';
 import DataPipelinePage from './pages/DataPipelinePage';
@@ -63,6 +64,7 @@ function App() {
         <Route path="planeacion/catastro" element={<DashboardCatastro />} />
         <Route path="planeacion/vivienda" element={<DashboardVivienda />} />
         <Route path="planeacion/zonarural" element={<DashboardZonaRural />} />
+        <Route path="planeacion/catastro/zona-rural-avaluos" element={<AnalisisZonaRural />} />
         <Route path="planeacion/catastro/:visorId" element={<PlaneacionMapPage />} />
         <Route path="planeacion/vivienda/:visorId" element={<PlaneacionMapPage />} />
 

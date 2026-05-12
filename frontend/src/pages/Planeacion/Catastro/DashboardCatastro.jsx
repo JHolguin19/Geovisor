@@ -25,6 +25,16 @@ const HERRAMIENTAS = [
     btnLabel: 'Abrir Visor Financiero',
   },
   {
+    id: 'zona-rural-avaluos',
+    nombre: 'Análisis Zona Rural — Avalúos',
+    desc: 'Impacto financiero de la actualización catastral rural: comparativo de avalúos, tarifas, Pareto y mapa de incrementos.',
+    icono: '🌾',
+    activo: true,
+    color: '#2E7D32',
+    path: '/planeacion/catastro/zona-rural-avaluos',
+    btnLabel: 'Abrir Análisis',
+  },
+  {
     id: 'fichas',
     nombre: 'Fichas Prediales',
     desc: 'Generador de certificados y consulta detallada por código predial.',

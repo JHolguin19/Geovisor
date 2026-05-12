@@ -526,6 +526,29 @@ export const delitosService = {
 // SERVICIO ZONA RURAL (Planeación)
 // ============================
 
+export const zonaRuralAvaluosService = {
+  getStats: async () => {
+    const res = await api.get('/zonarural-avaluos/stats');
+    return res.data;
+  },
+  getBrackets: async () => {
+    const res = await api.get('/zonarural-avaluos/brackets');
+    return res.data;
+  },
+  getPareto: async () => {
+    const res = await api.get('/zonarural-avaluos/pareto');
+    return res.data;
+  },
+  getVeredas: async () => {
+    const res = await api.get('/zonarural-avaluos/veredas');
+    return res.data;
+  },
+  getGeoJSON: async (mode) => {
+    const res = await api.get('/zonarural-avaluos/geojson', { params: { mode } });
+    return res.data;
+  },
+};
+
 export const zonaRuralService = {
   getVeredas: async () => {
     const res = await api.get('/zonarural/veredas');
