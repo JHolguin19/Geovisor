@@ -28,3 +28,18 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+
+# Large SQL data exports (geometry dumps — import manually via supabase db query)
+*_export.sql
+*_clean.sql
+ipm_*.sql
+salud_capas_*.sql
+
+# Supabase CLI temp/cache
+supabase/.temp/
+
+# One-off debug/import scripts
+backend/scripts/debug-*.js
+backend/scripts/inspect-*.js
+backend/scripts/importPdm.mjs
+backend/scripts/generate-pdm-sql.js
