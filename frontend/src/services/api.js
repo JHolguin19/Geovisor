@@ -547,6 +547,12 @@ export const zonaRuralAvaluosService = {
     const res = await api.get('/zonarural-avaluos/geojson', { params: { mode } });
     return res.data;
   },
+  getPropertyGeoJSON: async (vereda = null, colorBy = 'impuesto') => {
+    const params = { colorBy };
+    if (vereda) params.vereda = vereda;
+    const res = await api.get('/zonarural-avaluos/geojson/predios', { params });
+    return res.data;
+  },
 };
 
 export const zonaRuralService = {

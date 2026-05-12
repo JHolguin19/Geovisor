@@ -18,6 +18,10 @@ export function MapProvider({ children }) {
     tipoDelito: null,  // null = Todos, o tipo específico string
     vizMode: 'heatmap' // 'heatmap' | 'categorized'
   });
+  const [zonaRuralConfig, setZonaRuralConfig] = useState({
+    vereda: null,      // null = todas, o nombre de vereda
+    colorBy: 'impuesto' // 'impuesto' | 'avaluo' | 'incremento'
+  });
 
   const clearTools = useCallback(() => {
     setActiveTool(null);
@@ -48,6 +52,8 @@ export function MapProvider({ children }) {
     setSisbenBarriosFeatures,
     delitosConfig,
     setDelitosConfig,
+    zonaRuralConfig,
+    setZonaRuralConfig,
   };
 
   return (

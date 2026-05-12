@@ -1,0 +1,245 @@
+/* ── ZonaRuralPanel — Panel lateral avalúos zona rural ────────── */
+
+.zrp {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 280px;
+  max-height: calc(100vh - 115px);
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: -2px 4px 16px rgba(0,0,0,.10);
+  z-index: 200;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 13px;
+}
+
+/* ── Header ── */
+.zrp__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: #14532d;
+  color: #fff;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: .01em;
+  border-radius: 10px 10px 0 0;
+}
+
+.zrp__icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: #86efac;
+}
+
+/* ── Body ── */
+.zrp__body {
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── KPI row ── */
+.zrp__kpi-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.zrp__kpi {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  padding: 8px 10px;
+  text-align: center;
+}
+
+.zrp__kpi-val {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #14532d;
+  line-height: 1.2;
+}
+
+.zrp__kpi-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: #6b7280;
+}
+
+/* ── Field ── */
+.zrp__field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.zrp__label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: #6b7280;
+}
+
+/* ── Vereda select ── */
+.zrp__select {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 12.5px;
+  color: #1f2937;
+  background: #fff;
+  cursor: pointer;
+  outline: none;
+  transition: border-color .15s;
+}
+
+.zrp__select:focus {
+  border-color: #16a34a;
+}
+
+/* ── ColorBy pills ── */
+.zrp__pills {
+  display: flex;
+  gap: 5px;
+}
+
+.zrp__pill {
+  flex: 1;
+  padding: 5px 0;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #fff;
+  color: #374151;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, color .15s;
+}
+
+.zrp__pill:hover {
+  border-color: #16a34a;
+  color: #16a34a;
+}
+
+.zrp__pill--active {
+  background: #166534;
+  border-color: #166534;
+  color: #fff;
+}
+
+/* ── Legend ── */
+.zrp__legend {
+  border-top: 1px solid #f3f4f6;
+  padding-top: 10px;
+}
+
+.zrp__legend-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: #6b7280;
+  margin-bottom: 7px;
+}
+
+.zrp__legend-items {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.zrp__legend-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.zrp__legend-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid rgba(0,0,0,.12);
+  flex-shrink: 0;
+}
+
+.zrp__legend-label {
+  font-size: 12px;
+  color: #374151;
+}
+
+/* ── Vereda list ── */
+.zrp__vereda-list {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+}
+
+.zrp__vereda-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: 12px;
+  border-bottom: 1px solid #f3f4f6;
+  transition: background .1s;
+}
+
+.zrp__vereda-item:hover {
+  background: #f0fdf4;
+}
+
+.zrp__vereda-item--active {
+  background: #dcfce7;
+  font-weight: 700;
+  color: #166534;
+}
+
+.zrp__vereda-item:last-child {
+  border-bottom: none;
+}
+
+.zrp__vereda-badge {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #166534;
+  min-width: 28px;
+  text-align: right;
+}
+
+.zrp__search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.zrp__search input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 12px;
+  font-family: inherit;
+  color: #1f2937;
+}
+
+.zrp__search input::placeholder {
+  color: #9ca3af;
+}

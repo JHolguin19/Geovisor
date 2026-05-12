@@ -225,3 +225,46 @@ export async function getGeoJSON({ mode = 'incremento_pct' } = {}) {
   `);
   return rows[0]?.geojson || { type: 'FeatureCollection', features: [] };
 }
+
+/**
+ * Property-level GeoJSON — individual polygons with tax/valuation data.
+ * Supports optional vereda filter for performance.
+ */
+export async function getPropertyGeoJSON({ vereda = null, colorBy = 'impuesto' } = {}) {
+  const veredaFilter = vereda
+    ? `AND nombre = $1`
+    : '';
+  const params = vereda ? [vereda] : [];
+
+  const { rows } = await pool.query(`
+    SELECT jsonb_build_object(
+      'type', 'FeatureCollection',
+      'features', COALESCE(jsonb_agg(f.feature), '[]'::jsonb)
+    ) AS geojson
+    FROM (
+      SELECT jsonb_build_object(
+        'type', 'Feature',
+        'geometry', ST_AsGeoJSON(ST_Simplify(geom, 0.00005), 5)::jsonb,
+        'properties', jsonb_build_object(
+          'codigo',          "CODIGO",
+          'vereda',          COALESCE(nombre, '(Sin nombre)'),
+          'propietario',     propietario,
+          'avaluo_nuevo',    avaluo_nuevo,
+          'avaluo_antiguo',  avaluo_antiguo,
+          'area_predio',     area_predio,
+          'incremento_pct',  CASE WHEN avaluo_antiguo > 0
+            THEN ROUND(((avaluo_nuevo::float / avaluo_antiguo) - 1) * 100, 1)
+            ELSE 0 END,
+          'impuesto_nuevo',  ROUND((avaluo_nuevo * (CASE ${tarifaSQL('avaluo_nuevo', NEW_BRACKETS)} END) / 1000)::numeric, 0),
+          'impuesto_antiguo', ROUND((avaluo_antiguo * (CASE ${tarifaSQL('avaluo_antiguo', OLD_BRACKETS)} END) / 1000)::numeric, 0),
+          'tarifa_nueva',    CASE ${tarifaSQL('avaluo_nuevo', NEW_BRACKETS)} END,
+          'rango_nuevo',     CASE ${bracketSQL('avaluo_nuevo', NEW_BRACKETS)} END
+        )
+      ) AS feature
+      FROM ${TBL}
+      WHERE avaluo_nuevo IS NOT NULL AND avaluo_antiguo IS NOT NULL
+        AND geom IS NOT NULL ${veredaFilter}
+    ) f
+  `, params);
+  return rows[0]?.geojson || { type: 'FeatureCollection', features: [] };
+}

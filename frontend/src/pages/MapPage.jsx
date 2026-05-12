@@ -14,6 +14,7 @@ import AlumbradoPanel from '../organisms/AlumbradoPanel/AlumbradoPanel';
 import IpmLegendPanel from '../organisms/IpmLegendPanel/IpmLegendPanel';
 import VeredasPanel from '../organisms/VeredasPanel/VeredasPanel';
 import DelitosPanel from '../organisms/DelitosPanel/DelitosPanel';
+import ZonaRuralPanel from '../organisms/ZonaRuralPanel/ZonaRuralPanel';
 import MapContext from '../context/MapContext';
 import { getSecretariaById } from '../config/secretarias';
 import { useLayerPrefetch } from '../features/map/hooks/useLayerPrefetch';
@@ -28,13 +29,21 @@ function MapPageInner() {
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [searchOpen, setSearchOpen] = useState(false);
-  const { activeLayers, setActiveLayers, setDelitosConfig, selectionResults, setSelectionResults, clearTools } = useContext(MapContext);
+  const { activeLayers, setActiveLayers, setDelitosConfig, setZonaRuralConfig, selectionResults, setSelectionResults, clearTools } = useContext(MapContext);
 
   // Auto-activar capa de delitos al entrar en /mapa/gobierno
   useEffect(() => {
     if (secretariaId === 'gobierno' && !activeLayers.has('delitos_barrios_2025')) {
       setActiveLayers(prev => new Set([...prev, 'delitos_barrios_2025']));
       setDelitosConfig({ anio: '2025', tipoDelito: null, vizMode: 'heatmap' });
+    }
+  }, [secretariaId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-activar capa de zona rural al entrar en /mapa/planeacion
+  useEffect(() => {
+    if (secretariaId === 'planeacion' && !activeLayers.has('zonarural_avaluos')) {
+      setActiveLayers(prev => new Set([...prev, 'zonarural_avaluos']));
+      setZonaRuralConfig({ vereda: null, colorBy: 'impuesto' });
     }
   }, [secretariaId]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -87,6 +96,7 @@ function MapPageInner() {
           <IpmLegendPanel />
           <VeredasPanel />
           <DelitosPanel />
+          <ZonaRuralPanel />
           <SelectionResults results={selectionResults} onClose={handleCloseSelection} />
         </main>
       </div>

@@ -365,11 +365,15 @@ function ImpactCard({ label, value, sub, color }) {
 function MapSection() {
   const mapRef = useRef(null);
   const olMapRef = useRef(null);
-  const [mode, setMode] = useState('pct'); // 'pct' or 'abs'
+  const [mode, setMode] = useState('impuesto'); // 'impuesto' | 'avaluo' | 'incremento'
   const [geojson, setGeojson] = useState(null);
+  const [mapLoading, setMapLoading] = useState(true);
 
   useEffect(() => {
-    zonaRuralAvaluosService.getGeoJSON('incremento_pct').then(setGeojson).catch(console.error);
+    setMapLoading(true);
+    zonaRuralAvaluosService.getPropertyGeoJSON(null, mode)
+      .then(data => { setGeojson(data); setMapLoading(false); })
+      .catch(e => { console.error(e); setMapLoading(false); });
   }, []);
 
   useEffect(() => {
@@ -383,7 +387,7 @@ function MapSection() {
       const { default: VectorSource } = await import('ol/source/Vector');
       const { default: OSM } = await import('ol/source/OSM');
       const { default: GeoJSON } = await import('ol/format/GeoJSON');
-      const { Style, Fill, Stroke, Text } = await import('ol/style');
+      const { Style, Fill, Stroke } = await import('ol/style');
       const { fromLonLat } = await import('ol/proj');
 
       if (cancelled) return;
@@ -392,38 +396,32 @@ function MapSection() {
         features: new GeoJSON().readFeatures(geojson, { featureProjection: 'EPSG:3857' }),
       });
 
+      const ZR_COLORS = ['#dcfce7','#bbf7d0','#86efac','#fef08a','#fde047','#fdba74','#fb923c','#f87171','#ef4444','#dc2626'];
+
       const getColor = (feature) => {
-        const props = feature.getProperties();
-        const val = mode === 'pct'
-          ? Number(props.avg_incremento_pct || 0)
-          : Number(props.suma_avaluo_nuevo || 0) - Number(props.suma_avaluo_antiguo || 0);
-
-        const steps = mode === 'pct'
-          ? [50, 100, 200, 400, 800]
-          : [100e6, 500e6, 2e9, 10e9, 50e9];
-        const colors = ['#dcfce7','#86efac','#fde047','#fb923c','#ef4444','#7f1d1d'];
-
+        const p = feature.getProperties();
+        let val, steps;
+        if (mode === 'impuesto') {
+          val = Number(p.impuesto_nuevo || 0);
+          steps = [50000,100000,200000,400000,700000,1200000,2500000,5000000,10000000];
+        } else if (mode === 'avaluo') {
+          val = Number(p.avaluo_nuevo || 0);
+          steps = [5e6,10e6,20e6,40e6,60e6,100e6,250e6,500e6,1e9];
+        } else {
+          val = Number(p.incremento_pct || 0);
+          steps = [0,20,50,100,200,400,700,1000,2000];
+        }
         let idx = steps.findIndex(s => val <= s);
-        if (idx === -1) idx = colors.length - 1;
-        return colors[idx];
+        if (idx === -1) idx = ZR_COLORS.length - 1;
+        return ZR_COLORS[idx];
       };
 
       const layer = new VectorLayer({
         source,
-        style: (feature) => {
-          const props = feature.getProperties();
-          return new Style({
-            fill: new Fill({ color: getColor(feature) + 'cc' }),
-            stroke: new Stroke({ color: '#fff', width: 1 }),
-            text: new Text({
-              text: props.vereda || '',
-              font: 'bold 9px Nunito',
-              fill: new Fill({ color: '#1a2332' }),
-              stroke: new Stroke({ color: '#fff', width: 2.5 }),
-              overflow: true,
-            }),
-          });
-        },
+        style: (feature) => new Style({
+          fill: new Fill({ color: getColor(feature) + 'c0' }),
+          stroke: new Stroke({ color: '#166534', width: 0.5 }),
+        }),
       });
 
       if (olMapRef.current) { olMapRef.current.setTarget(null); olMapRef.current = null; }
@@ -443,20 +441,48 @@ function MapSection() {
     return () => { cancelled = true; if (olMapRef.current) { olMapRef.current.setTarget(null); olMapRef.current = null; } };
   }, [geojson, mode]);
 
-  const legendSteps = mode === 'pct'
-    ? [{ color: '#dcfce7', label: '< 50%' },{ color: '#86efac', label: '50–100%' },{ color: '#fde047', label: '100–200%' },{ color: '#fb923c', label: '200–400%' },{ color: '#ef4444', label: '400–800%' },{ color: '#7f1d1d', label: '> 800%' }]
-    : [{ color: '#dcfce7', label: '< $100M' },{ color: '#86efac', label: '$100–500M' },{ color: '#fde047', label: '$500M–2B' },{ color: '#fb923c', label: '$2–10B' },{ color: '#ef4444', label: '$10–50B' },{ color: '#7f1d1d', label: '> $50B' }];
+  const LEGEND_MAP = {
+    impuesto: [
+      { color: '#dcfce7', label: '< $50K' },{ color: '#bbf7d0', label: '$50K–100K' },
+      { color: '#86efac', label: '$100K–200K' },{ color: '#fef08a', label: '$200K–400K' },
+      { color: '#fde047', label: '$400K–700K' },{ color: '#fdba74', label: '$700K–1.2M' },
+      { color: '#fb923c', label: '$1.2M–2.5M' },{ color: '#f87171', label: '$2.5M–5M' },
+      { color: '#ef4444', label: '$5M–10M' },{ color: '#dc2626', label: '> $10M' },
+    ],
+    avaluo: [
+      { color: '#dcfce7', label: '< $5M' },{ color: '#bbf7d0', label: '$5M–10M' },
+      { color: '#86efac', label: '$10M–20M' },{ color: '#fef08a', label: '$20M–40M' },
+      { color: '#fde047', label: '$40M–60M' },{ color: '#fdba74', label: '$60M–100M' },
+      { color: '#fb923c', label: '$100M–250M' },{ color: '#f87171', label: '$250M–500M' },
+      { color: '#ef4444', label: '$500M–1B' },{ color: '#dc2626', label: '> $1B' },
+    ],
+    incremento: [
+      { color: '#dcfce7', label: '0% o menos' },{ color: '#bbf7d0', label: '0–20%' },
+      { color: '#86efac', label: '20–50%' },{ color: '#fef08a', label: '50–100%' },
+      { color: '#fde047', label: '100–200%' },{ color: '#fdba74', label: '200–400%' },
+      { color: '#fb923c', label: '400–700%' },{ color: '#f87171', label: '700–1000%' },
+      { color: '#ef4444', label: '1000–2000%' },{ color: '#dc2626', label: '> 2000%' },
+    ],
+  };
+
+  const TITLES = { impuesto: 'Impuesto predial anual', avaluo: 'Avaluo catastral nuevo', incremento: '% Incremento avaluo' };
 
   return (
     <div className="azr-map-wrap">
       <div ref={mapRef} style={{ width: '100%', height: '100%' }} />
+      {mapLoading && (
+        <div style={{ position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)', background:'rgba(255,255,255,.9)', padding:'12px 24px', borderRadius:8, fontWeight:600, fontSize:13, color:'#166534', zIndex:20 }}>
+          Cargando predios...
+        </div>
+      )}
       <div className="azr-map-controls">
-        <button className={`azr-map-btn ${mode === 'pct' ? 'azr-map-btn--active' : ''}`} onClick={() => setMode('pct')}>% Incremento</button>
-        <button className={`azr-map-btn ${mode === 'abs' ? 'azr-map-btn--active' : ''}`} onClick={() => setMode('abs')}>$ Diferencia</button>
+        <button className={`azr-map-btn ${mode === 'impuesto' ? 'azr-map-btn--active' : ''}`} onClick={() => setMode('impuesto')}>Impuesto</button>
+        <button className={`azr-map-btn ${mode === 'avaluo' ? 'azr-map-btn--active' : ''}`} onClick={() => setMode('avaluo')}>Avaluo</button>
+        <button className={`azr-map-btn ${mode === 'incremento' ? 'azr-map-btn--active' : ''}`} onClick={() => setMode('incremento')}>% Cambio</button>
       </div>
       <div className="azr-legend">
-        <div className="azr-legend-title">{mode === 'pct' ? 'Incremento %' : 'Diferencia en $'}</div>
-        {legendSteps.map((s, i) => (
+        <div className="azr-legend-title">{TITLES[mode]}</div>
+        {LEGEND_MAP[mode].map((s, i) => (
           <div key={i} className="azr-legend-row">
             <div className="azr-legend-swatch" style={{ background: s.color }} />
             <span className="azr-legend-text">{s.label}</span>

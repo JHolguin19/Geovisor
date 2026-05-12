@@ -153,12 +153,52 @@ export function makeDelitosCategorizedStyle(feature) {
   });
 }
 
+// Paleta coroplética para zona rural — avalúos/impuesto (verde→amarillo→naranja→rojo)
+const ZR_COLORS = ['#dcfce7','#bbf7d0','#86efac','#fef08a','#fde047','#fdba74','#fb923c','#f87171','#ef4444','#dc2626'];
+
+// Estilo por impuesto predial (default)
+export function makeZonaRuralImpuestoStyle(feature) {
+  const val = Number(feature.get('impuesto_nuevo') || 0);
+  const idx = val <= 50000 ? 0 : val <= 100000 ? 1 : val <= 200000 ? 2
+    : val <= 400000 ? 3 : val <= 700000 ? 4 : val <= 1200000 ? 5
+    : val <= 2500000 ? 6 : val <= 5000000 ? 7 : val <= 10000000 ? 8 : 9;
+  return new Style({
+    fill: new Fill({ color: hexToRgba(ZR_COLORS[idx], 0.75) }),
+    stroke: new Stroke({ color: '#166534', width: 0.6 }),
+  });
+}
+
+// Estilo por avalúo nuevo
+export function makeZonaRuralAvaluoStyle(feature) {
+  const val = Number(feature.get('avaluo_nuevo') || 0);
+  const idx = val <= 5000000 ? 0 : val <= 10000000 ? 1 : val <= 20000000 ? 2
+    : val <= 40000000 ? 3 : val <= 60000000 ? 4 : val <= 100000000 ? 5
+    : val <= 250000000 ? 6 : val <= 500000000 ? 7 : val <= 1000000000 ? 8 : 9;
+  return new Style({
+    fill: new Fill({ color: hexToRgba(ZR_COLORS[idx], 0.75) }),
+    stroke: new Stroke({ color: '#166534', width: 0.6 }),
+  });
+}
+
+// Estilo por % de incremento
+export function makeZonaRuralIncrementoStyle(feature) {
+  const val = Number(feature.get('incremento_pct') || 0);
+  const idx = val <= 0 ? 0 : val <= 20 ? 1 : val <= 50 ? 2
+    : val <= 100 ? 3 : val <= 200 ? 4 : val <= 400 ? 5
+    : val <= 700 ? 6 : val <= 1000 ? 7 : val <= 2000 ? 8 : 9;
+  return new Style({
+    fill: new Fill({ color: hexToRgba(ZR_COLORS[idx], 0.75) }),
+    stroke: new Stroke({ color: '#166534', width: 0.6 }),
+  });
+}
+
 // Resolución de estilo por configuración de capa
 export function resolveStyleForConfig(layerConfig) {
   if (layerConfig.id === 'predios_urbanos') return makePrediosStyle();
   if (layerConfig.id === 'obras_pavimentacion' || layerConfig.id === 'pavimentacion2') return makePavimentacionStyle();
   if (layerConfig.id === 'ipm_santander') return makeIpmStyle;
   if (layerConfig.id?.startsWith('delitos_') || layerConfig.id === 'delitos_panel') return makeDelitosStyle;
+  if (layerConfig.id === 'zonarural_avaluos' || layerConfig.id === 'zonarural_panel') return makeZonaRuralImpuestoStyle;
   if (layerConfig.labelField) return makeDefaultStyleWithLabel(layerConfig);
   if (layerConfig.geometryType === 'line') return makeLineStyle(layerConfig);
   // Para WFS de puntos usamos point style
