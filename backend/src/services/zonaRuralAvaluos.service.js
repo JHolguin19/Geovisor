@@ -209,7 +209,7 @@ export async function getGeoJSON({ mode = 'incremento_pct' } = {}) {
     FROM (
       SELECT jsonb_build_object(
         'type', 'Feature',
-        'geometry', ST_AsGeoJSON(ST_Union(ST_Simplify(geom, 0.0001)), 5)::jsonb,
+        'geometry', ST_AsGeoJSON(ST_Union(ST_Buffer(ST_MakeValid(geom), 0)), 5)::jsonb,
         'properties', jsonb_build_object(
           'vereda',         COALESCE(nombre, '(Sin nombre)'),
           'predios',        COUNT(*),
