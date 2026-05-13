@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useContext } from 'react';
+import { useState, useEffect, useRef, useCallback, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import AuthContext from '../../../context/AuthContext';
 import { zonaRuralAvaluosService } from '../../../services/api';
@@ -60,7 +60,7 @@ export default function AnalisisZonaRural() {
         </div>
         <div className="plan-header-right">
           {user && (
-            <span style={{ display:'flex',alignItems:'center',gap:6,padding:'6px 14px',background:'rgba(255,255,255,.08)',border:'1px solid rgba(255,255,255,.15)',borderRadius:99,color:'rgba(255,255,255,.75)',fontSize:12,fontWeight:600 }}>
+            <span className="azr-user-badge">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="7" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
               {user.username}
             </span>
@@ -114,7 +114,6 @@ export default function AnalisisZonaRural() {
           {/* ── BRACKET DISTRIBUTION ── */}
           <section className="azr-section">
             <div className="azr-row-2">
-              {/* New bracket distribution */}
               <div className="azr-card">
                 <div className="azr-card-header">
                   <span className="azr-card-title">Distribución — Tarifas Nuevas</span>
@@ -122,16 +121,10 @@ export default function AnalisisZonaRural() {
                 </div>
                 <div className="azr-card-body">
                   {loading ? <BarsSkeleton /> : brackets && (
-                    <BracketBars
-                      data={brackets.nuevo}
-                      colors={BRACKET_COLORS_NEW}
-                      totalPredios={Number(stats?.total_predios || 1)}
-                    />
+                    <BracketBars data={brackets.nuevo} colors={BRACKET_COLORS_NEW} totalPredios={Number(stats?.total_predios || 1)} />
                   )}
                 </div>
               </div>
-
-              {/* Old bracket distribution */}
               <div className="azr-card">
                 <div className="azr-card-header">
                   <span className="azr-card-title">Distribución — Tarifas Anteriores</span>
@@ -139,11 +132,7 @@ export default function AnalisisZonaRural() {
                 </div>
                 <div className="azr-card-body">
                   {loading ? <BarsSkeleton /> : brackets && (
-                    <BracketBars
-                      data={brackets.antiguo}
-                      colors={BRACKET_COLORS_OLD}
-                      totalPredios={Number(stats?.total_predios || 1)}
-                    />
+                    <BracketBars data={brackets.antiguo} colors={BRACKET_COLORS_OLD} totalPredios={Number(stats?.total_predios || 1)} />
                   )}
                 </div>
               </div>
@@ -167,7 +156,7 @@ export default function AnalisisZonaRural() {
           <section className="azr-section">
             <div className="azr-card">
               <div className="azr-card-header">
-                <span className="azr-card-title">Mapa de Incremento por Vereda</span>
+                <span className="azr-card-title">Mapa Coroplético — Predios Rurales</span>
                 <span className="azr-card-badge azr-card-badge--green">Avalúo nuevo vs antiguo</span>
               </div>
               <MapSection />
@@ -181,7 +170,7 @@ export default function AnalisisZonaRural() {
                 <span className="azr-card-title">Impacto Financiero por Vereda</span>
                 <span className="azr-card-badge azr-card-badge--green">{veredas?.length || '—'} veredas</span>
               </div>
-              <div style={{ overflowX: 'auto' }}>
+              <div className="azr-table-scroll">
                 {loading
                   ? <div className="azr-skel" style={{ height: 300, margin: 16 }} />
                   : veredas && <VeredaTable data={veredas} />
@@ -208,7 +197,7 @@ function KpiGrid({ stats }) {
       <div className="azr-kpi" style={{ '--kpi-color': '#2E7D32' }}>
         <div className="azr-kpi-label">Predios únicos</div>
         <div className="azr-kpi-value">{fmtN(s.total_predios)}</div>
-        <div className="azr-kpi-sub">{fmtN(s.total_veredas)} veredas · deduplicados</div>
+        <div className="azr-kpi-sub">{fmtN(s.total_veredas)} veredas</div>
       </div>
       <div className="azr-kpi" style={{ '--kpi-color': '#1565C0' }}>
         <div className="azr-kpi-label">Avalúo promedio nuevo</div>
@@ -265,12 +254,9 @@ function BracketBars({ data, colors, totalPredios }) {
     const barW = Math.max(4, Number(d.recaudo_estimado) / maxRecaudo * 100);
     return (
       <div key={i} className="azr-bracket-row">
-        <div className="azr-bracket-label">{d.rango}<br/><span style={{ fontSize: 10, color: 'var(--text-light)' }}>{d.tarifa}‰</span></div>
+        <div className="azr-bracket-label">{d.rango}<br/><span className="azr-bracket-tarifa">{d.tarifa}‰</span></div>
         <div className="azr-bracket-bar-wrap">
-          <div
-            className="azr-bracket-bar"
-            style={{ width: `${barW}%`, background: colors[i] || '#64748b' }}
-          >
+          <div className="azr-bracket-bar" style={{ width: `${barW}%`, background: colors[i] || '#64748b' }}>
             {barW > 18 && `${fmtN(d.predios)} (${pct}%)`}
           </div>
         </div>
@@ -299,7 +285,6 @@ function ParetoChart({ data }) {
   const linePath = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
   const areaPath = linePath + ` L ${pts[pts.length - 1].x} ${pad.t + ch} L ${pad.l} ${pad.t + ch} Z`;
 
-  // Find 80% crossing
   let cross80 = null;
   for (let i = 0; i < pts.length; i++) {
     if (pts[i].pctR >= 80) { cross80 = pts[i]; break; }
@@ -310,7 +295,6 @@ function ParetoChart({ data }) {
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="azr-pareto-svg">
-      {/* Grid */}
       {yTicks.map(t => (
         <g key={`y${t}`}>
           <line className="azr-pareto-grid" x1={pad.l} x2={W - pad.r} y1={pad.t + ch - t / 100 * ch} y2={pad.t + ch - t / 100 * ch} />
@@ -320,15 +304,10 @@ function ParetoChart({ data }) {
       {xTicks.map(t => (
         <text key={`x${t}`} x={pad.l + t / 100 * cw} y={H - pad.b + 16} textAnchor="middle" fontSize="9" fill="#94a3b8" fontWeight="600">{t}%</text>
       ))}
-
-      {/* Axis labels */}
       <text x={W / 2} y={H - 4} textAnchor="middle" fontSize="10" fill="#64748b" fontWeight="700">% Acumulado de Predios (mayor avalúo → menor)</text>
       <text x={12} y={H / 2} textAnchor="middle" fontSize="10" fill="#64748b" fontWeight="700" transform={`rotate(-90 12 ${H / 2})`}>% Acum. Recaudo</text>
-
-      {/* 80% rule line */}
       <line className="azr-pareto-rule" x1={pad.l} x2={W - pad.r} y1={pad.t + ch - 0.8 * ch} y2={pad.t + ch - 0.8 * ch} />
       <text className="azr-pareto-label-80" x={W - pad.r + 4} y={pad.t + ch - 0.8 * ch + 3}>80%</text>
-
       {cross80 && (
         <>
           <line className="azr-pareto-rule" x1={cross80.x} x2={cross80.x} y1={pad.t} y2={pad.t + ch} />
@@ -337,12 +316,8 @@ function ParetoChart({ data }) {
           </text>
         </>
       )}
-
-      {/* Area + line */}
       <path d={areaPath} fill={PARETO_COLOR} className="azr-pareto-area" />
       <path d={linePath} stroke={PARETO_COLOR} className="azr-pareto-line" />
-
-      {/* Dots */}
       {pts.map((p, i) => (
         <circle key={i} cx={p.x} cy={p.y} r={3.5} fill="#fff" stroke={PARETO_COLOR} className="azr-pareto-dot" />
       ))}
@@ -361,16 +336,18 @@ function ImpactCard({ label, value, sub, color }) {
   );
 }
 
-/* ── Map section ── */
+/* ── Map section with OL Overlay popup ── */
 function MapSection() {
   const wrapRef = useRef(null);
   const mapRef = useRef(null);
+  const popupRef = useRef(null);
   const olMapRef = useRef(null);
-  const [mode, setMode] = useState('impuesto'); // 'impuesto' | 'avaluo' | 'incremento'
+  const overlayRef = useRef(null);
+  const [mode, setMode] = useState('impuesto');
   const [geojson, setGeojson] = useState(null);
   const [mapLoading, setMapLoading] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [popup, setPopup] = useState(null); // { x, y, props }
+  const [popupData, setPopupData] = useState(null);
 
   useEffect(() => {
     setMapLoading(true);
@@ -379,12 +356,17 @@ function MapSection() {
       .catch(e => { console.error(e); setMapLoading(false); });
   }, []);
 
-  // ── Fullscreen handling ──
+  const closePopup = useCallback(() => {
+    setPopupData(null);
+    overlayRef.current?.setPosition(undefined);
+  }, []);
+
+  // ── Fullscreen ──
   const toggleFullscreen = () => {
     const el = wrapRef.current;
     if (!el) return;
     if (!document.fullscreenElement) {
-      (el.requestFullscreen?.() || el.webkitRequestFullscreen?.())?.catch(err => console.error(err));
+      (el.requestFullscreen?.() || el.webkitRequestFullscreen?.())?.catch(() => {});
     } else {
       document.exitFullscreen?.() || document.webkitExitFullscreen?.();
     }
@@ -394,7 +376,6 @@ function MapSection() {
     const onFsChange = () => {
       const fs = !!document.fullscreenElement;
       setIsFullscreen(fs);
-      // OL necesita recalcular su tamaño cuando el contenedor cambia
       setTimeout(() => olMapRef.current?.updateSize(), 50);
       setTimeout(() => olMapRef.current?.updateSize(), 350);
     };
@@ -406,12 +387,14 @@ function MapSection() {
     };
   }, []);
 
+  // ── Map init ──
   useEffect(() => {
     if (!geojson || !mapRef.current) return;
     let cancelled = false;
 
     (async () => {
       const ol = await import('ol');
+      const { default: Overlay } = await import('ol/Overlay');
       const { default: TileLayer } = await import('ol/layer/Tile');
       const { default: VectorLayer } = await import('ol/layer/Vector');
       const { default: VectorSource } = await import('ol/source/Vector');
@@ -426,15 +409,13 @@ function MapSection() {
         features: new GeoJSON().readFeatures(geojson, { featureProjection: 'EPSG:3857' }),
       });
 
-      // 14-stop diverging palette: green → yellow → orange → red → dark red
       const ZR_COLORS = [
         '#d1fae5','#a7f3d0','#6ee7b7','#34d399',
         '#fef9c3','#fde047','#facc15',
         '#fdba74','#fb923c','#f97316',
         '#f87171','#ef4444','#dc2626','#7f1d1d'
       ];
-
-      const NO_DATA_COLOR = '#cbd5e1'; // neutral gray for properties without data
+      const NO_DATA_COLOR = '#cbd5e1';
 
       const getColor = (feature) => {
         const p = feature.getProperties();
@@ -466,27 +447,38 @@ function MapSection() {
 
       if (olMapRef.current) { olMapRef.current.setTarget(null); olMapRef.current = null; }
 
+      // Create OL Overlay anchored to popup DOM node
+      const overlay = new Overlay({
+        element: popupRef.current,
+        autoPan: { animation: { duration: 200 }, margin: 60 },
+        positioning: 'bottom-center',
+        offset: [0, -12],
+      });
+      overlayRef.current = overlay;
+
       const map = new ol.Map({
         target: mapRef.current,
         layers: [new TileLayer({ source: new OSM() }), layer],
         view: new ol.View({ center: fromLonLat([-76.48, 3.00]), zoom: 11 }),
+        overlays: [overlay],
       });
 
       const ext = source.getExtent();
-      if (ext[0] !== Infinity) map.getView().fit(ext, { padding: [30, 30, 30, 30], maxZoom: 14 });
+      if (ext[0] !== Infinity) map.getView().fit(ext, { padding: [40, 40, 40, 40], maxZoom: 14 });
 
-      // Click handler for property popup
+      // Click → set overlay position at map coordinate
       map.on('click', (evt) => {
         const feature = map.forEachFeatureAtPixel(evt.pixel, f => f);
         if (feature) {
           const props = feature.getProperties();
-          setPopup({ x: evt.pixel[0], y: evt.pixel[1], props });
+          setPopupData(props);
+          overlay.setPosition(evt.coordinate);
         } else {
-          setPopup(null);
+          setPopupData(null);
+          overlay.setPosition(undefined);
         }
       });
 
-      // Pointer cursor on hover
       map.on('pointermove', (evt) => {
         const hit = map.hasFeatureAtPixel(evt.pixel);
         map.getTargetElement().style.cursor = hit ? 'pointer' : '';
@@ -495,8 +487,16 @@ function MapSection() {
       olMapRef.current = map;
     })();
 
-    return () => { cancelled = true; if (olMapRef.current) { olMapRef.current.setTarget(null); olMapRef.current = null; } };
+    return () => {
+      cancelled = true;
+      if (olMapRef.current) { olMapRef.current.setTarget(null); olMapRef.current = null; }
+    };
   }, [geojson, mode]);
+
+  const handleMode = useCallback((m) => {
+    setMode(m);
+    closePopup();
+  }, [closePopup]);
 
   const LEGEND_MAP = {
     impuesto: [
@@ -528,25 +528,27 @@ function MapSection() {
     ],
   };
 
-  const TITLES = { impuesto: 'Impuesto predial anual', avaluo: 'Avaluo catastral nuevo', incremento: '% Incremento avaluo' };
+  const TITLES = { impuesto: 'Impuesto predial anual', avaluo: 'Avalúo catastral nuevo', incremento: '% Incremento avalúo' };
 
   return (
     <div ref={wrapRef} className={`azr-map-wrap${isFullscreen ? ' azr-map-wrap--fs' : ''}`}>
-      <div ref={mapRef} style={{ width: '100%', height: '100%' }} />
+      <div ref={mapRef} className="azr-map-target" />
+
       {mapLoading && (
-        <div style={{ position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)', background:'rgba(255,255,255,.9)', padding:'12px 24px', borderRadius:8, fontWeight:600, fontSize:13, color:'#166534', zIndex:20 }}>
+        <div className="azr-map-loading">
+          <div className="azr-map-loading-spinner" />
           Cargando predios...
         </div>
       )}
+
+      {/* Controls */}
       <div className="azr-map-controls">
-        <button className={`azr-map-btn ${mode === 'impuesto' ? 'azr-map-btn--active' : ''}`} onClick={() => { setMode('impuesto'); setPopup(null); }}>Impuesto</button>
-        <button className={`azr-map-btn ${mode === 'avaluo' ? 'azr-map-btn--active' : ''}`} onClick={() => { setMode('avaluo'); setPopup(null); }}>Avaluo</button>
-        <button className={`azr-map-btn ${mode === 'incremento' ? 'azr-map-btn--active' : ''}`} onClick={() => { setMode('incremento'); setPopup(null); }}>% Cambio</button>
-        <button
-          className="azr-map-btn azr-map-btn--fs"
-          onClick={toggleFullscreen}
-          title={isFullscreen ? 'Salir de pantalla completa (Esc)' : 'Pantalla completa'}
-        >
+        {['impuesto','avaluo','incremento'].map(m => (
+          <button key={m} className={`azr-map-btn${mode === m ? ' azr-map-btn--active' : ''}`} onClick={() => handleMode(m)}>
+            {m === 'impuesto' ? 'Impuesto' : m === 'avaluo' ? 'Avalúo' : '% Cambio'}
+          </button>
+        ))}
+        <button className="azr-map-btn azr-map-btn--fs" onClick={toggleFullscreen} title={isFullscreen ? 'Salir (Esc)' : 'Pantalla completa'}>
           {isFullscreen ? (
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M8 3v4a1 1 0 0 1-1 1H3"/><path d="M21 8h-4a1 1 0 0 1-1-1V3"/><path d="M3 16h4a1 1 0 0 1 1 1v4"/><path d="M16 21v-4a1 1 0 0 1 1-1h4"/>
@@ -556,9 +558,10 @@ function MapSection() {
               <path d="M3 8V5a2 2 0 0 1 2-2h3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M21 16v3a2 2 0 0 1-2 2h-3"/>
             </svg>
           )}
-          <span style={{ marginLeft: 4 }}>{isFullscreen ? 'Salir' : 'Pantalla completa'}</span>
         </button>
       </div>
+
+      {/* Legend */}
       <div className="azr-legend">
         <div className="azr-legend-title">{TITLES[mode]}</div>
         {LEGEND_MAP[mode].map((s, i) => (
@@ -567,52 +570,50 @@ function MapSection() {
             <span className="azr-legend-text">{s.label}</span>
           </div>
         ))}
-      </div>
-      {/* Property popup */}
-      {popup && (
-        <div className="azr-popup" style={{ left: popup.x, top: popup.y }}>
-          <button className="azr-popup-close" onClick={() => setPopup(null)}>×</button>
-          <div className="azr-popup-title">{popup.props.codigo || '—'}</div>
-          <div className="azr-popup-row">
-            <span className="azr-popup-label">Propietario</span>
-            <span className="azr-popup-val">{popup.props.propietario || '—'}</span>
-          </div>
-          <div className="azr-popup-row">
-            <span className="azr-popup-label">Vereda</span>
-            <span className="azr-popup-val">{popup.props.vereda || '—'}</span>
-          </div>
-          <div className="azr-popup-row">
-            <span className="azr-popup-label">Área del predio</span>
-            <span className="azr-popup-val">{popup.props.area_predio != null ? fmtN(popup.props.area_predio) + ' m²' : '—'}</span>
-          </div>
-          <div className="azr-popup-row">
-            <span className="azr-popup-label">Área construida</span>
-            <span className="azr-popup-val">{popup.props.area_construida != null ? fmtN(popup.props.area_construida) + ' m²' : '—'}</span>
-          </div>
-          <hr className="azr-popup-hr" />
-          <div className="azr-popup-row">
-            <span className="azr-popup-label">Avalúo anterior</span>
-            <span className="azr-popup-val">{fmtM(popup.props.avaluo_antiguo)}</span>
-          </div>
-          <div className="azr-popup-row">
-            <span className="azr-popup-label">Avalúo nuevo</span>
-            <span className="azr-popup-val azr-popup-val--highlight">{fmtM(popup.props.avaluo_nuevo)}</span>
-          </div>
-          <div className="azr-popup-row">
-            <span className="azr-popup-label">Incremento</span>
-            <span className="azr-popup-val">{fmtPct(popup.props.incremento_pct)}</span>
-          </div>
-          <hr className="azr-popup-hr" />
-          <div className="azr-popup-row">
-            <span className="azr-popup-label">Impuesto (tarifa anterior)</span>
-            <span className="azr-popup-val">{fmtM(popup.props.impuesto_antiguo)}</span>
-          </div>
-          <div className="azr-popup-row">
-            <span className="azr-popup-label">Impuesto (tarifa nueva)</span>
-            <span className="azr-popup-val azr-popup-val--highlight">{fmtM(popup.props.impuesto_nuevo)}</span>
-          </div>
+        <div className="azr-legend-row" style={{ marginTop: 4 }}>
+          <div className="azr-legend-swatch" style={{ background: '#cbd5e1' }} />
+          <span className="azr-legend-text">Sin datos</span>
         </div>
-      )}
+      </div>
+
+      {/* OL Overlay popup — always in DOM, visibility controlled by OL */}
+      <div ref={popupRef} className="azr-popup-anchor">
+        {popupData && (
+          <div className="azr-popup">
+            <button className="azr-popup-close" onClick={closePopup}>×</button>
+            <div className="azr-popup-title">{popupData.codigo || 'Sin código'}</div>
+
+            <div className="azr-popup-group">
+              <PopupRow label="Propietario" value={popupData.propietario || '—'} />
+              <PopupRow label="Vereda" value={popupData.vereda || '—'} />
+              <PopupRow label="Área predio" value={popupData.area_predio != null ? fmtN(popupData.area_predio) + ' m²' : '—'} />
+              <PopupRow label="Área construida" value={popupData.area_construida != null ? fmtN(popupData.area_construida) + ' m²' : '—'} />
+            </div>
+
+            <div className="azr-popup-group">
+              <div className="azr-popup-group-label">Avalúo catastral</div>
+              <PopupRow label="Anterior" value={fmtM(popupData.avaluo_antiguo)} />
+              <PopupRow label="Nuevo" value={fmtM(popupData.avaluo_nuevo)} highlight />
+              <PopupRow label="Incremento" value={fmtPct(popupData.incremento_pct)} />
+            </div>
+
+            <div className="azr-popup-group">
+              <div className="azr-popup-group-label">Impuesto predial</div>
+              <PopupRow label="Tarifa anterior" value={fmtM(popupData.impuesto_antiguo)} />
+              <PopupRow label="Tarifa nueva" value={fmtM(popupData.impuesto_nuevo)} highlight />
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function PopupRow({ label, value, highlight }) {
+  return (
+    <div className="azr-popup-row">
+      <span className="azr-popup-label">{label}</span>
+      <span className={`azr-popup-val${highlight ? ' azr-popup-val--highlight' : ''}`}>{value}</span>
     </div>
   );
 }
@@ -642,7 +643,7 @@ function VeredaTable({ data }) {
       <tbody>
         {data.map((r, i) => (
           <tr key={r.vereda}>
-            <td style={{ color: 'var(--text-light)', fontSize: 11 }}>{i + 1}</td>
+            <td className="azr-table-num">{i + 1}</td>
             <td className="name">{r.vereda}</td>
             <td className="n">{fmtN(r.predios)}</td>
             <td className="r" style={{ fontWeight: 600 }}>{fmtM(r.avg_avaluo_antiguo)}</td>
