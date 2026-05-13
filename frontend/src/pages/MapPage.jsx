@@ -32,16 +32,18 @@ function MapPageInner() {
   const [searchOpen, setSearchOpen] = useState(false);
   const { activeLayers, setActiveLayers, setDelitosConfig, setAguasConfig, selectionResults, setSelectionResults, clearTools } = useContext(MapContext);
 
-  // Auto-activar capa de delitos al entrar en /mapa/gobierno
+  // Desactivar todas las capas al salir del geovisor
   useEffect(() => {
-    if (secretariaId === 'gobierno' && !activeLayers.has('delitos_barrios_2025')) {
+    return () => setActiveLayers(new Set());
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Resetear capas al cambiar de secretaría y activar las capas por defecto de cada una
+  useEffect(() => {
+    setActiveLayers(new Set());
+    if (secretariaId === 'gobierno') {
       setActiveLayers(prev => new Set([...prev, 'delitos_barrios_2025']));
       setDelitosConfig({ anio: '2025', tipoDelito: null, vizMode: 'heatmap' });
     }
-  }, [secretariaId]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Auto-activar capa de veredas al entrar en /mapa/aguas
-  useEffect(() => {
     if (secretariaId === 'aguas') {
       setActiveLayers(prev => new Set([...prev, 'aguas_veredas_acueductos']));
       setAguasConfig({ sistemaFiltro: null });
