@@ -1,6 +1,7 @@
 import { pool } from '../db/pool.js';
 
 const TBL = 'planeacion_zonarural2025_avaluos';
+const ANALYTICS_FILTER = 'AND (excluir_analisis IS NOT TRUE)';
 
 /* ── Tax-bracket helpers ─────────────────────────────────────────── */
 
@@ -71,7 +72,7 @@ export async function getStats() {
       MIN(avaluo_nuevo)  AS min_nuevo,   MAX(avaluo_nuevo)  AS max_nuevo,
       MIN(avaluo_antiguo) AS min_antiguo, MAX(avaluo_antiguo) AS max_antiguo
     FROM ${TBL}
-    WHERE avaluo_nuevo IS NOT NULL AND avaluo_antiguo IS NOT NULL
+    WHERE avaluo_nuevo IS NOT NULL AND avaluo_antiguo IS NOT NULL ${ANALYTICS_FILTER}
   `);
   return rows[0];
 }
@@ -89,7 +90,7 @@ export async function getBracketDistribution() {
       ROUND(SUM(avaluo_nuevo * (CASE ${tarifaSQL('avaluo_nuevo', NEW_BRACKETS)} END) / 1000)::numeric, 0)
                                                               AS recaudo_estimado
     FROM ${TBL}
-    WHERE avaluo_nuevo IS NOT NULL
+    WHERE avaluo_nuevo IS NOT NULL ${ANALYTICS_FILTER}
     GROUP BY 1, 2
     ORDER BY tarifa
   `);
@@ -104,7 +105,7 @@ export async function getBracketDistribution() {
       ROUND(SUM(avaluo_antiguo * (CASE ${tarifaSQL('avaluo_antiguo', OLD_BRACKETS)} END) / 1000)::numeric, 0)
                                                               AS recaudo_estimado
     FROM ${TBL}
-    WHERE avaluo_antiguo IS NOT NULL
+    WHERE avaluo_antiguo IS NOT NULL ${ANALYTICS_FILTER}
     GROUP BY 1, 2
     ORDER BY tarifa
   `);
@@ -125,7 +126,7 @@ export async function getParetoData() {
         ROUND((avaluo_nuevo * (CASE ${tarifaSQL('avaluo_nuevo', NEW_BRACKETS)} END) / 1000)::numeric, 0)
           AS impuesto
       FROM ${TBL}
-      WHERE avaluo_nuevo IS NOT NULL
+      WHERE avaluo_nuevo IS NOT NULL ${ANALYTICS_FILTER}
     ),
     ranked AS (
       SELECT *,
@@ -185,7 +186,7 @@ export async function getVeredaImpact() {
       SUM(avaluo_nuevo)                        AS suma_avaluo_nuevo,
       SUM(avaluo_antiguo)                      AS suma_avaluo_antiguo
     FROM ${TBL}
-    WHERE avaluo_nuevo IS NOT NULL AND avaluo_antiguo IS NOT NULL
+    WHERE avaluo_nuevo IS NOT NULL AND avaluo_antiguo IS NOT NULL ${ANALYTICS_FILTER}
     GROUP BY nombre
     ORDER BY avg_pct_incremento DESC NULLS LAST
   `);
@@ -219,7 +220,7 @@ export async function getGeoJSON({ mode = 'incremento_pct' } = {}) {
         )
       ) AS feature
       FROM ${TBL}
-      WHERE avaluo_nuevo IS NOT NULL AND avaluo_antiguo IS NOT NULL AND nombre IS NOT NULL
+      WHERE avaluo_nuevo IS NOT NULL AND avaluo_antiguo IS NOT NULL AND nombre IS NOT NULL ${ANALYTICS_FILTER}
       GROUP BY nombre
     ) f
   `);
