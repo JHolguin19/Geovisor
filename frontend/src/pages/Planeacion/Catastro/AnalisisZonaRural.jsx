@@ -426,20 +426,28 @@ function MapSection() {
         features: new GeoJSON().readFeatures(geojson, { featureProjection: 'EPSG:3857' }),
       });
 
-      const ZR_COLORS = ['#dcfce7','#bbf7d0','#86efac','#fef08a','#fde047','#fdba74','#fb923c','#f87171','#ef4444','#dc2626'];
+      // 14-stop diverging palette: green → yellow → orange → red → dark red
+      const ZR_COLORS = [
+        '#d1fae5','#a7f3d0','#6ee7b7','#34d399',
+        '#fef9c3','#fde047','#facc15',
+        '#fdba74','#fb923c','#f97316',
+        '#f87171','#ef4444','#dc2626','#7f1d1d'
+      ];
 
       const getColor = (feature) => {
         const p = feature.getProperties();
         let val, steps;
         if (mode === 'impuesto') {
           val = Number(p.impuesto_nuevo || 0);
-          steps = [50000,100000,200000,400000,700000,1200000,2500000,5000000,10000000];
+          // 13 breaks → 14 classes: fine-grained at low end, logarithmic at high end
+          steps = [20000,50000,100000,200000,400000,800000,1500000,3000000,5000000,8000000,15000000,30000000,60000000];
         } else if (mode === 'avaluo') {
           val = Number(p.avaluo_nuevo || 0);
-          steps = [5e6,10e6,20e6,40e6,60e6,100e6,250e6,500e6,1e9];
+          // Aligned with tax bracket boundaries + intermediate splits
+          steps = [3e6,7e6,10e6,20e6,40e6,60e6,100e6,250e6,500e6,1e9,2e9,5e9,10e9];
         } else {
           val = Number(p.incremento_pct || 0);
-          steps = [0,20,50,100,200,400,700,1000,2000];
+          steps = [-10,0,10,30,60,100,200,400,700,1200,2000,4000,8000];
         }
         let idx = steps.findIndex(s => val <= s);
         if (idx === -1) idx = ZR_COLORS.length - 1;
@@ -490,25 +498,31 @@ function MapSection() {
 
   const LEGEND_MAP = {
     impuesto: [
-      { color: '#dcfce7', label: '< $50K' },{ color: '#bbf7d0', label: '$50K–100K' },
-      { color: '#86efac', label: '$100K–200K' },{ color: '#fef08a', label: '$200K–400K' },
-      { color: '#fde047', label: '$400K–700K' },{ color: '#fdba74', label: '$700K–1.2M' },
-      { color: '#fb923c', label: '$1.2M–2.5M' },{ color: '#f87171', label: '$2.5M–5M' },
-      { color: '#ef4444', label: '$5M–10M' },{ color: '#dc2626', label: '> $10M' },
+      { color: '#d1fae5', label: '< $20K' },     { color: '#a7f3d0', label: '$20K–50K' },
+      { color: '#6ee7b7', label: '$50K–100K' },   { color: '#34d399', label: '$100K–200K' },
+      { color: '#fef9c3', label: '$200K–400K' },   { color: '#fde047', label: '$400K–800K' },
+      { color: '#facc15', label: '$800K–1.5M' },   { color: '#fdba74', label: '$1.5M–3M' },
+      { color: '#fb923c', label: '$3M–5M' },       { color: '#f97316', label: '$5M–8M' },
+      { color: '#f87171', label: '$8M–15M' },      { color: '#ef4444', label: '$15M–30M' },
+      { color: '#dc2626', label: '$30M–60M' },     { color: '#7f1d1d', label: '> $60M' },
     ],
     avaluo: [
-      { color: '#dcfce7', label: '< $5M' },{ color: '#bbf7d0', label: '$5M–10M' },
-      { color: '#86efac', label: '$10M–20M' },{ color: '#fef08a', label: '$20M–40M' },
-      { color: '#fde047', label: '$40M–60M' },{ color: '#fdba74', label: '$60M–100M' },
-      { color: '#fb923c', label: '$100M–250M' },{ color: '#f87171', label: '$250M–500M' },
-      { color: '#ef4444', label: '$500M–1B' },{ color: '#dc2626', label: '> $1B' },
+      { color: '#d1fae5', label: '< $3M' },       { color: '#a7f3d0', label: '$3M–7M' },
+      { color: '#6ee7b7', label: '$7M–10M' },     { color: '#34d399', label: '$10M–20M' },
+      { color: '#fef9c3', label: '$20M–40M' },     { color: '#fde047', label: '$40M–60M' },
+      { color: '#facc15', label: '$60M–100M' },    { color: '#fdba74', label: '$100M–250M' },
+      { color: '#fb923c', label: '$250M–500M' },   { color: '#f97316', label: '$500M–1B' },
+      { color: '#f87171', label: '$1B–2B' },       { color: '#ef4444', label: '$2B–5B' },
+      { color: '#dc2626', label: '$5B–10B' },      { color: '#7f1d1d', label: '> $10B' },
     ],
     incremento: [
-      { color: '#dcfce7', label: '0% o menos' },{ color: '#bbf7d0', label: '0–20%' },
-      { color: '#86efac', label: '20–50%' },{ color: '#fef08a', label: '50–100%' },
-      { color: '#fde047', label: '100–200%' },{ color: '#fdba74', label: '200–400%' },
-      { color: '#fb923c', label: '400–700%' },{ color: '#f87171', label: '700–1000%' },
-      { color: '#ef4444', label: '1000–2000%' },{ color: '#dc2626', label: '> 2000%' },
+      { color: '#d1fae5', label: 'Negativo' },     { color: '#a7f3d0', label: '0%' },
+      { color: '#6ee7b7', label: '0–10%' },        { color: '#34d399', label: '10–30%' },
+      { color: '#fef9c3', label: '30–60%' },        { color: '#fde047', label: '60–100%' },
+      { color: '#facc15', label: '100–200%' },      { color: '#fdba74', label: '200–400%' },
+      { color: '#fb923c', label: '400–700%' },      { color: '#f97316', label: '700–1200%' },
+      { color: '#f87171', label: '1200–2000%' },    { color: '#ef4444', label: '2000–4000%' },
+      { color: '#dc2626', label: '4000–8000%' },    { color: '#7f1d1d', label: '> 8000%' },
     ],
   };
 
@@ -585,6 +599,15 @@ function MapSection() {
           <div className="azr-popup-row">
             <span className="azr-popup-label">Incremento</span>
             <span className="azr-popup-val">{fmtPct(popup.props.incremento_pct)}</span>
+          </div>
+          <hr className="azr-popup-hr" />
+          <div className="azr-popup-row">
+            <span className="azr-popup-label">Impuesto (tarifa anterior)</span>
+            <span className="azr-popup-val">{fmtM(popup.props.impuesto_antiguo)}</span>
+          </div>
+          <div className="azr-popup-row">
+            <span className="azr-popup-label">Impuesto (tarifa nueva)</span>
+            <span className="azr-popup-val azr-popup-val--highlight">{fmtM(popup.props.impuesto_nuevo)}</span>
           </div>
         </div>
       )}
