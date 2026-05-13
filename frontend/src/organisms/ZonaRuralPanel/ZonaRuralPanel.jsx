@@ -76,6 +76,7 @@ export default function ZonaRuralPanel() {
   const [veredas, setVeredas] = useState([]);
   const [stats, setStats] = useState(null);
   const [search, setSearch] = useState('');
+  const [minPredios, setMinPredios] = useState('');
 
   useEffect(() => {
     if (!isActive) return;
@@ -93,9 +94,12 @@ export default function ZonaRuralPanel() {
 
   const legend = LEGENDS[colorBy] || IMPUESTO_LEGEND;
 
-  const filteredVeredas = search
-    ? veredas.filter(v => v.vereda.toLowerCase().includes(search.toLowerCase()))
-    : veredas;
+  const minN = minPredios !== '' ? Number(minPredios) : 0;
+  const filteredVeredas = veredas.filter(v => {
+    const matchSearch = !search || v.vereda.toLowerCase().includes(search.toLowerCase());
+    const matchMin    = minN === 0 || Number(v.predios_unicos) >= minN;
+    return matchSearch && matchMin;
+  });
 
   return (
     <div className="zrp">
@@ -151,7 +155,21 @@ export default function ZonaRuralPanel() {
 
         {/* Vereda filter */}
         <div className="zrp__field">
-          <label className="zrp__label">Filtrar por vereda</label>
+          <div className="zrp__filter-row">
+            <label className="zrp__label">Filtrar por vereda</label>
+            <div className="zrp__minpredios">
+              <span className="zrp__minpredios-label">Min. predios</span>
+              <input
+                type="number"
+                min="0"
+                step="10"
+                placeholder="0"
+                value={minPredios}
+                onChange={e => setMinPredios(e.target.value)}
+                className="zrp__minpredios-input"
+              />
+            </div>
+          </div>
           <div className="zrp__search">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2.5">
               <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
@@ -168,9 +186,14 @@ export default function ZonaRuralPanel() {
               className={`zrp__vereda-item ${!vereda ? 'zrp__vereda-item--active' : ''}`}
               onClick={() => update({ vereda: null })}
             >
-              <span>Todas las veredas</span>
+              <span>
+                Todas las veredas
+                {(search || minN > 0) && (
+                  <span className="zrp__filter-hint"> ({filteredVeredas.length} de {veredas.length})</span>
+                )}
+              </span>
               <span className="zrp__vereda-badge">
-                {veredas.reduce((a, v) => a + Number(v.predios_unicos), 0)}
+                {filteredVeredas.reduce((a, v) => a + Number(v.predios_unicos), 0)}
               </span>
             </div>
             {filteredVeredas.map(v => (

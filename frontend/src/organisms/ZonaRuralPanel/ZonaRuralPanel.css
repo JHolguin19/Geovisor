@@ -243,3 +243,48 @@
 .zrp__search input::placeholder {
   color: #9ca3af;
 }
+
+/* ── Filter row (label + min predios) ── */
+.zrp__filter-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.zrp__minpredios {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.zrp__minpredios-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: #9ca3af;
+  white-space: nowrap;
+}
+
+.zrp__minpredios-input {
+  width: 52px;
+  padding: 3px 6px;
+  border: 1px solid #d1d5db;
+  border-radius: 5px;
+  font-size: 12px;
+  font-family: inherit;
+  color: #1f2937;
+  text-align: right;
+  outline: none;
+}
+
+.zrp__minpredios-input:focus {
+  border-color: #16a34a;
+}
+
+/* ── Filter hint ── */
+.zrp__filter-hint {
+  font-size: 10px;
+  font-weight: 400;
+  color: #9ca3af;
+}
