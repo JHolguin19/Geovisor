@@ -176,8 +176,7 @@ export async function getVeredaImpact() {
       COUNT(*)                          AS predios,
       ROUND(AVG(avaluo_nuevo)::numeric, 0)    AS avg_avaluo_nuevo,
       ROUND(AVG(avaluo_antiguo)::numeric, 0)  AS avg_avaluo_antiguo,
-      ROUND(AVG(CASE WHEN avaluo_antiguo > 0
-        THEN ((avaluo_nuevo::float / avaluo_antiguo) - 1) * 100 END)::numeric, 1)
+      ROUND(((AVG(avaluo_nuevo::numeric) / NULLIF(AVG(avaluo_antiguo::numeric), 0)) - 1) * 100, 1)
                                                AS avg_pct_incremento,
       ROUND(SUM(avaluo_nuevo * (CASE ${tarifaSQL('avaluo_nuevo', NEW_BRACKETS)} END) / 1000)::numeric, 0)
                                                AS recaudo_nuevo,
