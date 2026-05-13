@@ -50,6 +50,7 @@
 /* Dentro del contenedor flex, los paneles pierden su position:absolute */
 .map-context-panels > .dp,
 .map-context-panels > .zrp,
+.map-context-panels > .ap,
 .map-context-panels > .sisben-panel,
 .map-context-panels > .suba-panel,
 .map-context-panels > .alum-panel,
