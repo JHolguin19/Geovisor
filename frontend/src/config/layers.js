@@ -616,6 +616,7 @@ export const LAYERS_BY_SECRETARIA = {
         geometryType: 'polygon',
         color: '#0277BD',
         group: 'aguas',
+        zIndex: 11,
         description: 'Cobertura de acueducto rural por vereda. Identifica veredas sin sistema de acueducto.',
         popupFields: [
           { field: 'VEREDA',           label: 'Vereda' },
@@ -631,6 +632,7 @@ export const LAYERS_BY_SECRETARIA = {
         queryable: true,
         geometryType: 'line',
         group: 'aguas',
+        zIndex: 14,
         description: 'Red de conducción de agua — tramos de tuberías y líneas principales del acueducto rural.',
         style: { strokeColor: '#0288D1', strokeWidth: 2.5 },
         popupFields: [
@@ -647,6 +649,7 @@ export const LAYERS_BY_SECRETARIA = {
         queryable: true,
         geometryType: 'point',
         group: 'aguas',
+        zIndex: 15,
         description: 'Bocatomas, tanques de almacenamiento, desarenadores y plantas de tratamiento.',
         style: { fillColor: '#01579B', strokeColor: '#E1F5FE', radius: 10 },
         popupFields: [
