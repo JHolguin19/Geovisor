@@ -197,7 +197,8 @@ export async function getVeredaImpact() {
 }
 
 /**
- * Simplified GeoJSON for map (aggregated by vereda for performance).
+ * Aggregated GeoJSON by vereda (overview mode — 102 features, fast).
+ * Property names match property-level GeoJSON so frontend styles work unchanged.
  */
 export async function getGeoJSON({ mode = 'incremento_pct' } = {}) {
   const { rows } = await pool.query(`
@@ -208,18 +209,16 @@ export async function getGeoJSON({ mode = 'incremento_pct' } = {}) {
     FROM (
       SELECT jsonb_build_object(
         'type', 'Feature',
-        'geometry', ST_AsGeoJSON(ST_Union(geom), 5)::jsonb,
+        'geometry', ST_AsGeoJSON(ST_Union(ST_Simplify(geom, 0.0001)), 5)::jsonb,
         'properties', jsonb_build_object(
-          'vereda',          COALESCE(nombre, '(Sin nombre)'),
-          'predios',         COUNT(*),
-          'avg_avaluo_nuevo',    ROUND(AVG(avaluo_nuevo)::numeric, 0),
-          'avg_avaluo_antiguo',  ROUND(AVG(avaluo_antiguo)::numeric, 0),
-          'avg_incremento_pct',  ROUND(AVG(CASE WHEN avaluo_antiguo > 0
+          'vereda',         COALESCE(nombre, '(Sin nombre)'),
+          'predios',        COUNT(*),
+          'avaluo_nuevo',   ROUND(AVG(avaluo_nuevo)::numeric, 0),
+          'avaluo_antiguo', ROUND(AVG(avaluo_antiguo)::numeric, 0),
+          'incremento_pct', ROUND(AVG(CASE WHEN avaluo_antiguo > 0
             THEN ((avaluo_nuevo::float / avaluo_antiguo) - 1) * 100 END)::numeric, 1),
-          'suma_avaluo_nuevo',   SUM(avaluo_nuevo),
-          'suma_avaluo_antiguo', SUM(avaluo_antiguo),
-          'recaudo_nuevo', ROUND(SUM(avaluo_nuevo * (CASE ${tarifaSQL('avaluo_nuevo', NEW_BRACKETS)} END) / 1000)::numeric, 0),
-          'recaudo_antiguo', ROUND(SUM(avaluo_antiguo * (CASE ${tarifaSQL('avaluo_antiguo', OLD_BRACKETS)} END) / 1000)::numeric, 0)
+          'impuesto_nuevo', ROUND(AVG(avaluo_nuevo * (CASE ${tarifaSQL('avaluo_nuevo', NEW_BRACKETS)} END) / 1000)::numeric, 0),
+          'recaudo_nuevo',  ROUND(SUM(avaluo_nuevo * (CASE ${tarifaSQL('avaluo_nuevo', NEW_BRACKETS)} END) / 1000)::numeric, 0)
         )
       ) AS feature
       FROM ${TBL}

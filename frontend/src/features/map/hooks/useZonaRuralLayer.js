@@ -59,13 +59,15 @@ export function useZonaRuralLayer(mapRef) {
 
     layerRef.current.setStyle(STYLE_MAP[colorBy] || makeZonaRuralImpuestoStyle);
 
-    const params = new URLSearchParams();
-    if (vereda) params.set('vereda', vereda);
-    if (colorBy) params.set('colorBy', colorBy);
+    // Sin vereda seleccionada → vista agregada (102 polígonos, rápida).
+    // Con vereda seleccionada → vista de predios individuales de esa vereda.
+    const url = vereda
+      ? `/api/zonarural-avaluos/geojson/predios?vereda=${encodeURIComponent(vereda)}&colorBy=${colorBy}`
+      : `/api/zonarural-avaluos/geojson?mode=${colorBy}`;
 
     const controller = new AbortController();
 
-    fetch(`/api/zonarural-avaluos/geojson/predios?${params.toString()}`, {
+    fetch(url, {
       headers: getAuthHeaders(),
       signal: controller.signal,
     })
