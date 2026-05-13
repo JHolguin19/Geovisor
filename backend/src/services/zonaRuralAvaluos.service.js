@@ -253,7 +253,7 @@ export async function getPropertyGeoJSON({ vereda = null, colorBy = 'impuesto' }
           'avaluo_antiguo',  avaluo_antiguo,
           'area_predio',     area_predio,
           'incremento_pct',  CASE WHEN avaluo_antiguo > 0
-            THEN ROUND(((avaluo_nuevo::float / avaluo_antiguo) - 1) * 100, 1)
+            THEN ROUND((((avaluo_nuevo::float / avaluo_antiguo) - 1) * 100)::numeric, 1)
             ELSE 0 END,
           'impuesto_nuevo',  ROUND((avaluo_nuevo * (CASE ${tarifaSQL('avaluo_nuevo', NEW_BRACKETS)} END) / 1000)::numeric, 0),
           'impuesto_antiguo', ROUND((avaluo_antiguo * (CASE ${tarifaSQL('avaluo_antiguo', OLD_BRACKETS)} END) / 1000)::numeric, 0),

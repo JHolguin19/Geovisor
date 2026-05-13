@@ -363,17 +363,46 @@ function ImpactCard({ label, value, sub, color }) {
 
 /* ── Map section ── */
 function MapSection() {
+  const wrapRef = useRef(null);
   const mapRef = useRef(null);
   const olMapRef = useRef(null);
   const [mode, setMode] = useState('impuesto'); // 'impuesto' | 'avaluo' | 'incremento'
   const [geojson, setGeojson] = useState(null);
   const [mapLoading, setMapLoading] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
     setMapLoading(true);
     zonaRuralAvaluosService.getPropertyGeoJSON(null, mode)
       .then(data => { setGeojson(data); setMapLoading(false); })
       .catch(e => { console.error(e); setMapLoading(false); });
+  }, []);
+
+  // ── Fullscreen handling ──
+  const toggleFullscreen = () => {
+    const el = wrapRef.current;
+    if (!el) return;
+    if (!document.fullscreenElement) {
+      (el.requestFullscreen?.() || el.webkitRequestFullscreen?.())?.catch(err => console.error(err));
+    } else {
+      document.exitFullscreen?.() || document.webkitExitFullscreen?.();
+    }
+  };
+
+  useEffect(() => {
+    const onFsChange = () => {
+      const fs = !!document.fullscreenElement;
+      setIsFullscreen(fs);
+      // OL necesita recalcular su tamaño cuando el contenedor cambia
+      setTimeout(() => olMapRef.current?.updateSize(), 50);
+      setTimeout(() => olMapRef.current?.updateSize(), 350);
+    };
+    document.addEventListener('fullscreenchange', onFsChange);
+    document.addEventListener('webkitfullscreenchange', onFsChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', onFsChange);
+      document.removeEventListener('webkitfullscreenchange', onFsChange);
+    };
   }, []);
 
   useEffect(() => {
@@ -468,7 +497,7 @@ function MapSection() {
   const TITLES = { impuesto: 'Impuesto predial anual', avaluo: 'Avaluo catastral nuevo', incremento: '% Incremento avaluo' };
 
   return (
-    <div className="azr-map-wrap">
+    <div ref={wrapRef} className={`azr-map-wrap${isFullscreen ? ' azr-map-wrap--fs' : ''}`}>
       <div ref={mapRef} style={{ width: '100%', height: '100%' }} />
       {mapLoading && (
         <div style={{ position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)', background:'rgba(255,255,255,.9)', padding:'12px 24px', borderRadius:8, fontWeight:600, fontSize:13, color:'#166534', zIndex:20 }}>
@@ -479,6 +508,22 @@ function MapSection() {
         <button className={`azr-map-btn ${mode === 'impuesto' ? 'azr-map-btn--active' : ''}`} onClick={() => setMode('impuesto')}>Impuesto</button>
         <button className={`azr-map-btn ${mode === 'avaluo' ? 'azr-map-btn--active' : ''}`} onClick={() => setMode('avaluo')}>Avaluo</button>
         <button className={`azr-map-btn ${mode === 'incremento' ? 'azr-map-btn--active' : ''}`} onClick={() => setMode('incremento')}>% Cambio</button>
+        <button
+          className="azr-map-btn azr-map-btn--fs"
+          onClick={toggleFullscreen}
+          title={isFullscreen ? 'Salir de pantalla completa (Esc)' : 'Pantalla completa'}
+        >
+          {isFullscreen ? (
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M8 3v4a1 1 0 0 1-1 1H3"/><path d="M21 8h-4a1 1 0 0 1-1-1V3"/><path d="M3 16h4a1 1 0 0 1 1 1v4"/><path d="M16 21v-4a1 1 0 0 1 1-1h4"/>
+            </svg>
+          ) : (
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 8V5a2 2 0 0 1 2-2h3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M21 16v3a2 2 0 0 1-2 2h-3"/>
+            </svg>
+          )}
+          <span style={{ marginLeft: 4 }}>{isFullscreen ? 'Salir' : 'Pantalla completa'}</span>
+        </button>
       </div>
       <div className="azr-legend">
         <div className="azr-legend-title">{TITLES[mode]}</div>
