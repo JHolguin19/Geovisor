@@ -150,6 +150,19 @@ const LAYER_GROUPS = [
   },
 
   {
+    id: 'aguas',
+    label: 'Dirección de Aguas',
+    accent: '#0277BD',
+    allowedSecretarias: ['sig', 'aguas', 'planeacion'],
+    layers: [
+      { id: 'aguas_veredas_acueductos',    label: 'Veredas — Sistemas de Acueducto', dot: '#0288D1' },
+      { id: 'aguas_red_acueducto',         label: 'Red de Acueducto',                dot: '#0288D1' },
+      { id: 'aguas_estructura_acueducto',  label: 'Estructuras de Acueducto',        dot: '#01579B' },
+    ],
+    subcategories: []
+  },
+
+  {
     id: 'infraestructura',
     label: 'Secretaría de Infraestructura',
     accent: '#F59E0B',
