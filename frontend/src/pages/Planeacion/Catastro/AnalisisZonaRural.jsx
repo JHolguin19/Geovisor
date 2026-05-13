@@ -370,6 +370,7 @@ function MapSection() {
   const [geojson, setGeojson] = useState(null);
   const [mapLoading, setMapLoading] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [popup, setPopup] = useState(null); // { x, y, props }
 
   useEffect(() => {
     setMapLoading(true);
@@ -464,6 +465,23 @@ function MapSection() {
       const ext = source.getExtent();
       if (ext[0] !== Infinity) map.getView().fit(ext, { padding: [30, 30, 30, 30], maxZoom: 14 });
 
+      // Click handler for property popup
+      map.on('click', (evt) => {
+        const feature = map.forEachFeatureAtPixel(evt.pixel, f => f);
+        if (feature) {
+          const props = feature.getProperties();
+          setPopup({ x: evt.pixel[0], y: evt.pixel[1], props });
+        } else {
+          setPopup(null);
+        }
+      });
+
+      // Pointer cursor on hover
+      map.on('pointermove', (evt) => {
+        const hit = map.hasFeatureAtPixel(evt.pixel);
+        map.getTargetElement().style.cursor = hit ? 'pointer' : '';
+      });
+
       olMapRef.current = map;
     })();
 
@@ -505,9 +523,9 @@ function MapSection() {
         </div>
       )}
       <div className="azr-map-controls">
-        <button className={`azr-map-btn ${mode === 'impuesto' ? 'azr-map-btn--active' : ''}`} onClick={() => setMode('impuesto')}>Impuesto</button>
-        <button className={`azr-map-btn ${mode === 'avaluo' ? 'azr-map-btn--active' : ''}`} onClick={() => setMode('avaluo')}>Avaluo</button>
-        <button className={`azr-map-btn ${mode === 'incremento' ? 'azr-map-btn--active' : ''}`} onClick={() => setMode('incremento')}>% Cambio</button>
+        <button className={`azr-map-btn ${mode === 'impuesto' ? 'azr-map-btn--active' : ''}`} onClick={() => { setMode('impuesto'); setPopup(null); }}>Impuesto</button>
+        <button className={`azr-map-btn ${mode === 'avaluo' ? 'azr-map-btn--active' : ''}`} onClick={() => { setMode('avaluo'); setPopup(null); }}>Avaluo</button>
+        <button className={`azr-map-btn ${mode === 'incremento' ? 'azr-map-btn--active' : ''}`} onClick={() => { setMode('incremento'); setPopup(null); }}>% Cambio</button>
         <button
           className="azr-map-btn azr-map-btn--fs"
           onClick={toggleFullscreen}
@@ -534,6 +552,42 @@ function MapSection() {
           </div>
         ))}
       </div>
+      {/* Property popup */}
+      {popup && (
+        <div className="azr-popup" style={{ left: popup.x, top: popup.y }}>
+          <button className="azr-popup-close" onClick={() => setPopup(null)}>×</button>
+          <div className="azr-popup-title">{popup.props.codigo || '—'}</div>
+          <div className="azr-popup-row">
+            <span className="azr-popup-label">Propietario</span>
+            <span className="azr-popup-val">{popup.props.propietario || '—'}</span>
+          </div>
+          <div className="azr-popup-row">
+            <span className="azr-popup-label">Vereda</span>
+            <span className="azr-popup-val">{popup.props.vereda || '—'}</span>
+          </div>
+          <div className="azr-popup-row">
+            <span className="azr-popup-label">Área del predio</span>
+            <span className="azr-popup-val">{popup.props.area_predio != null ? fmtN(popup.props.area_predio) + ' m²' : '—'}</span>
+          </div>
+          <div className="azr-popup-row">
+            <span className="azr-popup-label">Área construida</span>
+            <span className="azr-popup-val">{popup.props.area_construida != null ? fmtN(popup.props.area_construida) + ' m²' : '—'}</span>
+          </div>
+          <hr className="azr-popup-hr" />
+          <div className="azr-popup-row">
+            <span className="azr-popup-label">Avalúo anterior</span>
+            <span className="azr-popup-val">{fmtM(popup.props.avaluo_antiguo)}</span>
+          </div>
+          <div className="azr-popup-row">
+            <span className="azr-popup-label">Avalúo nuevo</span>
+            <span className="azr-popup-val azr-popup-val--highlight">{fmtM(popup.props.avaluo_nuevo)}</span>
+          </div>
+          <div className="azr-popup-row">
+            <span className="azr-popup-label">Incremento</span>
+            <span className="azr-popup-val">{fmtPct(popup.props.incremento_pct)}</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
