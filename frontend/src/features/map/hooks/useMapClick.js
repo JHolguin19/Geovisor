@@ -97,6 +97,20 @@ export function useMapClick(mapRef, overlayRef, popupContentRef) {
       }
     }
 
+    // 6b. Capa dinámica aguas_veredas_panel (controlada por AguasPanel)
+    if (!contenido) {
+      if (activeLayers.has('aguas_veredas_acueductos')) {
+        const panelEntry = QUERY_PRIORITY.find(e => e.id === 'aguas_veredas_panel');
+        if (panelEntry) {
+          map.forEachFeatureAtPixel(event.pixel, (feature, layer) => {
+            if (contenido) return;
+            if (layer?.get('name') !== 'aguas_veredas_panel') return;
+            contenido = panelEntry.props(feature.getProperties());
+          }, { hitTolerance: 5 });
+        }
+      }
+    }
+
     // 7. Prioridades vectoriales
     if (!contenido) {
       for (const { id, props } of QUERY_PRIORITY) {

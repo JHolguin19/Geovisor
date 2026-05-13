@@ -95,6 +95,31 @@ export const QUERY_PRIORITY = [
     <strong>Delitos sexuales:</strong> ${p.delitos_sexuales ?? 0}` },
   { id: 'barrios_urbanos_gobierno', props: (p) =>
     `<strong>🏘️ Barrio:</strong> ${p.nombre || '—'}` },
+  // 6c. Aguas y Saneamiento Básico
+  { id: 'aguas_veredas_panel', props: (p) => {
+    const sistema = p.SISTEMA_ACUEDUCTO || p['SISTEMA_ACUEDUCTO'];
+    const sinCobertura = !sistema || sistema.trim().toUpperCase() === 'SIN COBERTURA';
+    return `<strong>💧 ${p.VEREDA || p['VEREDA'] || '—'}</strong><br>
+      <strong>Sistema:</strong> ${sistema || '— Sin cobertura —'}<br>
+      ${sinCobertura ? '<span style="color:#DC2626;font-weight:600">⚠️ Sin sistema de acueducto</span>' : `<strong>Nombre:</strong> ${p.NOMBRE_ACUEDUCTO || p['NOMBRE_ACUEDUCTO'] || '—'}`}`;
+  }},
+  { id: 'aguas_veredas_acueductos', props: (p) => {
+    const sistema = p.SISTEMA_ACUEDUCTO || p['SISTEMA_ACUEDUCTO'];
+    const sinCobertura = !sistema || sistema.trim().toUpperCase() === 'SIN COBERTURA';
+    return `<strong>💧 ${p.VEREDA || p['VEREDA'] || '—'}</strong><br>
+      <strong>Sistema:</strong> ${sistema || '— Sin cobertura —'}<br>
+      ${sinCobertura ? '<span style="color:#DC2626;font-weight:600">⚠️ Sin sistema de acueducto</span>' : `<strong>Nombre:</strong> ${p.NOMBRE_ACUEDUCTO || p['NOMBRE_ACUEDUCTO'] || '—'}`}`;
+  }},
+  { id: 'aguas_red_acueducto', props: (p) =>
+    `<strong>🔵 Red de Acueducto</strong><br>
+    <strong>Nombre:</strong> ${p.Name || p.name || '—'}<br>
+    <strong>Descripción:</strong> ${p.descriptio || '—'}<br>
+    <strong>Longitud:</strong> ${p.Longitud != null ? Number(p.Longitud).toFixed(1) + ' m' : '—'}` },
+  { id: 'aguas_estructura_acueducto', props: (p) =>
+    `<strong>🏗️ Estructura de Acueducto</strong><br>
+    <strong>Nombre:</strong> ${p.Name || p.name || '—'}<br>
+    <strong>Descripción:</strong> ${p.descriptio || '—'}<br>
+    <strong>Tipo:</strong> ${p.layer || '—'}` },
   // 7. UBAs
   { id: 'uba1', props: (p) => `<strong>🏘️ Barrio:</strong> ${p.nombre || ''}<br><strong>🏢 UBA:</strong> 1` },
   { id: 'uba2', props: (p) => `<strong>🏘️ Barrio:</strong> ${p.nombre || ''}<br><strong>🏢 UBA:</strong> 2` },

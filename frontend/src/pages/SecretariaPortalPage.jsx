@@ -21,6 +21,24 @@ const MODULOS_GOBIERNO = [
   },
 ];
 
+const MODULOS_AGUAS = [
+  {
+    id: 'geovisor_aguas',
+    nombre: 'Geovisor de Acueductos',
+    descripcion: 'Visualiza la cobertura de acueducto por vereda, red de conducción y estructuras hidráulicas. Filtra por sistema de acueducto.',
+    icono: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 2C6 2 3 7.5 3 12a9 9 0 0018 0c0-4.5-3-10-9-10z"/>
+        <path d="M12 2v20"/>
+        <path d="M7.5 8.5c1.5 2 3 4 4.5 4s3-2 4.5-4"/>
+      </svg>
+    ),
+    activo: true,
+    getPath: () => '/mapa/aguas',
+    color: '#0277BD',
+  },
+];
+
 const MODULOS_PLANEACION = [
   {
     id: 'catastro',
@@ -291,6 +309,7 @@ export default function SecretariaPortalPage() {
           <div className="portal-grid">
             {(secretariaId === 'planeacion' ? [...MODULOS_PLANEACION, ...MODULOS]
               : secretariaId === 'gobierno' ? [...MODULOS_GOBIERNO, ...MODULOS]
+              : secretariaId === 'aguas' ? [...MODULOS_AGUAS, ...MODULOS]
               : MODULOS)
             .filter(m => isAdmin || !['subir_datos', 'pipeline', 'explorar_datos'].includes(m.id))
             .map(m => (

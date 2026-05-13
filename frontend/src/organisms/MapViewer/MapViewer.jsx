@@ -6,6 +6,7 @@ import { useMapTools } from '../../features/map/hooks/useMapTools';
 import { useSisbenHeatmap } from '../../features/map/hooks/useSisbenHeatmap';
 import { useDelitosLayer } from '../../features/map/hooks/useDelitosLayer';
 import { useZonaRuralLayer } from '../../features/map/hooks/useZonaRuralLayer';
+import { useAguasLayer } from '../../features/map/hooks/useAguasLayer';
 import BasemapSwitcher from '../../features/map/components/BasemapSwitcher';
 import PopupOverlay from '../../features/map/components/PopupOverlay';
 import './MapViewer.css';
@@ -44,6 +45,9 @@ export default function MapViewer() {
 
   // Hook 7: Capa dinámica de zona rural (controlada por ZonaRuralPanel)
   useZonaRuralLayer(mapRef);
+
+  // Hook 8: Capa dinámica de veredas de acueducto (controlada por AguasPanel)
+  useAguasLayer(mapRef);
 
   // Cerrar popup al hacer click en el botón X
   useEffect(() => {

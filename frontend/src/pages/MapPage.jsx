@@ -15,6 +15,7 @@ import IpmLegendPanel from '../organisms/IpmLegendPanel/IpmLegendPanel';
 import VeredasPanel from '../organisms/VeredasPanel/VeredasPanel';
 import DelitosPanel from '../organisms/DelitosPanel/DelitosPanel';
 import ZonaRuralPanel from '../organisms/ZonaRuralPanel/ZonaRuralPanel';
+import AguasPanel from '../organisms/AguasPanel/AguasPanel';
 import MapContext from '../context/MapContext';
 import { getSecretariaById } from '../config/secretarias';
 import { useLayerPrefetch } from '../features/map/hooks/useLayerPrefetch';
@@ -29,13 +30,21 @@ function MapPageInner() {
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [searchOpen, setSearchOpen] = useState(false);
-  const { activeLayers, setActiveLayers, setDelitosConfig, selectionResults, setSelectionResults, clearTools } = useContext(MapContext);
+  const { activeLayers, setActiveLayers, setDelitosConfig, setAguasConfig, selectionResults, setSelectionResults, clearTools } = useContext(MapContext);
 
   // Auto-activar capa de delitos al entrar en /mapa/gobierno
   useEffect(() => {
     if (secretariaId === 'gobierno' && !activeLayers.has('delitos_barrios_2025')) {
       setActiveLayers(prev => new Set([...prev, 'delitos_barrios_2025']));
       setDelitosConfig({ anio: '2025', tipoDelito: null, vizMode: 'heatmap' });
+    }
+  }, [secretariaId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-activar capa de veredas al entrar en /mapa/aguas
+  useEffect(() => {
+    if (secretariaId === 'aguas') {
+      setActiveLayers(prev => new Set([...prev, 'aguas_veredas_acueductos']));
+      setAguasConfig({ sistemaFiltro: null });
     }
   }, [secretariaId]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -89,6 +98,7 @@ function MapPageInner() {
             <VeredasPanel />
             <DelitosPanel />
             <ZonaRuralPanel />
+            <AguasPanel />
           </div>
           {/* Paneles con posición propia (bottom-left, bottom-right) */}
           <SisbenHeatmapPanel />

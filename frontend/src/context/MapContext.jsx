@@ -22,6 +22,9 @@ export function MapProvider({ children }) {
     vereda: null,      // null = todas, o nombre de vereda
     colorBy: 'impuesto' // 'impuesto' | 'avaluo' | 'incremento'
   });
+  const [aguasConfig, setAguasConfig] = useState({
+    sistemaFiltro: null, // null = todos, o valor de SISTEMA_ACUEDUCTO
+  });
 
   const clearTools = useCallback(() => {
     setActiveTool(null);
@@ -54,6 +57,8 @@ export function MapProvider({ children }) {
     setDelitosConfig,
     zonaRuralConfig,
     setZonaRuralConfig,
+    aguasConfig,
+    setAguasConfig,
   };
 
   return (

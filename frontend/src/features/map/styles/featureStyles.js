@@ -192,6 +192,60 @@ export function makeZonaRuralIncrementoStyle(feature) {
   });
 }
 
+// ── Estilos de Aguas y Saneamiento Básico ────────────────────────────────────
+
+// Colores para veredas según cobertura de acueducto
+const AGUAS_SIN_COBERTURA_COLOR = '#EF4444'; // rojo — sin acueducto
+const AGUAS_CON_COBERTURA_COLOR = '#0288D1'; // azul — con acueducto
+
+/**
+ * Estilo coroplético para capa de veredas con/sin acueducto.
+ * Acepta un filtro opcional: si se pasa un sistema específico, las demás
+ * veredas se muestran en gris translúcido para destacar las seleccionadas.
+ */
+export function makeAguasVeredasStyle(aguasConfig) {
+  const filtro = aguasConfig?.sistemaFiltro || null;
+  return (feature) => {
+    const sistema = feature.get('SISTEMA_ACUEDUCTO') || '';
+    const sinCobertura = sistema.trim().toUpperCase() === 'SIN COBERTURA' || sistema.trim() === '';
+    let fillColor, strokeColor;
+    if (filtro) {
+      const match = sistema === filtro;
+      fillColor = match
+        ? (sinCobertura ? hexToRgba(AGUAS_SIN_COBERTURA_COLOR, 0.75) : hexToRgba(AGUAS_CON_COBERTURA_COLOR, 0.75))
+        : 'rgba(200,200,200,0.2)';
+      strokeColor = match ? (sinCobertura ? '#B91C1C' : '#01579B') : 'rgba(150,150,150,0.4)';
+    } else {
+      fillColor = sinCobertura
+        ? hexToRgba(AGUAS_SIN_COBERTURA_COLOR, 0.55)
+        : hexToRgba(AGUAS_CON_COBERTURA_COLOR, 0.35);
+      strokeColor = sinCobertura ? '#B91C1C' : '#01579B';
+    }
+    return new Style({
+      fill: new Fill({ color: fillColor }),
+      stroke: new Stroke({ color: strokeColor, width: 1.2 }),
+    });
+  };
+}
+
+// Estilo para la red de acueducto (líneas)
+export function makeAguasRedStyle() {
+  return new Style({
+    stroke: new Stroke({ color: '#0288D1', width: 2.5 })
+  });
+}
+
+// Estilo para estructuras de acueducto (puntos grandes con símbolo de agua)
+export function makeAguasEstructuraStyle() {
+  return new Style({
+    image: new Circle({
+      radius: 10,
+      fill: new Fill({ color: '#01579B' }),
+      stroke: new Stroke({ color: '#E1F5FE', width: 2.5 })
+    })
+  });
+}
+
 // Resolución de estilo por configuración de capa
 export function resolveStyleForConfig(layerConfig) {
   if (layerConfig.id === 'predios_urbanos') return makePrediosStyle();
@@ -199,6 +253,9 @@ export function resolveStyleForConfig(layerConfig) {
   if (layerConfig.id === 'ipm_santander') return makeIpmStyle;
   if (layerConfig.id?.startsWith('delitos_') || layerConfig.id === 'delitos_panel') return makeDelitosStyle;
   if (layerConfig.id === 'zonarural_avaluos' || layerConfig.id === 'zonarural_panel') return makeZonaRuralImpuestoStyle;
+  if (layerConfig.id === 'aguas_veredas_acueductos') return makeAguasVeredasStyle(null);
+  if (layerConfig.id === 'aguas_red_acueducto') return makeAguasRedStyle();
+  if (layerConfig.id === 'aguas_estructura_acueducto') return makeAguasEstructuraStyle();
   if (layerConfig.labelField) return makeDefaultStyleWithLabel(layerConfig);
   if (layerConfig.geometryType === 'line') return makeLineStyle(layerConfig);
   // Para WFS de puntos usamos point style

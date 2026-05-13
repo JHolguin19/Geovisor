@@ -154,6 +154,17 @@ export const SECRETARIAS = [
     layersKey: null,
     hasMapa: true,
     orden: 14
+  },
+  {
+    id: 'aguas',
+    name: 'Dirección de Aguas y Saneamiento Básico',
+    shortName: 'Aguas',
+    code: 'AGUA',
+    color: '#0277BD',
+    description: 'Infraestructura de acueducto rural, redes de conducción, estructuras hidráulicas y cobertura por vereda.',
+    layersKey: 'aguas',
+    hasMapa: true,
+    orden: 15
   }
 ];
 

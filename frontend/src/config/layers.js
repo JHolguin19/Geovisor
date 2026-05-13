@@ -602,6 +602,62 @@ export const LAYERS_BY_SECRETARIA = {
     ]
   },
 
+  aguas: {
+    name: 'Dirección de Aguas y Saneamiento Básico',
+    icon: '💧',
+    color: '#0277BD',
+    layers: [
+      createWfsLayer({
+        id: 'aguas_veredas_acueductos',
+        name: 'Veredas — Sistemas de Acueducto',
+        tableName: 'planeacion_aguas_veredas_acueductos',
+        visible: true,
+        queryable: true,
+        geometryType: 'polygon',
+        color: '#0277BD',
+        group: 'aguas',
+        description: 'Cobertura de acueducto rural por vereda. Identifica veredas sin sistema de acueducto.',
+        popupFields: [
+          { field: 'VEREDA',           label: 'Vereda' },
+          { field: 'SISTEMA_ACUEDUCTO', label: 'Sistema de Acueducto' },
+          { field: 'NOMBRE_ACUEDUCTO',  label: 'Nombre del Acueducto' },
+        ]
+      }),
+      createWfsLayer({
+        id: 'aguas_red_acueducto',
+        name: 'Red de Acueducto',
+        tableName: 'planeacion_aguas_redAcueducto',
+        visible: false,
+        queryable: true,
+        geometryType: 'line',
+        group: 'aguas',
+        description: 'Red de conducción de agua — tramos de tuberías y líneas principales del acueducto rural.',
+        style: { strokeColor: '#0288D1', strokeWidth: 2.5 },
+        popupFields: [
+          { field: 'Name',       label: 'Nombre' },
+          { field: 'descriptio', label: 'Descripción' },
+          { field: 'Longitud',   label: 'Longitud (m)', format: 'number' },
+        ]
+      }),
+      createWfsLayer({
+        id: 'aguas_estructura_acueducto',
+        name: 'Estructuras de Acueducto',
+        tableName: 'planeacion_aguas_estructura_acueducto',
+        visible: false,
+        queryable: true,
+        geometryType: 'point',
+        group: 'aguas',
+        description: 'Bocatomas, tanques de almacenamiento, desarenadores y plantas de tratamiento.',
+        style: { fillColor: '#01579B', strokeColor: '#E1F5FE', radius: 10 },
+        popupFields: [
+          { field: 'Name',       label: 'Nombre de la Estructura' },
+          { field: 'descriptio', label: 'Descripción' },
+          { field: 'layer',      label: 'Tipo' },
+        ]
+      }),
+    ]
+  },
+
   servicios_publicos: {
     name: 'Secretaría de Infraestructura',
     icon: '💡',

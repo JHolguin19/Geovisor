@@ -95,6 +95,13 @@ function SecretariaIcon({ id }) {
         <path d="M13 13h4M13 17h4" />
       </svg>
     ),
+    aguas: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 2C6 2 3 7.5 3 12a9 9 0 0018 0c0-4.5-3-10-9-10z"/>
+        <path d="M12 2v20"/>
+        <path d="M7.5 8.5c1.5 2 3 4 4.5 4s3-2 4.5-4"/>
+      </svg>
+    ),
   };
   return icons[id] || icons.talento_humano;
 }
