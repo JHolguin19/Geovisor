@@ -434,21 +434,23 @@ function MapSection() {
         '#f87171','#ef4444','#dc2626','#7f1d1d'
       ];
 
+      const NO_DATA_COLOR = '#cbd5e1'; // neutral gray for properties without data
+
       const getColor = (feature) => {
         const p = feature.getProperties();
-        let val, steps;
+        let raw, steps;
         if (mode === 'impuesto') {
-          val = Number(p.impuesto_nuevo || 0);
-          // 13 breaks → 14 classes: fine-grained at low end, logarithmic at high end
+          raw = p.impuesto_nuevo;
           steps = [20000,50000,100000,200000,400000,800000,1500000,3000000,5000000,8000000,15000000,30000000,60000000];
         } else if (mode === 'avaluo') {
-          val = Number(p.avaluo_nuevo || 0);
-          // Aligned with tax bracket boundaries + intermediate splits
+          raw = p.avaluo_nuevo;
           steps = [3e6,7e6,10e6,20e6,40e6,60e6,100e6,250e6,500e6,1e9,2e9,5e9,10e9];
         } else {
-          val = Number(p.incremento_pct || 0);
+          raw = p.incremento_pct;
           steps = [-10,0,10,30,60,100,200,400,700,1200,2000,4000,8000];
         }
+        if (raw == null) return NO_DATA_COLOR;
+        const val = Number(raw);
         let idx = steps.findIndex(s => val <= s);
         if (idx === -1) idx = ZR_COLORS.length - 1;
         return ZR_COLORS[idx];

@@ -253,18 +253,21 @@ export async function getPropertyGeoJSON({ vereda = null, colorBy = 'impuesto' }
           'avaluo_antiguo',  avaluo_antiguo,
           'area_predio',     area_predio,
           'area_construida', area_construida,
-          'incremento_pct',  CASE WHEN avaluo_antiguo > 0
+          'incremento_pct',  CASE WHEN avaluo_antiguo > 0 AND avaluo_nuevo IS NOT NULL
             THEN ROUND((((avaluo_nuevo::float / avaluo_antiguo) - 1) * 100)::numeric, 1)
-            ELSE 0 END,
-          'impuesto_nuevo',  ROUND((avaluo_nuevo * (CASE ${tarifaSQL('avaluo_nuevo', NEW_BRACKETS)} END) / 1000)::numeric, 0),
-          'impuesto_antiguo', ROUND((avaluo_antiguo * (CASE ${tarifaSQL('avaluo_antiguo', OLD_BRACKETS)} END) / 1000)::numeric, 0),
-          'tarifa_nueva',    CASE ${tarifaSQL('avaluo_nuevo', NEW_BRACKETS)} END,
-          'rango_nuevo',     CASE ${bracketSQL('avaluo_nuevo', NEW_BRACKETS)} END
+            ELSE NULL END,
+          'impuesto_nuevo',  CASE WHEN avaluo_nuevo IS NOT NULL
+            THEN ROUND((avaluo_nuevo * (CASE ${tarifaSQL('avaluo_nuevo', NEW_BRACKETS)} END) / 1000)::numeric, 0)
+            ELSE NULL END,
+          'impuesto_antiguo', CASE WHEN avaluo_antiguo IS NOT NULL
+            THEN ROUND((avaluo_antiguo * (CASE ${tarifaSQL('avaluo_antiguo', OLD_BRACKETS)} END) / 1000)::numeric, 0)
+            ELSE NULL END,
+          'tarifa_nueva',    CASE WHEN avaluo_nuevo IS NOT NULL THEN CASE ${tarifaSQL('avaluo_nuevo', NEW_BRACKETS)} END ELSE NULL END,
+          'rango_nuevo',     CASE WHEN avaluo_nuevo IS NOT NULL THEN CASE ${bracketSQL('avaluo_nuevo', NEW_BRACKETS)} END ELSE NULL END
         )
       ) AS feature
       FROM ${TBL}
-      WHERE avaluo_nuevo IS NOT NULL AND avaluo_antiguo IS NOT NULL
-        AND geom IS NOT NULL ${veredaFilter}
+      WHERE geom IS NOT NULL ${veredaFilter}
     ) f
   `, params);
   return rows[0]?.geojson || { type: 'FeatureCollection', features: [] };
