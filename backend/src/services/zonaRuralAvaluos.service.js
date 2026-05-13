@@ -183,6 +183,10 @@ export async function getVeredaImpact() {
                                                AS recaudo_nuevo,
       ROUND(SUM(avaluo_antiguo * (CASE ${tarifaSQL('avaluo_antiguo', OLD_BRACKETS)} END) / 1000)::numeric, 0)
                                                AS recaudo_antiguo,
+      ROUND(AVG(avaluo_nuevo * (CASE ${tarifaSQL('avaluo_nuevo', NEW_BRACKETS)} END) / 1000)::numeric, 0)
+                                               AS avg_impuesto_nuevo,
+      ROUND(AVG(avaluo_antiguo * (CASE ${tarifaSQL('avaluo_antiguo', OLD_BRACKETS)} END) / 1000)::numeric, 0)
+                                               AS avg_impuesto_antiguo,
       SUM(avaluo_nuevo)                        AS suma_avaluo_nuevo,
       SUM(avaluo_antiguo)                      AS suma_avaluo_antiguo
     FROM ${TBL}

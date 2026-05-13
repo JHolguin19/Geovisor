@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useContext } from 'react';
+import { useState, useEffect, useRef, useCallback, useContext, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import AuthContext from '../../../context/AuthContext';
 import { zonaRuralAvaluosService } from '../../../services/api';
@@ -165,18 +165,10 @@ export default function AnalisisZonaRural() {
 
           {/* ── VEREDA IMPACT TABLE ── */}
           <section className="azr-section">
-            <div className="azr-card">
-              <div className="azr-card-header">
-                <span className="azr-card-title">Impacto Financiero por Vereda</span>
-                <span className="azr-card-badge azr-card-badge--green">{veredas?.length || '—'} veredas</span>
-              </div>
-              <div className="azr-table-scroll">
-                {loading
-                  ? <div className="azr-skel" style={{ height: 300, margin: 16 }} />
-                  : veredas && <VeredaTable data={veredas} />
-                }
-              </div>
-            </div>
+            {loading
+              ? <div className="azr-card"><div className="azr-skel" style={{ height: 300, margin: 16 }} /></div>
+              : veredas && <VeredaTable data={veredas} />
+            }
           </section>
 
         </div>
@@ -618,42 +610,208 @@ function PopupRow({ label, value, highlight }) {
   );
 }
 
-/* ── Vereda impact table ── */
+/* ── Vereda impact table with sorting, filtering, and tax columns ── */
+
+const COLUMNS = [
+  { key: 'vereda',              label: 'Vereda',                 align: 'left',  sortable: true,  type: 'text' },
+  { key: 'predios',             label: 'Predios',                align: 'right', sortable: true,  type: 'number' },
+  { key: 'avg_avaluo_antiguo',  label: 'Avalúo Prom. Antiguo',   align: 'right', sortable: true,  type: 'money' },
+  { key: 'avg_avaluo_nuevo',    label: 'Avalúo Prom. Nuevo',     align: 'right', sortable: true,  type: 'money' },
+  { key: 'avg_pct_incremento',  label: 'Incremento',             align: 'right', sortable: true,  type: 'pct' },
+  { key: 'avg_impuesto_antiguo',label: 'Imp. Prom. Anterior',    align: 'right', sortable: true,  type: 'money' },
+  { key: 'avg_impuesto_nuevo',  label: 'Imp. Prom. Nuevo',       align: 'right', sortable: true,  type: 'money' },
+  { key: 'recaudo_antiguo',     label: 'Recaudo Anterior',       align: 'right', sortable: true,  type: 'money' },
+  { key: 'recaudo_nuevo',       label: 'Recaudo Proyectado',     align: 'right', sortable: true,  type: 'money' },
+  { key: 'delta_recaudo',       label: 'Diferencia Recaudo',     align: 'right', sortable: true,  type: 'money', computed: true },
+  { key: 'pct_delta_recaudo',   label: '% Cambio Recaudo',       align: 'right', sortable: true,  type: 'pct',   computed: true },
+];
+
 function VeredaTable({ data }) {
-  const pctChip = pct => {
-    const n = Number(pct);
-    const cls = n < 100 ? 'azr-pct-chip--low' : n < 300 ? 'azr-pct-chip--med' : 'azr-pct-chip--high';
-    return <span className={`azr-pct-chip ${cls}`}>+{fmtPct(pct)}</span>;
+  const [sortCol, setSortCol]     = useState('avg_pct_incremento');
+  const [sortDir, setSortDir]     = useState('desc');
+  const [filterText, setFilter]   = useState('');
+  const [filterCol, setFilterCol] = useState(null);
+  const [filterRange, setRange]   = useState({ min: '', max: '' });
+
+  const enriched = useMemo(() => data.map(r => ({
+    ...r,
+    delta_recaudo: Number(r.recaudo_nuevo) - Number(r.recaudo_antiguo),
+    pct_delta_recaudo: Number(r.recaudo_antiguo) > 0
+      ? ((Number(r.recaudo_nuevo) / Number(r.recaudo_antiguo)) - 1) * 100
+      : null,
+  })), [data]);
+
+  const filtered = useMemo(() => {
+    let rows = enriched;
+    if (filterText) {
+      const q = filterText.toLowerCase();
+      rows = rows.filter(r => r.vereda.toLowerCase().includes(q));
+    }
+    if (filterCol && (filterRange.min !== '' || filterRange.max !== '')) {
+      rows = rows.filter(r => {
+        const val = Number(r[filterCol]);
+        if (isNaN(val)) return false;
+        if (filterRange.min !== '' && val < Number(filterRange.min)) return false;
+        if (filterRange.max !== '' && val > Number(filterRange.max)) return false;
+        return true;
+      });
+    }
+    return rows;
+  }, [enriched, filterText, filterCol, filterRange]);
+
+  const sorted = useMemo(() => {
+    const arr = [...filtered];
+    arr.sort((a, b) => {
+      let va = a[sortCol], vb = b[sortCol];
+      if (sortCol === 'vereda') {
+        va = (va || '').toLowerCase(); vb = (vb || '').toLowerCase();
+        return sortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+      }
+      va = Number(va) || 0; vb = Number(vb) || 0;
+      return sortDir === 'asc' ? va - vb : vb - va;
+    });
+    return arr;
+  }, [filtered, sortCol, sortDir]);
+
+  const toggleSort = key => {
+    if (sortCol === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    else { setSortCol(key); setSortDir('desc'); }
   };
 
+  const SortIcon = ({ col }) => {
+    if (sortCol !== col) return <span className="azr-sort-icon azr-sort-icon--idle">&#x21C5;</span>;
+    return <span className="azr-sort-icon">{sortDir === 'asc' ? '&#x25B2;' : '&#x25BC;'}</span>;
+  };
+
+  const pctChip = pct => {
+    const n = Number(pct);
+    if (isNaN(n)) return '—';
+    const cls = n < 100 ? 'azr-pct-chip--low' : n < 300 ? 'azr-pct-chip--med' : 'azr-pct-chip--high';
+    return <span className={`azr-pct-chip ${cls}`}>{n >= 0 ? '+' : ''}{fmtPct(pct)}</span>;
+  };
+
+  const deltaChip = val => {
+    const n = Number(val);
+    if (isNaN(n)) return '—';
+    const cls = n >= 0 ? 'azr-delta--up' : 'azr-delta--down';
+    return <span className={`azr-delta-chip ${cls}`}>{n >= 0 ? '+' : ''}{fmtM(n)}</span>;
+  };
+
+  const renderCell = (r, col) => {
+    const v = r[col.key];
+    switch (col.key) {
+      case 'vereda':              return <td key={col.key} className="name">{v}</td>;
+      case 'predios':             return <td key={col.key} className="n">{fmtN(v)}</td>;
+      case 'avg_avaluo_antiguo':  return <td key={col.key} className="r" style={{ fontWeight: 600 }}>{fmtM(v)}</td>;
+      case 'avg_avaluo_nuevo':    return <td key={col.key} className="n">{fmtM(v)}</td>;
+      case 'avg_pct_incremento':  return <td key={col.key} className="r">{pctChip(v)}</td>;
+      case 'avg_impuesto_antiguo':return <td key={col.key} className="r" style={{ fontWeight: 600 }}>{fmtM(v)}</td>;
+      case 'avg_impuesto_nuevo':  return <td key={col.key} className="n g">{fmtM(v)}</td>;
+      case 'recaudo_antiguo':     return <td key={col.key} className="r" style={{ fontWeight: 600 }}>{fmtM(v)}</td>;
+      case 'recaudo_nuevo':       return <td key={col.key} className="n g">{fmtM(v)}</td>;
+      case 'delta_recaudo':       return <td key={col.key} className="r">{deltaChip(v)}</td>;
+      case 'pct_delta_recaudo':   return <td key={col.key} className="r">{pctChip(v)}</td>;
+      default:                    return <td key={col.key} className="r">{v}</td>;
+    }
+  };
+
+  const numericCols = COLUMNS.filter(c => c.type !== 'text');
+  const clearFilters = () => { setFilter(''); setFilterCol(null); setRange({ min: '', max: '' }); };
+  const hasActiveFilters = filterText || (filterCol && (filterRange.min !== '' || filterRange.max !== ''));
+
   return (
-    <table className="azr-table">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Vereda</th>
-          <th className="r">Predios</th>
-          <th className="r">Avalúo Prom. Antiguo</th>
-          <th className="r">Avalúo Prom. Nuevo</th>
-          <th className="r">Incremento</th>
-          <th className="r">Recaudo Anterior</th>
-          <th className="r">Recaudo Proyectado</th>
-        </tr>
-      </thead>
-      <tbody>
-        {data.map((r, i) => (
-          <tr key={r.vereda}>
-            <td className="azr-table-num">{i + 1}</td>
-            <td className="name">{r.vereda}</td>
-            <td className="n">{fmtN(r.predios)}</td>
-            <td className="r" style={{ fontWeight: 600 }}>{fmtM(r.avg_avaluo_antiguo)}</td>
-            <td className="n">{fmtM(r.avg_avaluo_nuevo)}</td>
-            <td className="r">{pctChip(r.avg_pct_incremento)}</td>
-            <td className="r" style={{ fontWeight: 600 }}>{fmtM(r.recaudo_antiguo)}</td>
-            <td className="n g">{fmtM(r.recaudo_nuevo)}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <div className="azr-card">
+      <div className="azr-card-header">
+        <span className="azr-card-title">Impacto Financiero por Vereda</span>
+        <span className="azr-card-badge azr-card-badge--green">
+          {sorted.length}{sorted.length !== data.length ? ` de ${data.length}` : ''} veredas
+        </span>
+      </div>
+
+      {/* Filter bar */}
+      <div className="azr-filter-bar">
+        <div className="azr-filter-group">
+          <svg className="azr-filter-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+          </svg>
+          <input
+            className="azr-filter-input"
+            type="text"
+            placeholder="Buscar vereda..."
+            value={filterText}
+            onChange={e => setFilter(e.target.value)}
+          />
+        </div>
+
+        <div className="azr-filter-group">
+          <svg className="azr-filter-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/>
+          </svg>
+          <select
+            className="azr-filter-select"
+            value={filterCol || ''}
+            onChange={e => { setFilterCol(e.target.value || null); setRange({ min: '', max: '' }); }}
+          >
+            <option value="">Filtrar columna...</option>
+            {numericCols.map(c => <option key={c.key} value={c.key}>{c.label}</option>)}
+          </select>
+          {filterCol && (
+            <>
+              <input
+                className="azr-filter-range"
+                type="number"
+                placeholder="Min"
+                value={filterRange.min}
+                onChange={e => setRange(p => ({ ...p, min: e.target.value }))}
+              />
+              <span className="azr-filter-dash">–</span>
+              <input
+                className="azr-filter-range"
+                type="number"
+                placeholder="Max"
+                value={filterRange.max}
+                onChange={e => setRange(p => ({ ...p, max: e.target.value }))}
+              />
+            </>
+          )}
+        </div>
+
+        {hasActiveFilters && (
+          <button className="azr-filter-clear" onClick={clearFilters}>
+            Limpiar filtros
+          </button>
+        )}
+      </div>
+
+      <div className="azr-table-scroll">
+        <table className="azr-table azr-table--sortable">
+          <thead>
+            <tr>
+              <th>#</th>
+              {COLUMNS.map(col => (
+                <th
+                  key={col.key}
+                  className={`${col.align === 'right' ? 'r' : ''} ${col.sortable ? 'azr-th--sortable' : ''}`}
+                  onClick={() => col.sortable && toggleSort(col.key)}
+                >
+                  {col.label}
+                  {col.sortable && <SortIcon col={col.key} />}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {sorted.length === 0 ? (
+              <tr><td colSpan={COLUMNS.length + 1} style={{ textAlign: 'center', padding: 24, color: '#94a3b8' }}>Sin resultados para los filtros aplicados</td></tr>
+            ) : sorted.map((r, i) => (
+              <tr key={r.vereda}>
+                <td className="azr-table-num">{i + 1}</td>
+                {COLUMNS.map(col => renderCell(r, col))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 }

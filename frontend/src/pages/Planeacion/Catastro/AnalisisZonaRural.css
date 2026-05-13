@@ -522,6 +522,116 @@
 .azr-pct-chip--med  { background: #fef9c3; color: #854d0e; }
 .azr-pct-chip--high { background: #fee2e2; color: #991b1b; }
 
+/* ── Filter bar ── */
+.azr-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border-soft);
+  background: #fafbfc;
+  flex-wrap: wrap;
+}
+
+.azr-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.azr-filter-icon {
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
+.azr-filter-input {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-family: inherit;
+  width: 180px;
+  outline: none;
+  transition: border-color .15s;
+}
+.azr-filter-input:focus { border-color: #2E7D32; box-shadow: 0 0 0 2px rgba(46,125,50,.12); }
+
+.azr-filter-select {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 11px;
+  font-family: inherit;
+  background: #fff;
+  cursor: pointer;
+  outline: none;
+  max-width: 160px;
+}
+.azr-filter-select:focus { border-color: #2E7D32; }
+
+.azr-filter-range {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 11px;
+  font-family: inherit;
+  width: 90px;
+  outline: none;
+}
+.azr-filter-range:focus { border-color: #2E7D32; }
+
+.azr-filter-dash {
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.azr-filter-clear {
+  padding: 4px 12px;
+  border: 1px solid #fca5a5;
+  border-radius: 6px;
+  background: #fef2f2;
+  color: #dc2626;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all .15s;
+  white-space: nowrap;
+}
+.azr-filter-clear:hover { background: #fee2e2; border-color: #f87171; }
+
+/* ── Sort icons ── */
+.azr-th--sortable {
+  cursor: pointer;
+  user-select: none;
+  transition: background .1s;
+}
+.azr-th--sortable:hover { background: #f0fdf4; }
+
+.azr-sort-icon {
+  display: inline-block;
+  margin-left: 4px;
+  font-size: 8px;
+  color: #2E7D32;
+  vertical-align: middle;
+}
+.azr-sort-icon--idle { color: #cbd5e1; }
+
+/* ── Delta chip ── */
+.azr-delta-chip {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  font-family: 'Barlow Condensed', sans-serif;
+  letter-spacing: .3px;
+}
+.azr-delta--up   { background: #dcfce7; color: #166534; }
+.azr-delta--down { background: #fee2e2; color: #991b1b; }
+
 /* ── Impact banner ── */
 .azr-impact-banner {
   display: grid;
@@ -586,6 +696,10 @@
 
 /* Tablets */
 @media (max-width: 768px) {
+  .azr-filter-bar { gap: 8px; padding: 8px 12px; }
+  .azr-filter-input { width: 140px; }
+  .azr-filter-select { max-width: 130px; }
+  .azr-filter-range { width: 70px; }
   .azr-scroll { padding: 20px 16px 40px; }
   .azr-kpi-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .azr-kpi-value { font-size: 20px; }
