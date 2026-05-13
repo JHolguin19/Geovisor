@@ -553,6 +553,10 @@ export const zonaRuralAvaluosService = {
     const res = await api.get('/zonarural-avaluos/geojson/predios', { params });
     return res.data;
   },
+  refresh: async () => {
+    const res = await api.post('/zonarural-avaluos/refresh');
+    return res.data;
+  },
 };
 
 export const zonaRuralService = {

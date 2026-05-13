@@ -40,12 +40,35 @@ function tarifaSQL(col, brackets) {
   }).join(' ');
 }
 
+/* ── In-memory cache (TTL = 10 min) ─────────────────────────────── */
+
+const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+const _cache = new Map(); // key → { data, expiresAt }
+
+function cacheGet(key) {
+  const entry = _cache.get(key);
+  if (!entry) return null;
+  if (Date.now() > entry.expiresAt) { _cache.delete(key); return null; }
+  return entry.data;
+}
+
+function cacheSet(key, data) {
+  _cache.set(key, { data, expiresAt: Date.now() + CACHE_TTL });
+}
+
+export function clearCache() {
+  _cache.clear();
+}
+
 /* ── Service functions ───────────────────────────────────────────── */
 
 /**
  * Global KPIs — overall financial impact summary.
  */
 export async function getStats() {
+  const cached = cacheGet('stats');
+  if (cached) return cached;
+
   const { rows } = await pool.query(`
     SELECT
       COUNT(*)                                                   AS total_predios,
@@ -74,6 +97,7 @@ export async function getStats() {
     FROM ${TBL}
     WHERE avaluo_nuevo IS NOT NULL AND avaluo_antiguo IS NOT NULL ${ANALYTICS_FILTER}
   `);
+  cacheSet('stats', rows[0]);
   return rows[0];
 }
 
@@ -81,6 +105,9 @@ export async function getStats() {
  * Distribution by NEW tax brackets.
  */
 export async function getBracketDistribution() {
+  const cached = cacheGet('brackets');
+  if (cached) return cached;
+
   const { rows } = await pool.query(`
     SELECT
       CASE ${bracketSQL('avaluo_nuevo', NEW_BRACKETS)} END   AS rango,
@@ -95,7 +122,6 @@ export async function getBracketDistribution() {
     ORDER BY tarifa
   `);
 
-  // Also get OLD bracket distribution on OLD valuations
   const { rows: oldRows } = await pool.query(`
     SELECT
       CASE ${bracketSQL('avaluo_antiguo', OLD_BRACKETS)} END AS rango,
@@ -110,13 +136,18 @@ export async function getBracketDistribution() {
     ORDER BY tarifa
   `);
 
-  return { nuevo: rows, antiguo: oldRows, brackets: { old: OLD_BRACKETS, new: NEW_BRACKETS } };
+  const result = { nuevo: rows, antiguo: oldRows, brackets: { old: OLD_BRACKETS, new: NEW_BRACKETS } };
+  cacheSet('brackets', result);
+  return result;
 }
 
 /**
  * Pareto data — properties sorted by tax contribution (desc), with cumulative %.
  */
 export async function getParetoData() {
+  const cached = cacheGet('pareto');
+  if (cached) return cached;
+
   const { rows } = await pool.query(`
     WITH taxed AS (
       SELECT
@@ -163,6 +194,7 @@ export async function getParetoData() {
       total_predios)
     ORDER BY rn;
   `);
+  cacheSet('pareto', rows);
   return rows;
 }
 
@@ -170,6 +202,9 @@ export async function getParetoData() {
  * Per-vereda financial impact.
  */
 export async function getVeredaImpact() {
+  const cached = cacheGet('veredaImpact');
+  if (cached) return cached;
+
   const { rows } = await pool.query(`
     SELECT
       COALESCE(nombre, '(Sin nombre)') AS vereda,
@@ -193,14 +228,19 @@ export async function getVeredaImpact() {
     GROUP BY nombre
     ORDER BY avg_pct_incremento DESC NULLS LAST
   `);
+  cacheSet('veredaImpact', rows);
   return rows;
 }
 
 /**
- * Aggregated GeoJSON by vereda (overview mode — 102 features, fast).
- * Property names match property-level GeoJSON so frontend styles work unchanged.
+ * Aggregated GeoJSON by vereda — reads from the materialized view (fast, <200 ms).
+ * The MV was created by migration 021 and pre-computes ST_Union per vereda.
  */
 export async function getGeoJSON({ mode = 'incremento_pct' } = {}) {
+  const cacheKey = `geojson_vereda_${mode}`;
+  const cached = cacheGet(cacheKey);
+  if (cached) return cached;
+
   const { rows } = await pool.query(`
     SELECT jsonb_build_object(
       'type', 'FeatureCollection',
@@ -209,24 +249,24 @@ export async function getGeoJSON({ mode = 'incremento_pct' } = {}) {
     FROM (
       SELECT jsonb_build_object(
         'type', 'Feature',
-        'geometry', ST_AsGeoJSON(ST_Union(ST_Buffer(ST_MakeValid(geom), 0)), 5)::jsonb,
+        'geometry', ST_AsGeoJSON(geom, 5)::jsonb,
         'properties', jsonb_build_object(
-          'vereda',         COALESCE(nombre, '(Sin nombre)'),
-          'predios',        COUNT(*),
-          'avaluo_nuevo',   ROUND(AVG(avaluo_nuevo)::numeric, 0),
-          'avaluo_antiguo', ROUND(AVG(avaluo_antiguo)::numeric, 0),
-          'incremento_pct', ROUND(AVG(CASE WHEN avaluo_antiguo > 0
-            THEN ((avaluo_nuevo::float / avaluo_antiguo) - 1) * 100 END)::numeric, 1),
-          'impuesto_nuevo', ROUND(AVG(avaluo_nuevo * (CASE ${tarifaSQL('avaluo_nuevo', NEW_BRACKETS)} END) / 1000)::numeric, 0),
-          'recaudo_nuevo',  ROUND(SUM(avaluo_nuevo * (CASE ${tarifaSQL('avaluo_nuevo', NEW_BRACKETS)} END) / 1000)::numeric, 0)
+          'vereda',         vereda,
+          'predios',        predios,
+          'avaluo_nuevo',   avaluo_nuevo,
+          'avaluo_antiguo', avaluo_antiguo,
+          'incremento_pct', incremento_pct,
+          'impuesto_nuevo', impuesto_nuevo,
+          'recaudo_nuevo',  recaudo_nuevo
         )
       ) AS feature
-      FROM ${TBL}
-      WHERE avaluo_nuevo IS NOT NULL AND avaluo_antiguo IS NOT NULL AND nombre IS NOT NULL ${ANALYTICS_FILTER}
-      GROUP BY nombre
+      FROM mv_zonarural_avaluos_vereda
     ) f
   `);
-  return rows[0]?.geojson || { type: 'FeatureCollection', features: [] };
+
+  const result = rows[0]?.geojson || { type: 'FeatureCollection', features: [] };
+  cacheSet(cacheKey, result);
+  return result;
 }
 
 /**
@@ -234,9 +274,11 @@ export async function getGeoJSON({ mode = 'incremento_pct' } = {}) {
  * Supports optional vereda filter for performance.
  */
 export async function getPropertyGeoJSON({ vereda = null, colorBy = 'impuesto' } = {}) {
-  const veredaFilter = vereda
-    ? `AND nombre = $1`
-    : '';
+  const cacheKey = `geojson_predios_${vereda || 'all'}_${colorBy}`;
+  const cached = cacheGet(cacheKey);
+  if (cached) return cached;
+
+  const veredaFilter = vereda ? `AND nombre = $1` : '';
   const params = vereda ? [vereda] : [];
 
   const { rows } = await pool.query(`
@@ -273,5 +315,18 @@ export async function getPropertyGeoJSON({ vereda = null, colorBy = 'impuesto' }
       WHERE geom IS NOT NULL ${veredaFilter}
     ) f
   `, params);
-  return rows[0]?.geojson || { type: 'FeatureCollection', features: [] };
+
+  const result = rows[0]?.geojson || { type: 'FeatureCollection', features: [] };
+  cacheSet(cacheKey, result);
+  return result;
+}
+
+/**
+ * Refresh the materialized view and clear the in-memory cache.
+ * Called from the /refresh endpoint (admin only).
+ */
+export async function refreshMaterializedView() {
+  await pool.query('REFRESH MATERIALIZED VIEW CONCURRENTLY mv_zonarural_avaluos_vereda');
+  clearCache();
+  return { refreshed: true };
 }

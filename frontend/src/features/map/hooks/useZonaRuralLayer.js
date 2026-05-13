@@ -20,9 +20,26 @@ const STYLE_MAP = {
   incremento: makeZonaRuralIncrementoStyle,
 };
 
+// Module-level cache: url → GeoJSON object (persists for the browser session)
+const _geoCache = new Map();
+
+const FORMAT = new GeoJSON();
+
+function parseFeatures(geojson) {
+  return FORMAT.readFeatures(geojson, {
+    dataProjection: 'EPSG:4326',
+    featureProjection: 'EPSG:3857',
+  });
+}
+
 /**
  * Hook that manages a dynamic zonarural property layer controlled by ZonaRuralPanel.
  * Creates a VectorLayer ('zonarural_panel') with property-level polygons.
+ *
+ * Optimizations:
+ *  - /geojson now reads from a materialized view (pre-computed ST_Union per vereda)
+ *  - Module-level cache avoids re-fetching the same URL while the tab is open
+ *  - The cached GeoJSON is stored as already-parsed OL features
  */
 export function useZonaRuralLayer(mapRef) {
   const { activeLayers, zonaRuralConfig } = useContext(MapContext);
@@ -59,11 +76,16 @@ export function useZonaRuralLayer(mapRef) {
 
     layerRef.current.setStyle(STYLE_MAP[colorBy] || makeZonaRuralImpuestoStyle);
 
-    // Sin vereda seleccionada → vista agregada (102 polígonos, rápida).
-    // Con vereda seleccionada → vista de predios individuales de esa vereda.
     const url = vereda
       ? `/api/zonarural-avaluos/geojson/predios?vereda=${encodeURIComponent(vereda)}&colorBy=${colorBy}`
       : `/api/zonarural-avaluos/geojson?mode=${colorBy}`;
+
+    // Use cached features if available — no network request needed
+    if (_geoCache.has(url)) {
+      sourceRef.current.clear();
+      sourceRef.current.addFeatures(_geoCache.get(url));
+      return;
+    }
 
     const controller = new AbortController();
 
@@ -73,10 +95,8 @@ export function useZonaRuralLayer(mapRef) {
     })
       .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
       .then(geojson => {
-        const features = new GeoJSON().readFeatures(geojson, {
-          dataProjection: 'EPSG:4326',
-          featureProjection: 'EPSG:3857',
-        });
+        const features = parseFeatures(geojson);
+        _geoCache.set(url, features);
         sourceRef.current.clear();
         sourceRef.current.addFeatures(features);
       })
