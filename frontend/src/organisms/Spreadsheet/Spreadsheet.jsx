@@ -168,12 +168,12 @@ export const COLUMNS = [
 // ── Financial columns (shown when showFinancial = true) ───────────────────────
 // Values in millions of COP (backend divides by 1,000,000)
 export const FIN_COLUMNS = [2024, 2025, 2026, 2027].flatMap(y => [
-  { key: `apropiacion_${y}`,  label: 'Apropiación (M$)',  width: 104, editable: false, format: 'money_m', group: `${y} Fin` },
-  { key: `comprometido_${y}`, label: 'Comprometido (M$)', width: 110, editable: false, format: 'money_m', group: `${y} Fin` },
+  { key: `apropiacion_${y}`,  label: 'Apropiación (M$)',  width: 104, editable: true,  type: 'number', format: 'money_m', group: `${y} Fin` },
+  { key: `comprometido_${y}`, label: 'Comprometido (M$)', width: 110, editable: true,  type: 'number', format: 'money_m', group: `${y} Fin` },
   { key: `_pctfin_${y}`,      label: '% Comp.',           width: 62,  editable: false, group: `${y} Fin`,
     computed: finPctFn(y), format: 'pct1',
     cellStyle: (_, v) => ({ background: effColor(v), fontWeight: 600 }) },
-  { key: `obligado_${y}`,     label: 'Obligado (M$)',     width: 104, editable: false, format: 'money_m', group: `${y} Fin` },
+  { key: `obligado_${y}`,     label: 'Obligado (M$)',     width: 104, editable: true,  type: 'number', format: 'money_m', group: `${y} Fin` },
   { key: `_pctoblig_${y}`,    label: '% Oblig.',          width: 62,  editable: false, group: `${y} Fin`,
     computed: obligPctFn(y), format: 'pct1',
     cellStyle: (_, v) => ({ background: effColor(v), fontWeight: 600 }) },
@@ -242,6 +242,7 @@ export default function Spreadsheet({ rows: initialRows, onSave, saving }) {
   const [filter, setFilter]           = useState('');
   const [secFilter, setSecFilter]     = useState('');
   const [showFinancial, setShowFinancial] = useState(false);
+  const [yearFilter, setYearFilter]   = useState(null); // null = all years
 
   const editInputRef  = useRef(null);
   const fbarRef       = useRef(null);
@@ -259,11 +260,29 @@ export default function Spreadsheet({ rows: initialRows, onSave, saving }) {
   // Sync rows from props
   useEffect(() => { setRows(initialRows); }, [initialRows]);
 
-  // Active column set
-  const visibleCols = useMemo(
-    () => showFinancial ? [...COLUMNS, ...FIN_COLUMNS] : COLUMNS,
-    [showFinancial]
-  );
+  // Active column set — filtered by selected year when yearFilter is set
+  const visibleCols = useMemo(() => {
+    let base;
+    if (yearFilter) {
+      const y = String(yearFilter);
+      base = COLUMNS.filter(col =>
+        col.frozen ||
+        col.group === 'General' ||
+        col.group === y ||
+        col.group === 'Resumen' ||
+        (col.group === 'Notas' && col.key.includes(y))
+      );
+    } else {
+      base = COLUMNS;
+    }
+    if (showFinancial) {
+      const finCols = yearFilter
+        ? FIN_COLUMNS.filter(col => col.group === `${yearFilter} Fin`)
+        : FIN_COLUMNS;
+      return [...base, ...finCols];
+    }
+    return base;
+  }, [showFinancial, yearFilter]);
 
   // ── Filtered rows ──────────────────────────────────────────────────────────
   const filteredRows = useMemo(() => {
@@ -607,6 +626,19 @@ export default function Spreadsheet({ rows: initialRows, onSave, saving }) {
             <option value="">Todas las secretarías</option>
             {secretarias.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
+          <div className="sps__toolbar-divider" />
+          <div className="sps__year-pills">
+            {[null, 2024, 2025, 2026, 2027].map(y => (
+              <button
+                key={y ?? 'all'}
+                className={`sps__year-pill${yearFilter === y ? ' sps__year-pill--active' : ''}`}
+                onClick={() => setYearFilter(y)}
+                title={y ? `Mostrar solo el año ${y}` : 'Mostrar todos los años'}
+              >
+                {y ?? 'Todos'}
+              </button>
+            ))}
+          </div>
           <div className="sps__toolbar-divider" />
           <button
             className={`sps__btn ${showFinancial ? 'sps__btn--fin-active' : 'sps__btn--fin'}`}

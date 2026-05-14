@@ -4,6 +4,15 @@
 
 import pool from '../db/pool.js';
 
+// Campos financieros almacenados en JSONB (presupuesto_YYYY)
+// Valor en frontend: millones → raw en JSONB: × 1,000,000
+const JSONB_FINANCIAL = {};
+for (const y of [2024, 2025, 2026, 2027]) {
+  JSONB_FINANCIAL[`apropiacion_${y}`]  = { col: `presupuesto_${y}`, path: 'total_apropiacion' };
+  JSONB_FINANCIAL[`comprometido_${y}`] = { col: `presupuesto_${y}`, path: 'neto_registros' };
+  JSONB_FINANCIAL[`obligado_${y}`]     = { col: `presupuesto_${y}`, path: 'total_obligacion' };
+}
+
 // Campos que pueden ser editados por el usuario (whitelist de seguridad)
 const EDITABLE_FIELDS = new Set([
   'meta_cuatrienio',
@@ -11,6 +20,7 @@ const EDITABLE_FIELDS = new Set([
   'meta_fisica_2024', 'meta_fisica_2025', 'meta_fisica_2026', 'meta_fisica_2027',
   'observaciones_2024', 'observaciones_2025', 'observaciones_2026', 'observaciones_2027',
   'compromisos_2024', 'compromisos_2025', 'compromisos_2026', 'compromisos_2027',
+  ...Object.keys(JSONB_FINANCIAL),
 ]);
 
 // Campos numéricos (se convierten a float antes de guardar)
@@ -18,6 +28,7 @@ const NUMERIC_FIELDS = new Set([
   'meta_cuatrienio',
   'meta_pdm_2024', 'meta_pdm_2025', 'meta_pdm_2026', 'meta_pdm_2027',
   'meta_fisica_2024', 'meta_fisica_2025', 'meta_fisica_2026', 'meta_fisica_2027',
+  ...Object.keys(JSONB_FINANCIAL),
 ]);
 
 /**
@@ -84,10 +95,24 @@ export async function saveChanges(changes) {
       }
 
       try {
-        const res = await client.query(
-          `UPDATE pdm_metas SET ${field} = $1 WHERE meta_num = $2`,
-          [dbValue, meta_num]
-        );
+        let res;
+        if (JSONB_FINANCIAL[field]) {
+          // Update the specific key inside the JSONB presupuesto_YYYY column
+          // Frontend values are in millions → multiply by 1,000,000 to restore raw pesos
+          const { col: jsonbCol, path: jsonbPath } = JSONB_FINANCIAL[field];
+          const rawValue = dbValue != null ? dbValue * 1000000 : 0;
+          res = await client.query(
+            `UPDATE pdm_metas
+             SET ${jsonbCol} = jsonb_set(COALESCE(${jsonbCol}, '{}'), '{${jsonbPath}}', to_jsonb($1::numeric))
+             WHERE meta_num = $2`,
+            [rawValue, meta_num]
+          );
+        } else {
+          res = await client.query(
+            `UPDATE pdm_metas SET ${field} = $1 WHERE meta_num = $2`,
+            [dbValue, meta_num]
+          );
+        }
         if (res.rowCount > 0) updated++;
       } catch (err) {
         errors.push({ meta_num, field, error: err.message });
@@ -140,9 +165,34 @@ export async function saveChanges(changes) {
 export async function getRows(metaNums) {
   if (!metaNums?.length) return [];
   const placeholders = metaNums.map((_, i) => `$${i + 1}`).join(',');
-  const { rows } = await pool.query(
-    `SELECT * FROM pdm_metas WHERE meta_num IN (${placeholders}) ORDER BY meta_num`,
-    metaNums
-  );
+  const { rows } = await pool.query(`
+    SELECT
+      id, meta_num, secretaria, descripcion_meta,
+      num_pilar, nom_pilar, tipo_ponderado,
+      meta_cuatrienio,
+      meta_pdm_2024,    meta_pdm_2025,    meta_pdm_2026,    meta_pdm_2027,
+      meta_fisica_2024, meta_fisica_2025, meta_fisica_2026, meta_fisica_2027,
+      eficiencia_2024,  eficiencia_2025,  eficiencia_2026,  eficiencia_2027,
+      ponderado_avance_2024, ponderado_avance_2025,
+      ponderado_avance_2026, ponderado_avance_2027,
+      avance_fisico, ponderado_cuatrienio, cumplimiento_cuatrienio,
+      observaciones_2024, observaciones_2025, observaciones_2026, observaciones_2027,
+      compromisos_2024,    compromisos_2025,    compromisos_2026,    compromisos_2027,
+      ROUND(COALESCE((presupuesto_2024->>'total_apropiacion')::numeric, 0) / 1000000, 2) AS apropiacion_2024,
+      ROUND(COALESCE((presupuesto_2024->>'neto_registros')::numeric,    0) / 1000000, 2) AS comprometido_2024,
+      ROUND(COALESCE((presupuesto_2024->>'total_obligacion')::numeric,  0) / 1000000, 2) AS obligado_2024,
+      ROUND(COALESCE((presupuesto_2025->>'total_apropiacion')::numeric, 0) / 1000000, 2) AS apropiacion_2025,
+      ROUND(COALESCE((presupuesto_2025->>'neto_registros')::numeric,    0) / 1000000, 2) AS comprometido_2025,
+      ROUND(COALESCE((presupuesto_2025->>'total_obligacion')::numeric,  0) / 1000000, 2) AS obligado_2025,
+      ROUND(COALESCE((presupuesto_2026->>'total_apropiacion')::numeric, 0) / 1000000, 2) AS apropiacion_2026,
+      ROUND(COALESCE((presupuesto_2026->>'neto_registros')::numeric,    0) / 1000000, 2) AS comprometido_2026,
+      ROUND(COALESCE((presupuesto_2026->>'total_obligacion')::numeric,  0) / 1000000, 2) AS obligado_2026,
+      ROUND(COALESCE((presupuesto_2027->>'total_apropiacion')::numeric, 0) / 1000000, 2) AS apropiacion_2027,
+      ROUND(COALESCE((presupuesto_2027->>'neto_registros')::numeric,    0) / 1000000, 2) AS comprometido_2027,
+      ROUND(COALESCE((presupuesto_2027->>'total_obligacion')::numeric,  0) / 1000000, 2) AS obligado_2027
+    FROM pdm_metas
+    WHERE meta_num IN (${placeholders})
+    ORDER BY meta_num
+  `, metaNums);
   return rows;
 }
