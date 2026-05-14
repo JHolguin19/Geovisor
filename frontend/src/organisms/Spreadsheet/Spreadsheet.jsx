@@ -168,12 +168,12 @@ export const COLUMNS = [
 // ── Financial columns (shown when showFinancial = true) ───────────────────────
 // Values in millions of COP (backend divides by 1,000,000)
 export const FIN_COLUMNS = [2024, 2025, 2026, 2027].flatMap(y => [
-  { key: `apropiacion_${y}`,  label: 'Apropiación (M$)',  width: 104, editable: true,  type: 'number', format: 'money_m', group: `${y} Fin` },
-  { key: `comprometido_${y}`, label: 'Comprometido (M$)', width: 110, editable: true,  type: 'number', format: 'money_m', group: `${y} Fin` },
+  { key: `apropiacion_${y}`,  label: 'Apropiación ($)',  width: 148, editable: true,  type: 'number', format: 'money_m', group: `${y} Fin` },
+  { key: `comprometido_${y}`, label: 'Comprometido ($)', width: 148, editable: true,  type: 'number', format: 'money_m', group: `${y} Fin` },
   { key: `_pctfin_${y}`,      label: '% Comp.',           width: 62,  editable: false, group: `${y} Fin`,
     computed: finPctFn(y), format: 'pct1',
     cellStyle: (_, v) => ({ background: effColor(v), fontWeight: 600 }) },
-  { key: `obligado_${y}`,     label: 'Obligado (M$)',     width: 104, editable: true,  type: 'number', format: 'money_m', group: `${y} Fin` },
+  { key: `obligado_${y}`,     label: 'Obligado ($)',      width: 148, editable: true,  type: 'number', format: 'money_m', group: `${y} Fin` },
   { key: `_pctoblig_${y}`,    label: '% Oblig.',          width: 62,  editable: false, group: `${y} Fin`,
     computed: obligPctFn(y), format: 'pct1',
     cellStyle: (_, v) => ({ background: effColor(v), fontWeight: 600 }) },

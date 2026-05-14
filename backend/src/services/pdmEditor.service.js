@@ -48,19 +48,19 @@ export async function getGrid() {
       avance_fisico, ponderado_cuatrienio, cumplimiento_cuatrienio,
       observaciones_2024, observaciones_2025, observaciones_2026, observaciones_2027,
       compromisos_2024,    compromisos_2025,    compromisos_2026,    compromisos_2027,
-      -- Financial data extracted from JSONB columns (in millions)
-      ROUND(COALESCE((presupuesto_2024->>'total_apropiacion')::numeric, 0) / 1000000, 2) AS apropiacion_2024,
-      ROUND(COALESCE((presupuesto_2024->>'neto_registros')::numeric,    0) / 1000000, 2) AS comprometido_2024,
-      ROUND(COALESCE((presupuesto_2024->>'total_obligacion')::numeric,  0) / 1000000, 2) AS obligado_2024,
-      ROUND(COALESCE((presupuesto_2025->>'total_apropiacion')::numeric, 0) / 1000000, 2) AS apropiacion_2025,
-      ROUND(COALESCE((presupuesto_2025->>'neto_registros')::numeric,    0) / 1000000, 2) AS comprometido_2025,
-      ROUND(COALESCE((presupuesto_2025->>'total_obligacion')::numeric,  0) / 1000000, 2) AS obligado_2025,
-      ROUND(COALESCE((presupuesto_2026->>'total_apropiacion')::numeric, 0) / 1000000, 2) AS apropiacion_2026,
-      ROUND(COALESCE((presupuesto_2026->>'neto_registros')::numeric,    0) / 1000000, 2) AS comprometido_2026,
-      ROUND(COALESCE((presupuesto_2026->>'total_obligacion')::numeric,  0) / 1000000, 2) AS obligado_2026,
-      ROUND(COALESCE((presupuesto_2027->>'total_apropiacion')::numeric, 0) / 1000000, 2) AS apropiacion_2027,
-      ROUND(COALESCE((presupuesto_2027->>'neto_registros')::numeric,    0) / 1000000, 2) AS comprometido_2027,
-      ROUND(COALESCE((presupuesto_2027->>'total_obligacion')::numeric,  0) / 1000000, 2) AS obligado_2027
+      -- Financial data extracted from JSONB columns (raw pesos)
+      COALESCE((presupuesto_2024->>'total_apropiacion')::numeric, 0) AS apropiacion_2024,
+      COALESCE((presupuesto_2024->>'neto_registros')::numeric,    0) AS comprometido_2024,
+      COALESCE((presupuesto_2024->>'total_obligacion')::numeric,  0) AS obligado_2024,
+      COALESCE((presupuesto_2025->>'total_apropiacion')::numeric, 0) AS apropiacion_2025,
+      COALESCE((presupuesto_2025->>'neto_registros')::numeric,    0) AS comprometido_2025,
+      COALESCE((presupuesto_2025->>'total_obligacion')::numeric,  0) AS obligado_2025,
+      COALESCE((presupuesto_2026->>'total_apropiacion')::numeric, 0) AS apropiacion_2026,
+      COALESCE((presupuesto_2026->>'neto_registros')::numeric,    0) AS comprometido_2026,
+      COALESCE((presupuesto_2026->>'total_obligacion')::numeric,  0) AS obligado_2026,
+      COALESCE((presupuesto_2027->>'total_apropiacion')::numeric, 0) AS apropiacion_2027,
+      COALESCE((presupuesto_2027->>'neto_registros')::numeric,    0) AS comprometido_2027,
+      COALESCE((presupuesto_2027->>'total_obligacion')::numeric,  0) AS obligado_2027
     FROM pdm_metas
     ORDER BY meta_num ASC NULLS LAST
   `);
@@ -98,9 +98,9 @@ export async function saveChanges(changes) {
         let res;
         if (JSONB_FINANCIAL[field]) {
           // Update the specific key inside the JSONB presupuesto_YYYY column
-          // Frontend values are in millions → multiply by 1,000,000 to restore raw pesos
+          // Frontend values are raw pesos — store directly
           const { col: jsonbCol, path: jsonbPath } = JSONB_FINANCIAL[field];
-          const rawValue = dbValue != null ? dbValue * 1000000 : 0;
+          const rawValue = dbValue != null ? dbValue : 0;
           res = await client.query(
             `UPDATE pdm_metas
              SET ${jsonbCol} = jsonb_set(COALESCE(${jsonbCol}, '{}'), '{${jsonbPath}}', to_jsonb($1::numeric))
@@ -178,18 +178,18 @@ export async function getRows(metaNums) {
       avance_fisico, ponderado_cuatrienio, cumplimiento_cuatrienio,
       observaciones_2024, observaciones_2025, observaciones_2026, observaciones_2027,
       compromisos_2024,    compromisos_2025,    compromisos_2026,    compromisos_2027,
-      ROUND(COALESCE((presupuesto_2024->>'total_apropiacion')::numeric, 0) / 1000000, 2) AS apropiacion_2024,
-      ROUND(COALESCE((presupuesto_2024->>'neto_registros')::numeric,    0) / 1000000, 2) AS comprometido_2024,
-      ROUND(COALESCE((presupuesto_2024->>'total_obligacion')::numeric,  0) / 1000000, 2) AS obligado_2024,
-      ROUND(COALESCE((presupuesto_2025->>'total_apropiacion')::numeric, 0) / 1000000, 2) AS apropiacion_2025,
-      ROUND(COALESCE((presupuesto_2025->>'neto_registros')::numeric,    0) / 1000000, 2) AS comprometido_2025,
-      ROUND(COALESCE((presupuesto_2025->>'total_obligacion')::numeric,  0) / 1000000, 2) AS obligado_2025,
-      ROUND(COALESCE((presupuesto_2026->>'total_apropiacion')::numeric, 0) / 1000000, 2) AS apropiacion_2026,
-      ROUND(COALESCE((presupuesto_2026->>'neto_registros')::numeric,    0) / 1000000, 2) AS comprometido_2026,
-      ROUND(COALESCE((presupuesto_2026->>'total_obligacion')::numeric,  0) / 1000000, 2) AS obligado_2026,
-      ROUND(COALESCE((presupuesto_2027->>'total_apropiacion')::numeric, 0) / 1000000, 2) AS apropiacion_2027,
-      ROUND(COALESCE((presupuesto_2027->>'neto_registros')::numeric,    0) / 1000000, 2) AS comprometido_2027,
-      ROUND(COALESCE((presupuesto_2027->>'total_obligacion')::numeric,  0) / 1000000, 2) AS obligado_2027
+      COALESCE((presupuesto_2024->>'total_apropiacion')::numeric, 0) AS apropiacion_2024,
+      COALESCE((presupuesto_2024->>'neto_registros')::numeric,    0) AS comprometido_2024,
+      COALESCE((presupuesto_2024->>'total_obligacion')::numeric,  0) AS obligado_2024,
+      COALESCE((presupuesto_2025->>'total_apropiacion')::numeric, 0) AS apropiacion_2025,
+      COALESCE((presupuesto_2025->>'neto_registros')::numeric,    0) AS comprometido_2025,
+      COALESCE((presupuesto_2025->>'total_obligacion')::numeric,  0) AS obligado_2025,
+      COALESCE((presupuesto_2026->>'total_apropiacion')::numeric, 0) AS apropiacion_2026,
+      COALESCE((presupuesto_2026->>'neto_registros')::numeric,    0) AS comprometido_2026,
+      COALESCE((presupuesto_2026->>'total_obligacion')::numeric,  0) AS obligado_2026,
+      COALESCE((presupuesto_2027->>'total_apropiacion')::numeric, 0) AS apropiacion_2027,
+      COALESCE((presupuesto_2027->>'neto_registros')::numeric,    0) AS comprometido_2027,
+      COALESCE((presupuesto_2027->>'total_obligacion')::numeric,  0) AS obligado_2027
     FROM pdm_metas
     WHERE meta_num IN (${placeholders})
     ORDER BY meta_num

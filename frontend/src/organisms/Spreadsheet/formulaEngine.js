@@ -268,7 +268,7 @@ export function fmtCell(value, type) {
     case 'int':    return n.toLocaleString('es-CO', { maximumFractionDigits: 0 });
     case 'num2':   return n.toLocaleString('es-CO', { maximumFractionDigits: 2 });
     case 'money_m':
-      return n.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      return `$${Math.round(n).toLocaleString('es-CO')}`;
     default:       return n % 1 === 0 ? n.toLocaleString('es-CO') : n.toLocaleString('es-CO', { maximumFractionDigits: 2 });
   }
 }
