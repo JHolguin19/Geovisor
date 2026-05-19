@@ -540,14 +540,10 @@ function MapSection({ barrio, onSelectBarrio }) {
         const feature = map.forEachFeatureAtPixel(evt.pixel, f => f);
         if (feature) {
           const props = feature.getProperties();
-          if (!isPredios && props.barrio) {
-            /* Barrio mode: clicking selects the barrio as filter */
-            onSelectBarrio(props.barrio);
-          } else {
-            /* Predios mode: show popup */
-            setPopupData(props);
-            overlay.setPosition(evt.coordinate);
-          }
+          /* Always show popup; flag barrio features so the popup renders
+             a "Ver predios" drill-down button instead of property details. */
+          setPopupData({ ...props, _isBarrio: !isPredios });
+          overlay.setPosition(evt.coordinate);
         } else {
           setPopupData(null);
           overlay.setPosition(undefined);
@@ -566,7 +562,7 @@ function MapSection({ barrio, onSelectBarrio }) {
       cancelled = true;
       if (olMapRef.current) { olMapRef.current.setTarget(null); olMapRef.current = null; }
     };
-  }, [geojson, mode, isPredios, onSelectBarrio]);
+  }, [geojson, mode, isPredios]);
 
   const handleMode = useCallback((m) => {
     setMode(m);
@@ -687,37 +683,64 @@ function MapSection({ barrio, onSelectBarrio }) {
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>
           </svg>
-          Clic en un barrio para ver sus predios individuales
+          Clic en un barrio para ver su resumen
         </div>
       )}
 
-      {/* Popup */}
+      {/* Popup — two modes: barrio summary vs individual predio */}
       <div ref={popupRef} className="azu-popup-anchor">
         {popupData && (
           <div className="azu-popup">
             <button className="azu-popup-close" onClick={closePopup}>×</button>
-            <div className="azu-popup-title">{popupData.codigo || 'Sin código'}</div>
 
-            <div className="azu-popup-group">
-              <PopupRow label="Propietario"     value={popupData.propietario || '—'} />
-              <PopupRow label="Barrio"          value={popupData.barrio || '—'} />
-              <PopupRow label="Área predio"     value={popupData.area_predio     != null ? fmtN(popupData.area_predio)     + ' m²' : '—'} />
-              <PopupRow label="Área construida" value={popupData.area_construida != null ? fmtN(popupData.area_construida) + ' m²' : '—'} />
-            </div>
+            {popupData._isBarrio ? (
+              /* ── Barrio summary popup ── */
+              <>
+                <div className="azu-popup-title">{popupData.barrio}</div>
+                <div className="azu-popup-group">
+                  <PopupRow label="Predios"        value={fmtN(popupData.predios)} />
+                  <PopupRow label="Avalúo prom."   value={fmtM(popupData.avaluo_nuevo)} />
+                  <PopupRow label="Incremento"     value={fmtPct(popupData.incremento_pct)} />
+                  <PopupRow label="Recaudo nuevo"  value={fmtM(popupData.recaudo_nuevo)}  highlight />
+                  <PopupRow label="Recaudo ant."   value={fmtM(popupData.recaudo_antiguo)} />
+                </div>
+                <button
+                  className="azu-popup-drill-btn"
+                  onClick={() => { onSelectBarrio(popupData.barrio); closePopup(); }}
+                >
+                  Ver predios individuales
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                  </svg>
+                </button>
+              </>
+            ) : (
+              /* ── Individual predio popup ── */
+              <>
+                <div className="azu-popup-title">{popupData.codigo || 'Sin código'}</div>
 
-            <div className="azu-popup-group">
-              <div className="azu-popup-group-label">Avalúo catastral</div>
-              <PopupRow label="Anterior"    value={fmtM(popupData.avaluo_antiguo)} />
-              <PopupRow label="Nuevo"       value={fmtM(popupData.avaluo_nuevo)} highlight />
-              <PopupRow label="Incremento"  value={fmtPct(popupData.incremento_pct)} />
-            </div>
+                <div className="azu-popup-group">
+                  <PopupRow label="Propietario"     value={popupData.propietario || '—'} />
+                  <PopupRow label="Barrio"          value={popupData.barrio || '—'} />
+                  <PopupRow label="Área predio"     value={popupData.area_predio     != null ? fmtN(popupData.area_predio)     + ' m²' : '—'} />
+                  <PopupRow label="Área construida" value={popupData.area_construida != null ? fmtN(popupData.area_construida) + ' m²' : '—'} />
+                </div>
 
-            <div className="azu-popup-group">
-              <div className="azu-popup-group-label">Impuesto predial</div>
-              <PopupRow label="Tarifa anterior" value={fmtM(popupData.impuesto_antiguo)} />
-              <PopupRow label="Tarifa nueva"    value={fmtM(popupData.impuesto_nuevo)} highlight />
-              <PopupRow label="Rango"           value={popupData.rango_nuevo || '—'} />
-            </div>
+                <div className="azu-popup-group">
+                  <div className="azu-popup-group-label">Avalúo catastral</div>
+                  <PopupRow label="Anterior"   value={fmtM(popupData.avaluo_antiguo)} />
+                  <PopupRow label="Nuevo"      value={fmtM(popupData.avaluo_nuevo)} highlight />
+                  <PopupRow label="Incremento" value={fmtPct(popupData.incremento_pct)} />
+                </div>
+
+                <div className="azu-popup-group">
+                  <div className="azu-popup-group-label">Impuesto predial</div>
+                  <PopupRow label="Tarifa anterior" value={fmtM(popupData.impuesto_antiguo)} />
+                  <PopupRow label="Tarifa nueva"    value={fmtM(popupData.impuesto_nuevo)} highlight />
+                  <PopupRow label="Rango"           value={popupData.rango_nuevo || '—'} />
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>

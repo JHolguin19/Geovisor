@@ -56,6 +56,11 @@ function cacheSet(key, data) {
 }
 export function clearCache() { _cache.clear(); }
 
+/* ── Exclusión predios municipales ─────────────────────────────── */
+// El Municipio de Santander de Quilichao aparece con 3 variantes tipográficas
+// en el campo propietario. Todos sus predios están exentos del predial.
+const EXCL = `(propietario IS NULL OR propietario NOT ILIKE 'MUN%SANTANDER DE QUILI%')`;
+
 /* ── Shared WHERE helper ─────────────────────────────────────────── */
 
 function barrioFilter(barrio, offset = 0) {
@@ -77,7 +82,7 @@ export async function getBarrios() {
   const { rows } = await pool.query(`
     SELECT DISTINCT barrio, COUNT(*) AS predios
     FROM ${TBL}
-    WHERE barrio IS NOT NULL
+    WHERE barrio IS NOT NULL AND ${EXCL}
     GROUP BY barrio
     ORDER BY barrio
   `);
@@ -114,7 +119,7 @@ export async function getStats({ barrio = null } = {}) {
       MIN(avaluo_nuevo)  AS min_nuevo,  MAX(avaluo_nuevo)  AS max_nuevo,
       MIN(avaluo_antiguo) AS min_antiguo, MAX(avaluo_antiguo) AS max_antiguo
     FROM ${TBL}
-    WHERE avaluo_nuevo IS NOT NULL AND avaluo_antiguo IS NOT NULL
+    WHERE avaluo_nuevo IS NOT NULL AND avaluo_antiguo IS NOT NULL AND ${EXCL}
       ${barrioFilter(barrio)}
   `, barrioParams(barrio));
 
@@ -142,7 +147,7 @@ export async function getBracketDistribution({ barrio = null } = {}) {
       ROUND(SUM(avaluo_nuevo * (CASE ${tarifaSQL('avaluo_nuevo', NEW_BRACKETS)} END) / 1000)::numeric, 0)
                                                               AS recaudo_estimado
     FROM ${TBL}
-    WHERE avaluo_nuevo IS NOT NULL ${w}
+    WHERE avaluo_nuevo IS NOT NULL AND ${EXCL} ${w}
     GROUP BY 1, 2 ORDER BY tarifa
   `, p);
 
@@ -155,7 +160,7 @@ export async function getBracketDistribution({ barrio = null } = {}) {
       ROUND(SUM(avaluo_antiguo * (CASE ${tarifaSQL('avaluo_antiguo', OLD_BRACKETS)} END) / 1000)::numeric, 0)
                                                               AS recaudo_estimado
     FROM ${TBL}
-    WHERE avaluo_antiguo IS NOT NULL ${w}
+    WHERE avaluo_antiguo IS NOT NULL AND ${EXCL} ${w}
     GROUP BY 1, 2 ORDER BY tarifa
   `, p);
 
@@ -183,7 +188,7 @@ export async function getParetoData({ barrio = null } = {}) {
         avaluo_nuevo,
         ROUND((avaluo_nuevo * (CASE ${tarifaSQL('avaluo_nuevo', NEW_BRACKETS)} END) / 1000)::numeric, 0) AS impuesto
       FROM ${TBL}
-      WHERE avaluo_nuevo IS NOT NULL ${w}
+      WHERE avaluo_nuevo IS NOT NULL AND ${EXCL} ${w}
     ),
     ranked AS (
       SELECT *,
@@ -247,7 +252,7 @@ export async function getBarrioImpact() {
       SUM(avaluo_nuevo)                        AS suma_avaluo_nuevo,
       SUM(avaluo_antiguo)                      AS suma_avaluo_antiguo
     FROM ${TBL}
-    WHERE avaluo_nuevo IS NOT NULL AND avaluo_antiguo IS NOT NULL
+    WHERE avaluo_nuevo IS NOT NULL AND avaluo_antiguo IS NOT NULL AND ${EXCL}
     GROUP BY barrio
     ORDER BY recaudo_nuevo DESC NULLS LAST
   `);
@@ -336,7 +341,7 @@ export async function getPropertyGeoJSON({ barrio } = {}) {
         )
       ) AS feature
       FROM ${TBL}
-      WHERE geom IS NOT NULL AND barrio = $1
+      WHERE geom IS NOT NULL AND barrio = $1 AND ${EXCL}
     ) f
   `, [barrio]);
 

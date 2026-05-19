@@ -562,6 +562,28 @@
   color: #1565C0;
 }
 
+.azu-popup-drill-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  margin-top: 10px;
+  background: #1565C0;
+  border: none;
+  border-radius: 7px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  transition: background .15s;
+}
+
+.azu-popup-drill-btn:hover {
+  background: #1976D2;
+}
+
 /* ── Skeleton ──────────────────────────────────────────────────────────────── */
 .azu-skel {
   background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
