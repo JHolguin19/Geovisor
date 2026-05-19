@@ -166,7 +166,7 @@ export async function getBracketDistribution({ barrio = null } = {}) {
                                                                            AS recaudo_estimado
     FROM ${TBL}
     WHERE avaluo_nuevo IS NOT NULL AND ${EXCL} ${w}
-    GROUP BY 1, 2 ORDER BY tarifa::numeric
+    GROUP BY 1, 2 ORDER BY 2
   `, p);
 
   const { rows: oldRows } = await pool.query(`
@@ -179,7 +179,7 @@ export async function getBracketDistribution({ barrio = null } = {}) {
                                                               AS recaudo_estimado
     FROM ${TBL}
     WHERE avaluo_antiguo IS NOT NULL AND ${EXCL} ${w}
-    GROUP BY 1, 2 ORDER BY tarifa
+    GROUP BY 1, 2 ORDER BY 2
   `, p);
 
   const result = { nuevo: rows, antiguo: oldRows, brackets: { old: OLD_BRACKETS, new: NEW_BRACKETS } };
@@ -335,7 +335,7 @@ export async function getPropertyGeoJSON({ barrio = null } = {}) {
     FROM (
       SELECT jsonb_build_object(
         'type', 'Feature',
-        'geometry', ST_AsGeoJSON(ST_Simplify(geom, 0.00008), 5)::jsonb,
+        'geometry', ST_AsGeoJSON(geom, 6)::jsonb,
         'properties', jsonb_build_object(
           'codigo',           codigo,
           'barrio',           COALESCE(barrio, '(Sin nombre)'),
