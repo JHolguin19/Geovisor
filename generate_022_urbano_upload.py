@@ -74,6 +74,10 @@ def main():
     run_sql_file(ddl_path)
     print('  DDL OK')
 
+    # Step 1b — Truncate existing data before re-inserting
+    print('\n[1b/3] Truncating existing table data...')
+    upload_sql(f'TRUNCATE TABLE {TARGET_TBL};', 'TRUNCATE')
+
     # Step 2 — Data batches
     print(f'\n[2/3] Connecting to local PostgreSQL ({SOURCE_TBL})...')
     conn = psycopg2.connect(**LOCAL_DB)
@@ -83,7 +87,7 @@ def main():
     total = cur.fetchone()[0]
     print(f'  {total:,} records — {(total + BATCH_SIZE - 1) // BATCH_SIZE} batches of {BATCH_SIZE}')
 
-    # Fetch query — rename columns and cast avaluo_nuevo from varchar → numeric
+    # Fetch query — predialu_5 is the correct avaluo_nuevo (numeric, new appraisal)
     cur.execute(f"""
         SELECT
             id,
@@ -91,11 +95,7 @@ def main():
             "CODIGO",
             nombre,
             predialu_3,
-            CASE
-                WHEN predialu_4 ~ '^[0-9]+(\\.?[0-9]*)$' AND predialu_4::numeric > 0
-                THEN predialu_4::numeric
-                ELSE NULL
-            END AS avaluo_nuevo,
+            predialu_5,
             predialu10,
             "SHAPE_Area",
             predialu_8
@@ -140,9 +140,9 @@ def main():
     conn.close()
     print(f'  Done — {total_done:,} rows inserted.')
 
-    # Step 3 — Materialized view
-    mv_path = os.path.join(MIGRATIONS_DIR, '022b_mv_urbano_barrio.sql')
-    print(f'\n[3/3] Creating materialized view (may take ~60s)...')
+    # Step 3 — Materialized view (022c drops + recreates with municipal exclusion)
+    mv_path = os.path.join(MIGRATIONS_DIR, '022c_excl_municipio_mv.sql')
+    print('\n[3/3] Recreating materialized view (may take ~60s)...')
     run_sql_file(mv_path)
     print('  Materialized view OK')
 

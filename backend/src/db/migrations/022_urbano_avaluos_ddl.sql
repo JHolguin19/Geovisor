@@ -2,10 +2,10 @@
 -- Datos catastrales urbanos con columnas renombradas para análisis.
 -- Fuente: Predios_avaluos_urbanos_con_barrio_2026 (PostgreSQL local / QGIS)
 -- Columnas clave:
---   predialu_4 (varchar → NUMERIC) = avaluo_nuevo
---   predialu10 (numeric)           = avaluo_antiguo
---   predialu_3 (varchar)           = propietario
---   nombre     (varchar)           = barrio
+--   predialu_5 (numeric)  = avaluo_nuevo
+--   predialu10 (numeric)  = avaluo_antiguo
+--   predialu_3 (varchar)  = propietario
+--   nombre     (varchar)  = barrio
 
 -- ── 1. Tabla principal ─────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.predios_avaluos_urbanos_2026 (
