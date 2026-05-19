@@ -559,6 +559,49 @@ export const zonaRuralAvaluosService = {
   },
 };
 
+// ============================
+// SERVICIO ZONA URBANA — AVALÚOS (Planeación)
+// ============================
+
+export const zonaUrbanaAvaluosService = {
+  getBarrios: async () => {
+    const res = await api.get('/urbano-avaluos/barrios');
+    return res.data;
+  },
+  getStats: async (barrio = null) => {
+    const params = barrio ? { barrio } : {};
+    const res = await api.get('/urbano-avaluos/stats', { params });
+    return res.data;
+  },
+  getBrackets: async (barrio = null) => {
+    const params = barrio ? { barrio } : {};
+    const res = await api.get('/urbano-avaluos/brackets', { params });
+    return res.data;
+  },
+  getPareto: async (barrio = null) => {
+    const params = barrio ? { barrio } : {};
+    const res = await api.get('/urbano-avaluos/pareto', { params });
+    return res.data;
+  },
+  getBarrioImpact: async () => {
+    const res = await api.get('/urbano-avaluos/barrio-impact');
+    return res.data;
+  },
+  getBarrioGeoJSON: async () => {
+    const res = await api.get('/urbano-avaluos/geojson');
+    return res.data;
+  },
+  getPropertyGeoJSON: async (barrio = null) => {
+    const params = barrio ? { barrio } : {};
+    const res = await api.get('/urbano-avaluos/geojson/predios', { params });
+    return res.data;
+  },
+  refresh: async () => {
+    const res = await api.post('/urbano-avaluos/refresh');
+    return res.data;
+  },
+};
+
 export const zonaRuralService = {
   getVeredas: async () => {
     const res = await api.get('/zonarural/veredas');

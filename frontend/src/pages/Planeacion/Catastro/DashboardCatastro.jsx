@@ -35,6 +35,16 @@ const HERRAMIENTAS = [
     btnLabel: 'Abrir Análisis',
   },
   {
+    id: 'zona-urbana-avaluos',
+    nombre: 'Análisis Zona Urbana — Avalúos',
+    desc: 'Impacto financiero de la actualización catastral urbana: comparativo por barrio, distribución de tarifas, Pareto y mapa interactivo.',
+    icono: '🏙️',
+    activo: true,
+    color: '#1565C0',
+    path: '/planeacion/catastro/zona-urbana-avaluos',
+    btnLabel: 'Abrir Análisis',
+  },
+  {
     id: 'fichas',
     nombre: 'Fichas Prediales',
     desc: 'Generador de certificados y consulta detallada por código predial.',
