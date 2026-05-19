@@ -3,24 +3,30 @@ import { pool } from '../db/pool.js';
 const TBL = 'predios_avaluos_urbanos_2026';
 const MV  = 'mv_urbano_barrio_avaluos';
 
-/* ── Tax-bracket helpers ─────────────────────────────────────────── */
+/* ── Urban tax-bracket helpers ───────────────────────────────────── */
 
+// Old rates (applied to avaluo_antiguo)
 const OLD_BRACKETS = [
-  { min: 0,          max: 10000000,   tarifa: 5.0,  label: '0 – 10 M'      },
-  { min: 10000001,   max: 20000000,   tarifa: 5.5,  label: '10 – 20 M'     },
-  { min: 20000001,   max: 40000000,   tarifa: 6.5,  label: '20 – 40 M'     },
-  { min: 40000001,   max: 60000000,   tarifa: 7.0,  label: '40 – 60 M'     },
-  { min: 60000001,   max: Infinity,   tarifa: 8.0,  label: '> 60 M'        },
+  { min: 0,          max: 10000000,  tarifa: 5.0,  label: '0 – 10 M'  },
+  { min: 10000001,   max: 20000000,  tarifa: 5.5,  label: '10 – 20 M' },
+  { min: 20000001,   max: 40000000,  tarifa: 6.5,  label: '20 – 40 M' },
+  { min: 40000001,   max: 60000000,  tarifa: 7.0,  label: '40 – 60 M' },
+  { min: 60000001,   max: Infinity,  tarifa: 8.0,  label: '> 60 M'    },
 ];
 
+// New urban non-stratified brackets (applied to avaluo_nuevo for non-commercial)
 const NEW_BRACKETS = [
-  { min: 0,            max: 10000000,    tarifa: 5.0,   label: '0 – 10 M'      },
-  { min: 10000001,     max: 40000000,    tarifa: 6.0,   label: '10 – 40 M'     },
-  { min: 40000001,     max: 60000000,    tarifa: 7.0,   label: '40 – 60 M'     },
-  { min: 60000001,     max: 250000000,   tarifa: 9.0,   label: '60 – 250 M'    },
-  { min: 250000001,    max: 1000000000,  tarifa: 10.0,  label: '250 – 1000 M'  },
-  { min: 1000000001,   max: Infinity,    tarifa: 11.0,  label: '> 1000 M'      },
+  { min: 0,          max: 10000000,  tarifa: 5.0,  label: '0 – 10 M'  },
+  { min: 10000001,   max: 20000000,  tarifa: 6.0,  label: '10 – 20 M' },
+  { min: 20000001,   max: 40000000,  tarifa: 6.5,  label: '20 – 40 M' },
+  { min: 40000001,   max: 60000000,  tarifa: 7.0,  label: '40 – 60 M' },
+  { min: 60000001,   max: Infinity,  tarifa: 8.0,  label: '> 60 M'    },
 ];
+
+// Commercial / Industrial / Special Services → flat 10‰ (urban)
+const COMERCIAL_TARIFA = 10.0;
+const COMERCIAL_LABEL  = 'Comercial/Industrial';
+const COMERCIAL_DESTS  = `COALESCE(dest_eco,'') IN ('B','C','Q')`;
 
 function bracketSQL(col, brackets) {
   return brackets.map(b => {
@@ -40,6 +46,18 @@ function tarifaSQL(col, brackets) {
   }).join(' ');
 }
 
+/** Urban new tarifa: commercial = 10‰, others = non-stratified brackets */
+function tarifaNuevaUrban(avaluoCol) {
+  return `CASE WHEN ${COMERCIAL_DESTS} THEN ${COMERCIAL_TARIFA}
+               ELSE (CASE ${tarifaSQL(avaluoCol, NEW_BRACKETS)} END) END`;
+}
+
+/** Urban new rango label: commercial = 'Comercial/Industrial', others = bracket label */
+function rangoNuevoUrban(avaluoCol) {
+  return `CASE WHEN ${COMERCIAL_DESTS} THEN '${COMERCIAL_LABEL}'
+               ELSE (CASE ${bracketSQL(avaluoCol, NEW_BRACKETS)} END) END`;
+}
+
 /* ── In-memory cache (TTL = 10 min) ─────────────────────────────── */
 
 const CACHE_TTL = 10 * 60 * 1000;
@@ -57,8 +75,6 @@ function cacheSet(key, data) {
 export function clearCache() { _cache.clear(); }
 
 /* ── Exclusión predios municipales ─────────────────────────────── */
-// El Municipio de Santander de Quilichao aparece con 3 variantes tipográficas
-// en el campo propietario. Todos sus predios están exentos del predial.
 const EXCL = `(propietario IS NULL OR propietario NOT ILIKE 'MUN%SANTANDER DE QUILI%')`;
 
 /* ── Shared WHERE helper ─────────────────────────────────────────── */
@@ -112,9 +128,9 @@ export async function getStats({ barrio = null } = {}) {
       SUM(avaluo_nuevo - avaluo_antiguo)                         AS diferencia_total,
       ROUND(SUM(avaluo_antiguo * (CASE ${tarifaSQL('avaluo_antiguo', OLD_BRACKETS)} END) / 1000)::numeric, 0)
                                                                  AS recaudo_antiguo_old_tarifa,
-      ROUND(SUM(avaluo_nuevo   * (CASE ${tarifaSQL('avaluo_nuevo',   NEW_BRACKETS)} END) / 1000)::numeric, 0)
+      ROUND(SUM(avaluo_nuevo * ${tarifaNuevaUrban('avaluo_nuevo')} / 1000)::numeric, 0)
                                                                  AS recaudo_nuevo_new_tarifa,
-      ROUND(SUM(avaluo_nuevo   * (CASE ${tarifaSQL('avaluo_nuevo',   OLD_BRACKETS)} END) / 1000)::numeric, 0)
+      ROUND(SUM(avaluo_nuevo * (CASE ${tarifaSQL('avaluo_nuevo', OLD_BRACKETS)} END) / 1000)::numeric, 0)
                                                                  AS recaudo_nuevo_old_tarifa,
       MIN(avaluo_nuevo)  AS min_nuevo,  MAX(avaluo_nuevo)  AS max_nuevo,
       MIN(avaluo_antiguo) AS min_antiguo, MAX(avaluo_antiguo) AS max_antiguo
@@ -129,6 +145,8 @@ export async function getStats({ barrio = null } = {}) {
 
 /**
  * Bracket distribution — optionally filtered by barrio.
+ * New brackets: 5 urban non-stratified + 1 commercial/industrial bucket.
+ * Old brackets: 5 urban non-stratified (no commercial distinction for old).
  */
 export async function getBracketDistribution({ barrio = null } = {}) {
   const key = `brackets_${barrio || 'all'}`;
@@ -140,15 +158,15 @@ export async function getBracketDistribution({ barrio = null } = {}) {
 
   const { rows } = await pool.query(`
     SELECT
-      CASE ${bracketSQL('avaluo_nuevo', NEW_BRACKETS)} END   AS rango,
-      CASE ${tarifaSQL('avaluo_nuevo', NEW_BRACKETS)} END    AS tarifa,
-      COUNT(*)                                                AS predios,
-      ROUND(SUM(avaluo_nuevo)::numeric, 0)                    AS suma_avaluo,
-      ROUND(SUM(avaluo_nuevo * (CASE ${tarifaSQL('avaluo_nuevo', NEW_BRACKETS)} END) / 1000)::numeric, 0)
-                                                              AS recaudo_estimado
+      ${rangoNuevoUrban('avaluo_nuevo')}                                  AS rango,
+      ${tarifaNuevaUrban('avaluo_nuevo')}                                 AS tarifa,
+      COUNT(*)                                                             AS predios,
+      ROUND(SUM(avaluo_nuevo)::numeric, 0)                                AS suma_avaluo,
+      ROUND(SUM(avaluo_nuevo * ${tarifaNuevaUrban('avaluo_nuevo')} / 1000)::numeric, 0)
+                                                                           AS recaudo_estimado
     FROM ${TBL}
     WHERE avaluo_nuevo IS NOT NULL AND ${EXCL} ${w}
-    GROUP BY 1, 2 ORDER BY tarifa
+    GROUP BY 1, 2 ORDER BY tarifa::numeric
   `, p);
 
   const { rows: oldRows } = await pool.query(`
@@ -186,7 +204,7 @@ export async function getParetoData({ barrio = null } = {}) {
         codigo,
         barrio,
         avaluo_nuevo,
-        ROUND((avaluo_nuevo * (CASE ${tarifaSQL('avaluo_nuevo', NEW_BRACKETS)} END) / 1000)::numeric, 0) AS impuesto
+        ROUND((avaluo_nuevo * ${tarifaNuevaUrban('avaluo_nuevo')} / 1000)::numeric, 0) AS impuesto
       FROM ${TBL}
       WHERE avaluo_nuevo IS NOT NULL AND ${EXCL} ${w}
     ),
@@ -241,11 +259,11 @@ export async function getBarrioImpact() {
       ROUND(AVG(avaluo_antiguo)::numeric, 0)  AS avg_avaluo_antiguo,
       ROUND(((AVG(avaluo_nuevo::numeric) / NULLIF(AVG(avaluo_antiguo::numeric), 0)) - 1) * 100, 1)
                                                AS avg_pct_incremento,
-      ROUND(SUM(avaluo_nuevo   * (CASE ${tarifaSQL('avaluo_nuevo',   NEW_BRACKETS)} END) / 1000)::numeric, 0)
+      ROUND(SUM(avaluo_nuevo   * ${tarifaNuevaUrban('avaluo_nuevo')}   / 1000)::numeric, 0)
                                                AS recaudo_nuevo,
       ROUND(SUM(avaluo_antiguo * (CASE ${tarifaSQL('avaluo_antiguo', OLD_BRACKETS)} END) / 1000)::numeric, 0)
                                                AS recaudo_antiguo,
-      ROUND(AVG(avaluo_nuevo   * (CASE ${tarifaSQL('avaluo_nuevo',   NEW_BRACKETS)} END) / 1000)::numeric, 0)
+      ROUND(AVG(avaluo_nuevo   * ${tarifaNuevaUrban('avaluo_nuevo')}   / 1000)::numeric, 0)
                                                AS avg_impuesto_nuevo,
       ROUND(AVG(avaluo_antiguo * (CASE ${tarifaSQL('avaluo_antiguo', OLD_BRACKETS)} END) / 1000)::numeric, 0)
                                                AS avg_impuesto_antiguo,
@@ -278,13 +296,13 @@ export async function getBarrioGeoJSON() {
         'type', 'Feature',
         'geometry', ST_AsGeoJSON(geom, 5)::jsonb,
         'properties', jsonb_build_object(
-          'barrio',        barrio,
-          'predios',       predios,
-          'avaluo_nuevo',  avaluo_nuevo,
-          'avaluo_antiguo',avaluo_antiguo,
-          'incremento_pct',incremento_pct,
-          'impuesto_nuevo',impuesto_nuevo,
-          'recaudo_nuevo', recaudo_nuevo,
+          'barrio',         barrio,
+          'predios',        predios,
+          'avaluo_nuevo',   avaluo_nuevo,
+          'avaluo_antiguo', avaluo_antiguo,
+          'incremento_pct', incremento_pct,
+          'impuesto_nuevo', impuesto_nuevo,
+          'recaudo_nuevo',  recaudo_nuevo,
           'recaudo_antiguo',recaudo_antiguo
         )
       ) AS feature
@@ -298,15 +316,16 @@ export async function getBarrioGeoJSON() {
 }
 
 /**
- * Property-level GeoJSON — individual polygons for a specific barrio.
- * Barrio is required (too many records to return all at once).
+ * Property-level GeoJSON — individual polygons with tax/valuation data.
+ * Supports optional barrio filter; returns all predios when barrio is null.
  */
-export async function getPropertyGeoJSON({ barrio } = {}) {
-  if (!barrio) return { type: 'FeatureCollection', features: [] };
-
-  const cacheKey = `geojson_predios_${barrio}`;
+export async function getPropertyGeoJSON({ barrio = null } = {}) {
+  const cacheKey = `geojson_predios_${barrio || 'all'}`;
   const cached   = cacheGet(cacheKey);
   if (cached) return cached;
+
+  const barrioFilter = barrio ? `AND barrio = $1` : '';
+  const params = barrio ? [barrio] : [];
 
   const { rows } = await pool.query(`
     SELECT jsonb_build_object(
@@ -316,11 +335,12 @@ export async function getPropertyGeoJSON({ barrio } = {}) {
     FROM (
       SELECT jsonb_build_object(
         'type', 'Feature',
-        'geometry', ST_AsGeoJSON(ST_Simplify(geom, 0.000005), 6)::jsonb,
+        'geometry', ST_AsGeoJSON(ST_Simplify(geom, 0.00008), 5)::jsonb,
         'properties', jsonb_build_object(
           'codigo',           codigo,
           'barrio',           COALESCE(barrio, '(Sin nombre)'),
           'propietario',      propietario,
+          'dest_eco',         dest_eco,
           'avaluo_nuevo',     avaluo_nuevo,
           'avaluo_antiguo',   avaluo_antiguo,
           'area_predio',      area_predio,
@@ -329,21 +349,21 @@ export async function getPropertyGeoJSON({ barrio } = {}) {
             THEN ROUND((((avaluo_nuevo::float / avaluo_antiguo) - 1) * 100)::numeric, 1)
             ELSE NULL END,
           'impuesto_nuevo',   CASE WHEN avaluo_nuevo IS NOT NULL
-            THEN ROUND((avaluo_nuevo * (CASE ${tarifaSQL('avaluo_nuevo', NEW_BRACKETS)} END) / 1000)::numeric, 0)
+            THEN ROUND((avaluo_nuevo * ${tarifaNuevaUrban('avaluo_nuevo')} / 1000)::numeric, 0)
             ELSE NULL END,
           'impuesto_antiguo', CASE WHEN avaluo_antiguo IS NOT NULL
             THEN ROUND((avaluo_antiguo * (CASE ${tarifaSQL('avaluo_antiguo', OLD_BRACKETS)} END) / 1000)::numeric, 0)
             ELSE NULL END,
           'tarifa_nueva',     CASE WHEN avaluo_nuevo IS NOT NULL
-            THEN CASE ${tarifaSQL('avaluo_nuevo', NEW_BRACKETS)} END ELSE NULL END,
+            THEN ${tarifaNuevaUrban('avaluo_nuevo')} ELSE NULL END,
           'rango_nuevo',      CASE WHEN avaluo_nuevo IS NOT NULL
-            THEN CASE ${bracketSQL('avaluo_nuevo', NEW_BRACKETS)} END ELSE NULL END
+            THEN ${rangoNuevoUrban('avaluo_nuevo')} ELSE NULL END
         )
       ) AS feature
       FROM ${TBL}
-      WHERE geom IS NOT NULL AND barrio = $1 AND ${EXCL}
+      WHERE geom IS NOT NULL ${barrioFilter} AND ${EXCL}
     ) f
-  `, [barrio]);
+  `, params);
 
   const result = rows[0]?.geojson || { type: 'FeatureCollection', features: [] };
   cacheSet(cacheKey, result);
