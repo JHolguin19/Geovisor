@@ -64,6 +64,13 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-shrink: 0;
+}
+
+/* ── User badge (header) ── */
+.plan-user-badge {
+  display: flex;
+  align-items: center;
 }
 
 .plan-back-btn {
@@ -907,6 +914,11 @@
   .visor-topbar-title { font-size: 13px; letter-spacing: .3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
   .visor-topbar-back  { padding: 4px 8px; font-size: 10.5px; }
   .visor-topbar-badge { display: none; }
+  /* Header brand — hide long entity name, shrink name font */
+  .plan-entity          { display: none; }
+  .plan-header-name     { font-size: 13px; }
+  .plan-header-brand    { gap: 8px; }
+  .plan-user-badge      { display: none; }
 }
 
 @media (max-width: 480px) {
@@ -915,4 +927,18 @@
   .sidepanel  { width: calc(100vw - 32px); right: 16px; left: 16px; top: 8px; }
   .visor-topbar-sep { display: none; }
   .visor-topbar-back span { display: none; }
+  /* Hide first (Colombia flag) logo to save header space */
+  .plan-logo:first-child { display: none; }
+  .plan-hero  { flex-wrap: wrap; margin-bottom: 24px; }
+}
+
+@media (max-width: 360px) {
+  .plan-main      { padding: 18px 12px 28px; }
+  .plan-title     { font-size: 18px; }
+  .plan-hero      { gap: 10px; margin-bottom: 18px; }
+  .plan-hero-icon { width: 36px; height: 36px; border-radius: 10px; }
+  .plan-card      { padding: 16px 14px; gap: 10px; }
+  .plan-card-name { font-size: 16px; }
+  .plan-card-icon { width: 40px; height: 40px; font-size: 20px; }
+  .plan-grid      { gap: 10px; }
 }

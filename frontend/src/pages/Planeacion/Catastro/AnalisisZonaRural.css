@@ -715,6 +715,7 @@
   .azr-card-header { padding: 10px 14px; }
   .azr-card-body { padding: 14px; }
   .azr-popup { min-width: 230px; max-width: 280px; padding: 12px 14px 10px; }
+  .azr-user-badge { display: none; }
 }
 
 /* Small phones */
@@ -736,4 +737,28 @@
   .azr-popup-val { font-size: 12.5px; }
   .azr-popup-label { font-size: 10px; }
   .azr-impact-val { font-size: 22px; }
+  /* Filter bar: stack vertically */
+  .azr-filter-bar   { flex-direction: column; align-items: flex-start; }
+  .azr-filter-group { width: 100%; flex-wrap: wrap; }
+  .azr-filter-input { width: 100%; min-width: 0; }
+  .azr-filter-select { width: 100%; max-width: none; }
+  /* Pareto chart: allow horizontal scroll inside card */
+  .azr-card        { overflow: auto; }
+  .azr-pareto-svg  { min-width: 440px; }
+}
+
+/* Extra-small phones */
+@media (max-width: 360px) {
+  .azr-scroll     { padding: 10px 8px 24px; }
+  .azr-kpi        { padding: 10px 8px; }
+  .azr-kpi-value  { font-size: 16px; }
+  .azr-kpi-label  { font-size: 8px; }
+  .azr-section    { margin-bottom: 18px; }
+  .azr-section-title { font-size: 10px; letter-spacing: .8px; }
+  .azr-map-wrap   { height: 260px; }
+  .azr-filter-range { width: 60px; }
+  .azr-impact-val { font-size: 20px; }
+  .azr-impact-card { padding: 14px 12px; }
+  .azr-card-header { padding: 8px 12px; }
+  .azr-card-body  { padding: 10px; }
 }
