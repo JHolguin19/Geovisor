@@ -9,18 +9,35 @@ import './AnalisisZonaUrbana.css';
 const fmtM = n => {
   if (n == null) return '—';
   const v = Number(n);
-  if (v >= 1e12) return `$${(v / 1e12).toFixed(1)} B`;
-  if (v >= 1e9)  return `$${(v / 1e9).toFixed(1)} B`;
-  if (v >= 1e6)  return `$${(v / 1e6).toFixed(1)} M`;
+  if (v >= 1e9) return `$${(v / 1e9).toFixed(1)} mM`;
+  if (v >= 1e6) return `$${(v / 1e6).toFixed(1)} M`;
   return `$${v.toLocaleString('es-CO')}`;
 };
 const fmtN   = n => n == null ? '—' : Number(n).toLocaleString('es-CO');
 const fmtPct = n => n == null ? '—' : `${Number(n).toFixed(1)}%`;
 
+/* ── Economic destination map ── */
+const DEST_ECO = {
+  A:'Habitacional', B:'Industrial', C:'Comercial', D:'Agrícola',
+  E:'Minería', F:'Cultural', G:'Recreacional', H:'Salud',
+  I:'Institucional', J:'Educativo', K:'Religioso', L:'Cultivos',
+  M:'Pecuario', N:'Agroindustrial', O:'Forestal', P:'Uso Público',
+  Q:'Serv. Especiales', R:'Lote Urbanizable', S:'Lote No Edificado', T:'No Urbanizable',
+};
+
 /* ── Color palettes ── */
+// 6 colors: 5 urban brackets + commercial (10‰)
 const BRACKET_COLORS_NEW = ['#22c55e','#3b82f6','#8b5cf6','#f59e0b','#ef4444','#991b1b'];
 const BRACKET_COLORS_OLD = ['#86efac','#93c5fd','#c4b5fd','#fcd34d','#fca5a5'];
-const PARETO_COLOR = '#1565C0';
+const PARETO_COLOR = '#166534';
+
+/* ── Rural-style choropleth colors (green → yellow → orange → red) ── */
+const MAP_COLORS = [
+  '#d1fae5','#a7f3d0','#6ee7b7','#34d399',
+  '#fef9c3','#fde047','#facc15',
+  '#fdba74','#fb923c','#f97316',
+  '#f87171','#ef4444','#dc2626','#7f1d1d',
+];
 
 /* ============================================================================
    MAIN PAGE
@@ -29,14 +46,13 @@ const PARETO_COLOR = '#1565C0';
 export default function AnalisisZonaUrbana() {
   const { user } = useContext(AuthContext);
 
-  const [barrio, setBarrio]           = useState(null);
-  const [barrios, setBarrios]         = useState([]);
-  const [stats, setStats]             = useState(null);
-  const [brackets, setBrackets]       = useState(null);
-  const [pareto, setPareto]           = useState(null);
+  const [barrio, setBarrio]             = useState(null);
+  const [barrios, setBarrios]           = useState([]);
+  const [stats, setStats]               = useState(null);
+  const [brackets, setBrackets]         = useState(null);
+  const [pareto, setPareto]             = useState(null);
   const [barrioImpact, setBarrioImpact] = useState(null);
-  const [loading, setLoading]         = useState(true);
-  const [filterLoading, setFilterLoading] = useState(false);
+  const [loading, setLoading]           = useState(true);
 
   /* Initial load — barrios list + static barrioImpact */
   useEffect(() => {
@@ -49,7 +65,7 @@ export default function AnalisisZonaUrbana() {
     }).catch(console.error);
   }, []);
 
-  /* Re-fetch filterable data whenever barrio changes (null = all) */
+  /* Re-fetch filterable data whenever barrio changes */
   useEffect(() => {
     setLoading(true);
     Promise.all([
@@ -57,14 +73,13 @@ export default function AnalisisZonaUrbana() {
       zonaUrbanaAvaluosService.getBrackets(barrio),
       zonaUrbanaAvaluosService.getPareto(barrio),
     ]).then(([s, b, p]) => {
-      setStats(s);
-      setBrackets(b);
-      setPareto(p);
+      setStats(s); setBrackets(b); setPareto(p);
     }).catch(console.error)
     .finally(() => setLoading(false));
   }, [barrio]);
 
-  const isFiltered = barrio !== null;
+  const clearBarrio = useCallback(() => setBarrio(null), []);
+  const isFiltered  = barrio !== null;
 
   return (
     <div className="azu-page">
@@ -113,9 +128,8 @@ export default function AnalisisZonaUrbana() {
               </div>
               <select
                 className="azu-filter-banner-select"
-                value={barrio || ''}
+                value={barrio === null ? '' : barrio}
                 onChange={e => setBarrio(e.target.value || null)}
-                disabled={loading && barrios.length === 0}
               >
                 <option value="">Todos los barrios ({barrios.length})</option>
                 {barrios.map(b => (
@@ -127,7 +141,11 @@ export default function AnalisisZonaUrbana() {
               {isFiltered && (
                 <>
                   <span className="azu-filter-chip">{barrio}</span>
-                  <button className="azu-filter-clear-btn" onClick={() => setBarrio(null)}>
+                  <button
+                    type="button"
+                    className="azu-filter-clear-btn"
+                    onClick={clearBarrio}
+                  >
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
                       <path d="M18 6L6 18M6 6l12 12"/>
                     </svg>
@@ -223,10 +241,10 @@ export default function AnalisisZonaUrbana() {
             <div className="azu-card">
               <div className="azu-card-header">
                 <span className="azu-card-title">
-                  {barrio ? `Mapa de Predios — ${barrio}` : 'Mapa Coroplético — Barrios Urbanos'}
+                  {barrio ? `Mapa de Predios — ${barrio}` : 'Mapa Coroplético — Predios Urbanos'}
                 </span>
-                <span className="azu-card-badge azu-card-badge--blue">
-                  {barrio ? 'Predios individuales' : 'Clic en barrio para filtrar'}
+                <span className="azu-card-badge azu-card-badge--green">
+                  {barrio ? `Filtrado: ${barrio}` : 'Predios individuales'}
                 </span>
               </div>
               <MapSection barrio={barrio} onSelectBarrio={setBarrio} />
@@ -237,7 +255,7 @@ export default function AnalisisZonaUrbana() {
           <section className="azu-section">
             {!barrioImpact
               ? <div className="azu-card"><div className="azu-skel" style={{ height: 300, margin: 16 }} /></div>
-              : <BarrioTable data={barrioImpact} selectedBarrio={barrio} onSelectBarrio={setBarrio} />
+              : <BarrioTable data={barrioImpact} selectedBarrio={barrio} onSelectBarrio={setBarrio} onClearBarrio={clearBarrio} />
             }
           </section>
 
@@ -353,28 +371,25 @@ function ParetoChart({ data }) {
     if (pts[i].pctR >= 80) { cross80 = pts[i]; break; }
   }
 
-  const yTicks = [0, 20, 40, 60, 80, 100];
-  const xTicks = [0, 20, 40, 60, 80, 100];
-
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="azu-pareto-svg">
-      {yTicks.map(t => (
+      {[0,20,40,60,80,100].map(t => (
         <g key={`y${t}`}>
-          <line className="azu-pareto-grid" x1={pad.l} x2={W - pad.r} y1={pad.t + ch - t / 100 * ch} y2={pad.t + ch - t / 100 * ch} />
-          <text x={pad.l - 6} y={pad.t + ch - t / 100 * ch + 3} textAnchor="end" fontSize="9" fill="#94a3b8" fontWeight="600">{t}%</text>
+          <line className="azu-pareto-grid" x1={pad.l} x2={W-pad.r} y1={pad.t+ch-t/100*ch} y2={pad.t+ch-t/100*ch} />
+          <text x={pad.l-6} y={pad.t+ch-t/100*ch+3} textAnchor="end" fontSize="9" fill="#94a3b8" fontWeight="600">{t}%</text>
         </g>
       ))}
-      {xTicks.map(t => (
-        <text key={`x${t}`} x={pad.l + t / 100 * cw} y={H - pad.b + 16} textAnchor="middle" fontSize="9" fill="#94a3b8" fontWeight="600">{t}%</text>
+      {[0,20,40,60,80,100].map(t => (
+        <text key={`x${t}`} x={pad.l+t/100*cw} y={H-pad.b+16} textAnchor="middle" fontSize="9" fill="#94a3b8" fontWeight="600">{t}%</text>
       ))}
-      <text x={W / 2} y={H - 4} textAnchor="middle" fontSize="10" fill="#64748b" fontWeight="700">% Acumulado de Predios (mayor avalúo → menor)</text>
-      <text x={12} y={H / 2} textAnchor="middle" fontSize="10" fill="#64748b" fontWeight="700" transform={`rotate(-90 12 ${H / 2})`}>% Acum. Recaudo</text>
-      <line className="azu-pareto-rule" x1={pad.l} x2={W - pad.r} y1={pad.t + ch - 0.8 * ch} y2={pad.t + ch - 0.8 * ch} />
-      <text className="azu-pareto-label-80" x={W - pad.r + 4} y={pad.t + ch - 0.8 * ch + 3}>80%</text>
+      <text x={W/2} y={H-4} textAnchor="middle" fontSize="10" fill="#64748b" fontWeight="700">% Acumulado de Predios (mayor avalúo → menor)</text>
+      <text x={12} y={H/2} textAnchor="middle" fontSize="10" fill="#64748b" fontWeight="700" transform={`rotate(-90 12 ${H/2})`}>% Acum. Recaudo</text>
+      <line className="azu-pareto-rule" x1={pad.l} x2={W-pad.r} y1={pad.t+ch-0.8*ch} y2={pad.t+ch-0.8*ch} />
+      <text className="azu-pareto-label-80" x={W-pad.r+4} y={pad.t+ch-0.8*ch+3}>80%</text>
       {cross80 && (
         <>
-          <line className="azu-pareto-rule" x1={cross80.x} x2={cross80.x} y1={pad.t} y2={pad.t + ch} />
-          <text className="azu-pareto-label-80" x={cross80.x} y={pad.t - 4} textAnchor="middle">
+          <line className="azu-pareto-rule" x1={cross80.x} x2={cross80.x} y1={pad.t} y2={pad.t+ch} />
+          <text className="azu-pareto-label-80" x={cross80.x} y={pad.t-4} textAnchor="middle">
             {cross80.pctP.toFixed(0)}% predios → {cross80.pctR.toFixed(0)}% recaudo
           </text>
         </>
@@ -398,7 +413,32 @@ function ImpactCard({ label, value, sub, color }) {
   );
 }
 
-/* ── Map section: barrio choropleth (no filter) or individual predios (filtered) ── */
+/* ── Popup sub-components ── */
+function PopupRow({ label, value, highlight, rise, fall }) {
+  const cls = highlight ? ' azu-popup-val--highlight'
+            : rise      ? ' azu-popup-val--rise'
+            : fall      ? ' azu-popup-val--fall'
+            : '';
+  return (
+    <div className="azu-popup-row">
+      <span className="azu-popup-label">{label}</span>
+      <span className={`azu-popup-val${cls}`}>{value}</span>
+    </div>
+  );
+}
+
+function DestEcoChip({ code }) {
+  const label = code ? (DEST_ECO[code] || code) : 'No especificado';
+  return (
+    <span className="azu-dest-eco-chip">
+      {code && <strong>{code}</strong>}
+      {code && ' · '}
+      {label}
+    </span>
+  );
+}
+
+/* ── Map section ── */
 function MapSection({ barrio, onSelectBarrio }) {
   const wrapRef    = useRef(null);
   const mapRef     = useRef(null);
@@ -410,16 +450,13 @@ function MapSection({ barrio, onSelectBarrio }) {
   const [mapLoading, setMapLoading] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [popupData, setPopupData]   = useState(null);
-  const isPredios = barrio !== null;
 
-  /* Fetch correct GeoJSON when barrio changes */
+  /* Fetch GeoJSON when barrio changes — always show individual predios */
   useEffect(() => {
     setMapLoading(true);
     setPopupData(null);
-    const fn = barrio
-      ? zonaUrbanaAvaluosService.getPropertyGeoJSON(barrio)
-      : zonaUrbanaAvaluosService.getBarrioGeoJSON();
-    fn
+    setGeojson(null);
+    zonaUrbanaAvaluosService.getPropertyGeoJSON(barrio)
       .then(data => { setGeojson(data); setMapLoading(false); })
       .catch(e => { console.error(e); setMapLoading(false); });
   }, [barrio]);
@@ -471,48 +508,37 @@ function MapSection({ barrio, onSelectBarrio }) {
       const { fromLonLat }            = await import('ol/proj');
       if (cancelled) return;
 
-      const URB_COLORS = [
-        '#dbeafe','#bfdbfe','#93c5fd','#60a5fa',
-        '#fef9c3','#fde047','#facc15',
-        '#fdba74','#fb923c','#f97316',
-        '#f87171','#ef4444','#dc2626','#7f1d1d',
-      ];
       const NO_DATA = '#cbd5e1';
 
       const getColor = (feature) => {
         const p = feature.getProperties();
         let raw, steps;
         if (mode === 'impuesto') {
-          raw = isPredios ? p.impuesto_nuevo : p.recaudo_nuevo;
-          steps = isPredios
-            ? [20000,50000,100000,200000,400000,800000,1500000,3000000,5000000,8000000,15000000,30000000,60000000]
-            : [500000,1e6,2e6,4e6,8e6,15e6,25e6,40e6,60e6,100e6,150e6,250e6,400e6];
+          raw   = p.impuesto_nuevo;
+          steps = [20000,50000,100000,200000,400000,800000,1500000,3000000,5000000,8000000,15000000,30000000,60000000];
         } else if (mode === 'avaluo') {
-          raw = p.avaluo_nuevo;
-          steps = isPredios
-            ? [3e6,7e6,10e6,20e6,40e6,60e6,100e6,250e6,500e6,1e9,2e9,5e9,10e9]
-            : [10e6,20e6,40e6,80e6,150e6,300e6,600e6,1e9,2e9,5e9,10e9,20e9,50e9];
+          raw   = p.avaluo_nuevo;
+          steps = [3e6,7e6,10e6,20e6,40e6,60e6,100e6,250e6,500e6,1e9,2e9,5e9,10e9];
         } else {
-          raw = p.incremento_pct;
+          raw   = p.incremento_pct;
           steps = [-10,0,10,30,60,100,200,400,700,1200,2000,4000,8000];
         }
         if (raw == null) return NO_DATA;
         const val = Number(raw);
         let idx = steps.findIndex(s => val <= s);
-        if (idx === -1) idx = URB_COLORS.length - 1;
-        return URB_COLORS[idx];
+        if (idx === -1) idx = MAP_COLORS.length - 1;
+        return MAP_COLORS[idx];
       };
 
       const source = new VectorSource({
         features: new GeoJSON().readFeatures(geojson, { featureProjection: 'EPSG:3857' }),
       });
 
-      const strokeColor = isPredios ? '#1565C0' : '#1976D2';
       const layer = new VectorLayer({
         source,
         style: (feature) => new Style({
           fill:   new Fill({ color: getColor(feature) + 'c8' }),
-          stroke: new Stroke({ color: strokeColor, width: isPredios ? 0.5 : 1.2 }),
+          stroke: new Stroke({ color: '#166534', width: 0.5 }),
         }),
       });
 
@@ -534,15 +560,13 @@ function MapSection({ barrio, onSelectBarrio }) {
       });
 
       const ext = source.getExtent();
-      if (ext[0] !== Infinity) map.getView().fit(ext, { padding: [40, 40, 40, 40], maxZoom: 16 });
+      if (ext[0] !== Infinity) map.getView().fit(ext, { padding: [40,40,40,40], maxZoom: 16 });
 
       map.on('click', (evt) => {
         const feature = map.forEachFeatureAtPixel(evt.pixel, f => f);
         if (feature) {
           const props = feature.getProperties();
-          /* Always show popup; flag barrio features so the popup renders
-             a "Ver predios" drill-down button instead of property details. */
-          setPopupData({ ...props, _isBarrio: !isPredios });
+          setPopupData(props);
           overlay.setPosition(evt.coordinate);
         } else {
           setPopupData(null);
@@ -551,8 +575,7 @@ function MapSection({ barrio, onSelectBarrio }) {
       });
 
       map.on('pointermove', (evt) => {
-        const hit = map.hasFeatureAtPixel(evt.pixel);
-        map.getTargetElement().style.cursor = hit ? 'pointer' : '';
+        map.getTargetElement().style.cursor = map.hasFeatureAtPixel(evt.pixel) ? 'pointer' : '';
       });
 
       olMapRef.current = map;
@@ -562,63 +585,100 @@ function MapSection({ barrio, onSelectBarrio }) {
       cancelled = true;
       if (olMapRef.current) { olMapRef.current.setTarget(null); olMapRef.current = null; }
     };
-  }, [geojson, mode, isPredios]);
+  }, [geojson, mode]);
 
-  const handleMode = useCallback((m) => {
-    setMode(m);
-    closePopup();
-  }, [closePopup]);
+  const handleMode = useCallback((m) => { setMode(m); closePopup(); }, [closePopup]);
 
   const LEGEND_MAP = {
-    impuesto: isPredios ? [
-      { color: '#dbeafe', label: '< $20K' },       { color: '#bfdbfe', label: '$20K–50K' },
-      { color: '#93c5fd', label: '$50K–100K' },     { color: '#60a5fa', label: '$100K–200K' },
-      { color: '#fef9c3', label: '$200K–400K' },    { color: '#fde047', label: '$400K–800K' },
-      { color: '#facc15', label: '$800K–1.5M' },    { color: '#fdba74', label: '$1.5M–3M' },
-      { color: '#fb923c', label: '$3M–5M' },        { color: '#f97316', label: '$5M–8M' },
-      { color: '#f87171', label: '$8M–15M' },       { color: '#ef4444', label: '$15M–30M' },
-      { color: '#dc2626', label: '$30M–60M' },      { color: '#7f1d1d', label: '> $60M' },
-    ] : [
-      { color: '#dbeafe', label: '< $500K' },       { color: '#bfdbfe', label: '$500K–1M' },
-      { color: '#93c5fd', label: '$1M–2M' },        { color: '#60a5fa', label: '$2M–4M' },
-      { color: '#fef9c3', label: '$4M–8M' },        { color: '#fde047', label: '$8M–15M' },
-      { color: '#facc15', label: '$15M–25M' },      { color: '#fdba74', label: '$25M–40M' },
-      { color: '#fb923c', label: '$40M–60M' },      { color: '#f97316', label: '$60M–100M' },
-      { color: '#f87171', label: '$100M–150M' },    { color: '#ef4444', label: '$150M–250M' },
-      { color: '#dc2626', label: '$250M–400M' },    { color: '#7f1d1d', label: '> $400M' },
+    impuesto: [
+      { color: MAP_COLORS[0],  label: '< $20K' },       { color: MAP_COLORS[1],  label: '$20K–50K' },
+      { color: MAP_COLORS[2],  label: '$50K–100K' },     { color: MAP_COLORS[3],  label: '$100K–200K' },
+      { color: MAP_COLORS[4],  label: '$200K–400K' },    { color: MAP_COLORS[5],  label: '$400K–800K' },
+      { color: MAP_COLORS[6],  label: '$800K–1.5M' },    { color: MAP_COLORS[7],  label: '$1.5M–3M' },
+      { color: MAP_COLORS[8],  label: '$3M–5M' },        { color: MAP_COLORS[9],  label: '$5M–8M' },
+      { color: MAP_COLORS[10], label: '$8M–15M' },       { color: MAP_COLORS[11], label: '$15M–30M' },
+      { color: MAP_COLORS[12], label: '$30M–60M' },      { color: MAP_COLORS[13], label: '> $60M' },
     ],
-    avaluo: isPredios ? [
-      { color: '#dbeafe', label: '< $3M' },         { color: '#bfdbfe', label: '$3M–7M' },
-      { color: '#93c5fd', label: '$7M–10M' },       { color: '#60a5fa', label: '$10M–20M' },
-      { color: '#fef9c3', label: '$20M–40M' },      { color: '#fde047', label: '$40M–60M' },
-      { color: '#facc15', label: '$60M–100M' },     { color: '#fdba74', label: '$100M–250M' },
-      { color: '#fb923c', label: '$250M–500M' },    { color: '#f97316', label: '$500M–1B' },
-      { color: '#f87171', label: '$1B–2B' },        { color: '#ef4444', label: '$2B–5B' },
-      { color: '#dc2626', label: '$5B–10B' },       { color: '#7f1d1d', label: '> $10B' },
-    ] : [
-      { color: '#dbeafe', label: '< $10M' },        { color: '#bfdbfe', label: '$10M–20M' },
-      { color: '#93c5fd', label: '$20M–40M' },      { color: '#60a5fa', label: '$40M–80M' },
-      { color: '#fef9c3', label: '$80M–150M' },     { color: '#fde047', label: '$150M–300M' },
-      { color: '#facc15', label: '$300M–600M' },    { color: '#fdba74', label: '$600M–1B' },
-      { color: '#fb923c', label: '$1B–2B' },        { color: '#f97316', label: '$2B–5B' },
-      { color: '#f87171', label: '$5B–10B' },       { color: '#ef4444', label: '$10B–20B' },
-      { color: '#dc2626', label: '$20B–50B' },      { color: '#7f1d1d', label: '> $50B' },
+    avaluo: [
+      { color: MAP_COLORS[0],  label: '< $3M' },         { color: MAP_COLORS[1],  label: '$3M–7M' },
+      { color: MAP_COLORS[2],  label: '$7M–10M' },       { color: MAP_COLORS[3],  label: '$10M–20M' },
+      { color: MAP_COLORS[4],  label: '$20M–40M' },      { color: MAP_COLORS[5],  label: '$40M–60M' },
+      { color: MAP_COLORS[6],  label: '$60M–100M' },     { color: MAP_COLORS[7],  label: '$100M–250M' },
+      { color: MAP_COLORS[8],  label: '$250M–500M' },    { color: MAP_COLORS[9],  label: '$500M–1B' },
+      { color: MAP_COLORS[10], label: '$1B–2B' },        { color: MAP_COLORS[11], label: '$2B–5B' },
+      { color: MAP_COLORS[12], label: '$5B–10B' },       { color: MAP_COLORS[13], label: '> $10B' },
     ],
     incremento: [
-      { color: '#dbeafe', label: 'Negativo' },      { color: '#bfdbfe', label: '0%' },
-      { color: '#93c5fd', label: '0–10%' },         { color: '#60a5fa', label: '10–30%' },
-      { color: '#fef9c3', label: '30–60%' },        { color: '#fde047', label: '60–100%' },
-      { color: '#facc15', label: '100–200%' },      { color: '#fdba74', label: '200–400%' },
-      { color: '#fb923c', label: '400–700%' },      { color: '#f97316', label: '700–1200%' },
-      { color: '#f87171', label: '1200–2000%' },    { color: '#ef4444', label: '2000–4000%' },
-      { color: '#dc2626', label: '4000–8000%' },    { color: '#7f1d1d', label: '> 8000%' },
+      { color: MAP_COLORS[0],  label: 'Negativo' },      { color: MAP_COLORS[1],  label: '0%' },
+      { color: MAP_COLORS[2],  label: '0–10%' },         { color: MAP_COLORS[3],  label: '10–30%' },
+      { color: MAP_COLORS[4],  label: '30–60%' },        { color: MAP_COLORS[5],  label: '60–100%' },
+      { color: MAP_COLORS[6],  label: '100–200%' },      { color: MAP_COLORS[7],  label: '200–400%' },
+      { color: MAP_COLORS[8],  label: '400–700%' },      { color: MAP_COLORS[9],  label: '700–1200%' },
+      { color: MAP_COLORS[10], label: '1200–2000%' },    { color: MAP_COLORS[11], label: '2000–4000%' },
+      { color: MAP_COLORS[12], label: '4000–8000%' },    { color: MAP_COLORS[13], label: '> 8000%' },
     ],
   };
 
   const TITLES = {
-    impuesto: isPredios ? 'Impuesto predial anual'     : 'Recaudo total (barrio)',
-    avaluo:   isPredios ? 'Avalúo catastral nuevo'     : 'Avalúo promedio (barrio)',
+    impuesto:   'Impuesto predial anual',
+    avaluo:     'Avalúo catastral nuevo',
     incremento: '% Incremento avalúo',
+  };
+
+  /* ── Popup content for individual predio ── */
+  const PredioPopup = ({ d }) => {
+    const impNuevo = d.impuesto_nuevo != null ? Number(d.impuesto_nuevo) : null;
+    const impAnt   = d.impuesto_antiguo != null ? Number(d.impuesto_antiguo) : null;
+    const diff     = impNuevo != null && impAnt != null ? impNuevo - impAnt : null;
+    const pctImp   = impAnt > 0 && impNuevo != null
+      ? ((impNuevo / impAnt) - 1) * 100 : null;
+
+    return (
+      <>
+        <div className="azu-popup-title">{d.codigo || 'Sin código'}</div>
+
+        <div className="azu-popup-group">
+          <PopupRow label="Propietario" value={d.propietario || '—'} />
+          <PopupRow label="Barrio" value={d.barrio || '—'} />
+          <div className="azu-popup-row">
+            <span className="azu-popup-label">Destinación</span>
+            <DestEcoChip code={d.dest_eco} />
+          </div>
+          <PopupRow label="Área predio"     value={d.area_predio     != null ? fmtN(d.area_predio)     + ' m²' : '—'} />
+          <PopupRow label="Área construida" value={d.area_construida != null ? fmtN(d.area_construida) + ' m²' : '—'} />
+        </div>
+
+        <div className="azu-popup-group">
+          <div className="azu-popup-group-label">Avalúo catastral</div>
+          <PopupRow label="Anterior"   value={fmtM(d.avaluo_antiguo)} />
+          <PopupRow label="Nuevo"      value={fmtM(d.avaluo_nuevo)} highlight />
+          <PopupRow label="Incremento" value={d.incremento_pct != null ? `+${fmtPct(d.incremento_pct)}` : '—'} />
+        </div>
+
+        <div className="azu-popup-group">
+          <div className="azu-popup-group-label">Impuesto predial estimado</div>
+          <PopupRow label="Anterior"      value={fmtM(impAnt)} />
+          <PopupRow label="Proyectado"    value={fmtM(impNuevo)} highlight />
+          <PopupRow label="Tarifa"        value={d.tarifa_nueva != null ? `${d.tarifa_nueva}‰` : '—'} />
+          {diff != null && (
+            <PopupRow
+              label="Diferencia"
+              value={`${diff >= 0 ? '+' : ''}${fmtM(diff)}`}
+              rise={diff > 0}
+              fall={diff < 0}
+            />
+          )}
+          {pctImp != null && (
+            <PopupRow
+              label="% cambio impuesto"
+              value={`${pctImp >= 0 ? '+' : ''}${fmtPct(pctImp)}`}
+              rise={pctImp > 0}
+              fall={pctImp < 0}
+            />
+          )}
+        </div>
+      </>
+    );
   };
 
   return (
@@ -628,7 +688,7 @@ function MapSection({ barrio, onSelectBarrio }) {
       {mapLoading && (
         <div className="azu-map-loading">
           <div className="azu-map-loading-spinner" />
-          {barrio ? `Cargando predios de ${barrio}...` : 'Cargando barrios...'}
+          {barrio ? `Cargando predios de ${barrio}...` : 'Cargando predios...'}
         </div>
       )}
 
@@ -640,14 +700,11 @@ function MapSection({ barrio, onSelectBarrio }) {
             className={`azu-map-btn${mode === m ? ' azu-map-btn--active' : ''}`}
             onClick={() => handleMode(m)}
           >
-            {m === 'impuesto' ? (isPredios ? 'Impuesto' : 'Recaudo') : m === 'avaluo' ? 'Avalúo' : '% Cambio'}
+            {m === 'impuesto' ? 'Impuesto' : m === 'avaluo' ? 'Avalúo' : '% Cambio'}
           </button>
         ))}
-        <button
-          className="azu-map-btn azu-map-btn--fs"
-          onClick={toggleFullscreen}
-          title={isFullscreen ? 'Salir (Esc)' : 'Pantalla completa'}
-        >
+        <button className="azu-map-btn azu-map-btn--fs" onClick={toggleFullscreen}
+          title={isFullscreen ? 'Salir (Esc)' : 'Pantalla completa'}>
           {isFullscreen ? (
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M8 3v4a1 1 0 0 1-1 1H3"/><path d="M21 8h-4a1 1 0 0 1-1-1V3"/>
@@ -677,70 +734,12 @@ function MapSection({ barrio, onSelectBarrio }) {
         </div>
       </div>
 
-      {/* Hint when no barrio is selected */}
-      {!isPredios && !mapLoading && (
-        <div className="azu-map-hint">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>
-          </svg>
-          Clic en un barrio para ver su resumen
-        </div>
-      )}
-
-      {/* Popup — two modes: barrio summary vs individual predio */}
+      {/* Popup */}
       <div ref={popupRef} className="azu-popup-anchor">
         {popupData && (
           <div className="azu-popup">
             <button className="azu-popup-close" onClick={closePopup}>×</button>
-
-            {popupData._isBarrio ? (
-              /* ── Barrio summary popup ── */
-              <>
-                <div className="azu-popup-title">{popupData.barrio}</div>
-                <div className="azu-popup-group">
-                  <PopupRow label="Predios"        value={fmtN(popupData.predios)} />
-                  <PopupRow label="Avalúo prom."   value={fmtM(popupData.avaluo_nuevo)} />
-                  <PopupRow label="Incremento"     value={fmtPct(popupData.incremento_pct)} />
-                  <PopupRow label="Recaudo nuevo"  value={fmtM(popupData.recaudo_nuevo)}  highlight />
-                  <PopupRow label="Recaudo ant."   value={fmtM(popupData.recaudo_antiguo)} />
-                </div>
-                <button
-                  className="azu-popup-drill-btn"
-                  onClick={() => { onSelectBarrio(popupData.barrio); closePopup(); }}
-                >
-                  Ver predios individuales
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <path d="M5 12h14M12 5l7 7-7 7"/>
-                  </svg>
-                </button>
-              </>
-            ) : (
-              /* ── Individual predio popup ── */
-              <>
-                <div className="azu-popup-title">{popupData.codigo || 'Sin código'}</div>
-
-                <div className="azu-popup-group">
-                  <PopupRow label="Propietario"     value={popupData.propietario || '—'} />
-                  <PopupRow label="Barrio"          value={popupData.barrio || '—'} />
-                  <PopupRow label="Área predio"     value={popupData.area_predio     != null ? fmtN(popupData.area_predio)     + ' m²' : '—'} />
-                  <PopupRow label="Área construida" value={popupData.area_construida != null ? fmtN(popupData.area_construida) + ' m²' : '—'} />
-                </div>
-
-                <div className="azu-popup-group">
-                  <div className="azu-popup-group-label">Avalúo catastral</div>
-                  <PopupRow label="Anterior"   value={fmtM(popupData.avaluo_antiguo)} />
-                  <PopupRow label="Nuevo"      value={fmtM(popupData.avaluo_nuevo)} highlight />
-                  <PopupRow label="Incremento" value={fmtPct(popupData.incremento_pct)} />
-                </div>
-
-                <div className="azu-popup-group">
-                  <div className="azu-popup-group-label">Impuesto predial</div>
-                  <PopupRow label="Tarifa anterior" value={fmtM(popupData.impuesto_antiguo)} />
-                  <PopupRow label="Tarifa nueva"    value={fmtM(popupData.impuesto_nuevo)} highlight />
-                  <PopupRow label="Rango"           value={popupData.rango_nuevo || '—'} />
-                </div>
-              </>
-            )}
+            <PredioPopup d={popupData} />
           </div>
         )}
       </div>
@@ -748,16 +747,7 @@ function MapSection({ barrio, onSelectBarrio }) {
   );
 }
 
-function PopupRow({ label, value, highlight }) {
-  return (
-    <div className="azu-popup-row">
-      <span className="azu-popup-label">{label}</span>
-      <span className={`azu-popup-val${highlight ? ' azu-popup-val--highlight' : ''}`}>{value}</span>
-    </div>
-  );
-}
-
-/* ── Barrio impact table with sorting, filtering, and row-click selection ── */
+/* ── Barrio impact table ── */
 
 const COLUMNS = [
   { key: 'barrio',              label: 'Barrio',                 align: 'left',  sortable: true, type: 'text'   },
@@ -773,16 +763,16 @@ const COLUMNS = [
   { key: 'pct_delta_recaudo',   label: '% Cambio Recaudo',       align: 'right', sortable: true, type: 'pct',   computed: true },
 ];
 
-function BarrioTable({ data, selectedBarrio, onSelectBarrio }) {
-  const [sortCol, setSortCol]   = useState('recaudo_nuevo');
-  const [sortDir, setSortDir]   = useState('desc');
-  const [filterText, setFilter] = useState('');
+function BarrioTable({ data, selectedBarrio, onSelectBarrio, onClearBarrio }) {
+  const [sortCol, setSortCol]     = useState('recaudo_nuevo');
+  const [sortDir, setSortDir]     = useState('desc');
+  const [filterText, setFilter]   = useState('');
   const [filterCol, setFilterCol] = useState(null);
-  const [filterRange, setRange] = useState({ min: '', max: '' });
+  const [filterRange, setRange]   = useState({ min: '', max: '' });
 
   const enriched = useMemo(() => data.map(r => ({
     ...r,
-    delta_recaudo: Number(r.recaudo_nuevo) - Number(r.recaudo_antiguo),
+    delta_recaudo:    Number(r.recaudo_nuevo) - Number(r.recaudo_antiguo),
     pct_delta_recaudo: Number(r.recaudo_antiguo) > 0
       ? ((Number(r.recaudo_nuevo) / Number(r.recaudo_antiguo)) - 1) * 100
       : null,
@@ -863,8 +853,8 @@ function BarrioTable({ data, selectedBarrio, onSelectBarrio }) {
   };
 
   const numericCols = COLUMNS.filter(c => c.type !== 'text');
-  const clearFilters = () => { setFilter(''); setFilterCol(null); setRange({ min: '', max: '' }); };
-  const hasActiveFilters = filterText || (filterCol && (filterRange.min !== '' || filterRange.max !== ''));
+  const clearSearch = () => { setFilter(''); setFilterCol(null); setRange({ min: '', max: '' }); };
+  const hasSearch   = filterText || (filterCol && (filterRange.min !== '' || filterRange.max !== ''));
 
   return (
     <div className="azu-card">
@@ -876,6 +866,26 @@ function BarrioTable({ data, selectedBarrio, onSelectBarrio }) {
       </div>
 
       <div className="azu-filter-bar">
+        {/* Active barrio indicator + clear */}
+        {selectedBarrio && (
+          <div className="azu-filter-group azu-filter-group--barrio">
+            <svg className="azu-filter-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+              <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+            <span className="azu-filter-active-label">Barrio activo:</span>
+            <span className="azu-filter-chip azu-filter-chip--sm">{selectedBarrio}</span>
+            <button
+              type="button"
+              className="azu-filter-clear"
+              onClick={() => { onClearBarrio(); }}
+            >
+              Quitar filtro
+            </button>
+          </div>
+        )}
+
+        {/* Text search */}
         <div className="azu-filter-group">
           <svg className="azu-filter-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
@@ -889,6 +899,7 @@ function BarrioTable({ data, selectedBarrio, onSelectBarrio }) {
           />
         </div>
 
+        {/* Column range filter */}
         <div className="azu-filter-group">
           <svg className="azu-filter-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/>
@@ -912,8 +923,10 @@ function BarrioTable({ data, selectedBarrio, onSelectBarrio }) {
           )}
         </div>
 
-        {hasActiveFilters && (
-          <button className="azu-filter-clear" onClick={clearFilters}>Limpiar filtros</button>
+        {hasSearch && (
+          <button type="button" className="azu-filter-clear" onClick={clearSearch}>
+            Limpiar búsqueda
+          </button>
         )}
       </div>
 
@@ -937,23 +950,38 @@ function BarrioTable({ data, selectedBarrio, onSelectBarrio }) {
           </thead>
           <tbody>
             {sorted.length === 0 ? (
-              <tr><td colSpan={COLUMNS.length + 2} style={{ textAlign: 'center', padding: 24, color: '#94a3b8' }}>Sin resultados</td></tr>
+              <tr>
+                <td colSpan={COLUMNS.length + 2} style={{ textAlign: 'center', padding: 24, color: '#94a3b8' }}>
+                  Sin resultados
+                </td>
+              </tr>
             ) : sorted.map((r, i) => (
               <tr
                 key={r.barrio}
                 className={selectedBarrio === r.barrio ? 'azu-row--selected' : ''}
-                onClick={() => onSelectBarrio(selectedBarrio === r.barrio ? null : r.barrio)}
+                onClick={() => onSelectBarrio(r.barrio)}
                 style={{ cursor: 'pointer' }}
               >
                 <td className="azu-table-num">{i + 1}</td>
                 {COLUMNS.map(col => renderCell(r, col))}
                 <td className="r">
-                  <button
-                    className={`azu-row-action-btn${selectedBarrio === r.barrio ? ' azu-row-action-btn--active' : ''}`}
-                    onClick={e => { e.stopPropagation(); onSelectBarrio(selectedBarrio === r.barrio ? null : r.barrio); }}
-                  >
-                    {selectedBarrio === r.barrio ? 'Quitar filtro' : 'Ver barrio'}
-                  </button>
+                  {selectedBarrio === r.barrio ? (
+                    <button
+                      type="button"
+                      className="azu-row-action-btn azu-row-action-btn--active"
+                      onClick={e => { e.stopPropagation(); onClearBarrio(); }}
+                    >
+                      Quitar filtro
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="azu-row-action-btn"
+                      onClick={e => { e.stopPropagation(); onSelectBarrio(r.barrio); }}
+                    >
+                      Ver barrio
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}
