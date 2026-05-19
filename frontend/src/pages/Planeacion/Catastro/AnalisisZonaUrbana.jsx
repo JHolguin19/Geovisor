@@ -241,10 +241,10 @@ export default function AnalisisZonaUrbana() {
             <div className="azu-card">
               <div className="azu-card-header">
                 <span className="azu-card-title">
-                  {barrio ? `Mapa de Predios — ${barrio}` : 'Mapa Coroplético — Predios Urbanos'}
+                  {barrio ? `Predios Individuales — ${barrio}` : 'Mapa Coroplético — Barrios Urbanos'}
                 </span>
                 <span className="azu-card-badge azu-card-badge--green">
-                  {barrio ? `Filtrado: ${barrio}` : 'Predios individuales'}
+                  {barrio ? `Barrio: ${barrio}` : 'Clic en un barrio → ver predios individuales'}
                 </span>
               </div>
               <MapSection barrio={barrio} onSelectBarrio={setBarrio} />
@@ -451,12 +451,15 @@ function MapSection({ barrio, onSelectBarrio }) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [popupData, setPopupData]   = useState(null);
 
-  /* Fetch GeoJSON when barrio changes — always show individual predios */
+  /* Fetch GeoJSON — barrio choropleth when no filter, individual predios when filtered */
   useEffect(() => {
     setMapLoading(true);
     setPopupData(null);
     setGeojson(null);
-    zonaUrbanaAvaluosService.getPropertyGeoJSON(barrio)
+    const req = barrio
+      ? zonaUrbanaAvaluosService.getPropertyGeoJSON(barrio)
+      : zonaUrbanaAvaluosService.getBarrioGeoJSON();
+    req
       .then(data => { setGeojson(data); setMapLoading(false); })
       .catch(e => { console.error(e); setMapLoading(false); });
   }, [barrio]);
@@ -566,8 +569,13 @@ function MapSection({ barrio, onSelectBarrio }) {
         const feature = map.forEachFeatureAtPixel(evt.pixel, f => f);
         if (feature) {
           const props = feature.getProperties();
-          setPopupData(props);
-          overlay.setPosition(evt.coordinate);
+          if (!barrio && props.barrio) {
+            /* Barrio choropleth mode: drill into the clicked barrio */
+            onSelectBarrio(props.barrio);
+          } else {
+            setPopupData(props);
+            overlay.setPosition(evt.coordinate);
+          }
         } else {
           setPopupData(null);
           overlay.setPosition(undefined);
@@ -688,7 +696,7 @@ function MapSection({ barrio, onSelectBarrio }) {
       {mapLoading && (
         <div className="azu-map-loading">
           <div className="azu-map-loading-spinner" />
-          {barrio ? `Cargando predios de ${barrio}...` : 'Cargando predios...'}
+          {barrio ? `Cargando predios de ${barrio}...` : 'Cargando mapa de barrios...'}
         </div>
       )}
 
