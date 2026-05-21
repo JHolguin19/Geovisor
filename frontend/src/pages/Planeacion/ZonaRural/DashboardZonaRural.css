@@ -414,4 +414,15 @@
   }
   .zr-kpi-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .zr-main { padding: 16px; }
+  .zr-header { padding: 0 16px; height: 56px; }
+  .zr-logo   { height: 26px; }
+}
+
+@media (max-width: 480px) {
+  .zr-sidebar { height: 180px; }
+  .zr-kpi-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .zr-main { padding: 12px; }
+  .zr-user-badge { display: none; }
+  .zr-table th:nth-child(4),
+  .zr-table td:nth-child(4) { display: none; }
 }

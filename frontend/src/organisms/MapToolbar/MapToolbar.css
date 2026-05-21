@@ -65,3 +65,18 @@
   text-align: center;
 }
 .mt-buffer-row input:focus { border-color: var(--blue); }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .map-toolbar { padding: 4px 6px; gap: 3px; }
+  .mt-btn { width: 30px; height: 30px; }
+  .mt-btn svg { width: 15px; height: 15px; }
+  .mt-sep { height: 18px; }
+  .mt-buffer-row { gap: 4px; font-size: 11px; }
+  .mt-buffer-row input { width: 50px; height: 24px; font-size: 11px; }
+}
+
+@media (max-width: 480px) {
+  .mt-buffer-row { display: none; }
+  .mt-btn { width: 28px; height: 28px; }
+}

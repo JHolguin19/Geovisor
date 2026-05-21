@@ -4,10 +4,12 @@ generate_022_urbano_upload.py
 Uploads predios_avaluos_urbanos_2026 to Supabase in batches.
 
 Steps:
-  1. Upload DDL  (022_urbano_avaluos_ddl.sql)
-  2. Read source table from local PostgreSQL in batches of 1000 rows
-  3. For each batch: write INSERT SQL → upload via supabase CLI → delete temp file
-  4. Upload materialized view (022b_mv_urbano_barrio.sql)
+  1.  Upload DDL  (022_urbano_avaluos_ddl.sql)
+  1b. TRUNCATE existing data
+  2.  Read source table from local PostgreSQL in batches of 1000 rows
+      - DISTINCT ON ("CODIGO") keeps one row per property code (largest polygon)
+      - LEFT JOIN planeacion_predios_2025 to get destinoeconomico (dest_eco)
+  3.  Upload materialized view (022e_mv_urban_final.sql)
 
 Run from:  C:\\Users\\usuario\\Desktop\\Py2\\hibrido\\App-Alcaldia\\alcaldia-geovisor
 """
@@ -28,7 +30,8 @@ MIGRATIONS_DIR = os.path.join(SUPABASE_DIR, 'backend', 'src', 'db', 'migrations'
 BATCH_SIZE  = 1000
 SOURCE_TBL  = 'Predios_avaluos_urbanos_con_barrio_2026'
 TARGET_TBL  = 'public.predios_avaluos_urbanos_2026'
-TARGET_COLS = '(id, geom, codigo, barrio, propietario, avaluo_nuevo, avaluo_antiguo, area_predio, area_construida)'
+TARGET_COLS = ('(id, geom, codigo, barrio, propietario, avaluo_nuevo, avaluo_antiguo,'
+               ' area_predio, area_construida, dest_eco)')
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 def esc(val):
@@ -83,24 +86,42 @@ def main():
     conn = psycopg2.connect(**LOCAL_DB)
     cur  = conn.cursor()
 
-    cur.execute(f'SELECT COUNT(*) FROM "{SOURCE_TBL}"')
-    total = cur.fetchone()[0]
-    print(f'  {total:,} records — {(total + BATCH_SIZE - 1) // BATCH_SIZE} batches of {BATCH_SIZE}')
-
-    # Fetch query — predialu_5 is the correct avaluo_nuevo (numeric, new appraisal)
+    # Count deduplicated rows for progress display
     cur.execute(f"""
-        SELECT
-            id,
-            ST_AsHEXEWKB(geom)  AS geom_hex,
-            "CODIGO",
-            nombre,
-            predialu_3,
-            predialu_5,
-            predialu10,
-            "SHAPE_Area",
-            predialu_8
-        FROM "{SOURCE_TBL}"
-        ORDER BY id
+        SELECT COUNT(*) FROM (
+            SELECT DISTINCT ON (p."CODIGO") p.id
+            FROM "{SOURCE_TBL}" p
+            LEFT JOIN planeacion_predios_2025 pp ON pp.codigo = p."CODIGO"
+            ORDER BY p."CODIGO", p."SHAPE_Area" DESC NULLS LAST
+        ) t
+    """)
+    total = cur.fetchone()[0]
+    print(f'  {total:,} unique predios -> {(total + BATCH_SIZE - 1) // BATCH_SIZE} batches of {BATCH_SIZE}')
+
+    # DISTINCT ON ("CODIGO") keeps only the largest polygon per property code.
+    # LEFT JOIN with planeacion_predios_2025 brings in destinoeconomico (dest_eco).
+    # Column mapping:
+    #   predialu_5  = avaluo_nuevo  (new appraisal, numeric)
+    #   predialu10  = avaluo_antiguo (old appraisal, numeric)
+    #   predialu_3  = propietario   (owner name)
+    #   nombre      = barrio        (neighbourhood)
+    #   SHAPE_Area  = area_predio
+    #   predialu_8  = area_construida
+    cur.execute(f"""
+        SELECT DISTINCT ON (p."CODIGO")
+            p.id,
+            ST_AsHEXEWKB(p.geom)                               AS geom_hex,
+            p."CODIGO",
+            p.nombre,
+            p.predialu_3,
+            p.predialu_5,
+            p.predialu10,
+            p."SHAPE_Area",
+            p.predialu_8,
+            NULLIF(COALESCE(pp.destinoeconomico, ''), '')       AS dest_eco
+        FROM "{SOURCE_TBL}" p
+        LEFT JOIN planeacion_predios_2025 pp ON pp.codigo = p."CODIGO"
+        ORDER BY p."CODIGO", p."SHAPE_Area" DESC NULLS LAST
     """)
 
     batch_num  = 1
@@ -111,12 +132,12 @@ def main():
         lines = [f'INSERT INTO {TARGET_TBL} {TARGET_COLS} VALUES']
         vals  = []
         for r in rows:
-            id_, gh, codigo, barrio, prop, av_nuevo, av_ant, area_p, area_c = r
+            id_, gh, codigo, barrio, prop, av_nuevo, av_ant, area_p, area_c, dest_eco = r
             geom_sql = f"decode('{gh}', 'hex')::geometry" if gh else 'NULL'
             vals.append(
                 f"  ({num(id_)}, {geom_sql}, {esc(codigo)}, {esc(barrio)}, "
                 f"{esc(prop)}, {num(av_nuevo)}, {num(av_ant)}, "
-                f"{num(area_p)}, {num(area_c)})"
+                f"{num(area_p)}, {num(area_c)}, {esc(dest_eco)})"
             )
         sql = '\n'.join(lines) + '\n' + ',\n'.join(vals) + ';\n'
         upload_sql(sql, f'batch {bn:03d} ({len(rows)} rows)')
@@ -138,15 +159,15 @@ def main():
 
     cur.close()
     conn.close()
-    print(f'  Done — {total_done:,} rows inserted.')
+    print(f'  Done - {total_done:,} rows inserted.')
 
-    # Step 3 — Materialized view (022c drops + recreates with municipal exclusion)
-    mv_path = os.path.join(MIGRATIONS_DIR, '022c_excl_municipio_mv.sql')
+    # Step 3 — Recreate materialized view with correct urban rates + dest_eco
+    mv_path = os.path.join(MIGRATIONS_DIR, '022e_mv_urban_final.sql')
     print('\n[3/3] Recreating materialized view (may take ~60s)...')
     run_sql_file(mv_path)
     print('  Materialized view OK')
 
-    print('\n✓ Migration 022 complete!')
+    print('\nMigration 022 complete!')
 
 if __name__ == '__main__':
     main()

@@ -543,3 +543,18 @@ td.sps__cell--frozen:nth-child(4) {
   outline: 1px solid #93c5fd;
   outline-offset: -1px;
 }
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .sps__toolbar-right { gap: 3px; }
+  .sps__toolbar-right .sps__btn--icon:not(:nth-child(-n+3)) { display: none; }
+}
+@media (max-width: 768px) {
+  .sps { font-size: 11.5px; }
+  .sps__toolbar { flex-wrap: wrap; min-height: auto; gap: 4px; padding: 4px 8px; }
+  .sps__status--hint { display: none; }
+}
+@media (max-width: 480px) {
+  .sps__cell-name { width: 48px; font-size: 11px; }
+  .sps__status { font-size: 10.5px; gap: 8px; padding: 2px 8px; }
+}

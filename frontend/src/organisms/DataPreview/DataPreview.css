@@ -201,3 +201,13 @@
   font-size: 0.82rem;
   color: var(--text-sub);
 }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .dp-toolbar { flex-direction: column; align-items: flex-start; }
+  .dp-filter-pills { flex-wrap: wrap; }
+}
+@media (max-width: 480px) {
+  .dp-pagination { flex-wrap: wrap; justify-content: center; gap: 0.5rem; }
+  .dp-table-wrap { max-height: 320px; }
+}

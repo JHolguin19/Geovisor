@@ -1,7 +1,8 @@
-import { useContext, useEffect } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
 import SECRETARIAS, { getSecretariaById } from '../config/secretarias';
+import { etlService } from '../services/api';
 import './DashboardPage.css';
 
 // ── Iconos SVG por secretaría ──────────────────────────────────────────────────
@@ -106,6 +107,43 @@ function SecretariaIcon({ id }) {
   return icons[id] || icons.talento_humano;
 }
 
+// ── Pipeline Widget (solo admin / editor_geo) ──────────────────────────────────
+function PipelineWidget({ stats }) {
+  const inPipeline = (stats.raw || 0) + (stats.processing || 0) + (stats.staging || 0) + (stats.validated || 0);
+  const stages = [
+    { label: 'Ingesta',     value: inPipeline,          color: '#3B82F6' },
+    { label: 'Producción',  value: stats.production || 0, color: '#10B981' },
+    { label: 'Error',       value: stats.error || 0,      color: '#EF4444' },
+  ];
+
+  return (
+    <div className="pipe-widget">
+      <div className="pipe-widget-left">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="2" y="3" width="6" height="18" rx="1"/><rect x="9" y="8" width="6" height="13" rx="1"/><rect x="16" y="5" width="6" height="16" rx="1"/>
+        </svg>
+        <span className="pipe-widget-title">Pipeline de Datos</span>
+        <span className="pipe-widget-total">{stats.total || 0} datasets</span>
+      </div>
+      <div className="pipe-widget-stages">
+        {stages.map(s => (
+          <div key={s.label} className="pipe-stage">
+            <span className="pipe-stage-dot" style={{ background: s.color }} />
+            <span className="pipe-stage-label">{s.label}</span>
+            <span className="pipe-stage-count" style={{ color: s.color }}>{s.value}</span>
+          </div>
+        ))}
+      </div>
+      <Link to="/pipeline" className="pipe-widget-btn">
+        Ver Pipeline
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </Link>
+    </div>
+  );
+}
+
 // ── Card individual ────────────────────────────────────────────────────────────
 function SecretariaCard({ secretaria }) {
   const { id, name, color, description, hasMapa } = secretaria;
@@ -132,6 +170,7 @@ function SecretariaCard({ secretaria }) {
 export default function DashboardPage() {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
+  const [pipelineStats, setPipelineStats] = useState(null);
 
   // Usuarios con secretaría asignada van directo a su portal
   useEffect(() => {
@@ -139,6 +178,12 @@ export default function DashboardPage() {
       navigate(`/portal/${user.secretaria}`, { replace: true });
     }
   }, [user, navigate]);
+
+  // Cargar stats del pipeline solo para roles privilegiados
+  useEffect(() => {
+    if (!user || !['admin', 'editor_geo'].includes(user.role)) return;
+    etlService.getStats().then(data => setPipelineStats(data)).catch(() => {});
+  }, [user]);
 
   const activas = SECRETARIAS.filter(s => s.hasMapa).sort((a, b) => a.orden - b.orden);
   const proximamente = SECRETARIAS.filter(s => !s.hasMapa).sort((a, b) => a.orden - b.orden);
@@ -193,6 +238,9 @@ export default function DashboardPage() {
           <h1 className="dash-title">Geovisor Municipal</h1>
           <p className="dash-subtitle">Sistema de Información Geográfica · Selecciona la secretaría</p>
         </div>
+
+        {/* Pipeline widget — solo admin / editor_geo */}
+        {pipelineStats && <PipelineWidget stats={pipelineStats} />}
 
         {/* Geovisores activos */}
         <section className="dash-section">

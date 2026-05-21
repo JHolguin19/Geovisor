@@ -59,8 +59,8 @@ export async function login(username, password) {
   const refreshToken = generateRefreshToken();
   await saveRefreshToken(user.id, refreshToken);
 
-  // Limpiar tokens expirados de fondo
-  cleanExpiredTokens();
+  // Limpiar tokens expirados de fondo (fire-and-forget con log de error)
+  cleanExpiredTokens().catch(err => logger.warn({ err }, 'Error limpiando tokens expirados'));
 
   return {
     message: 'Login exitoso',

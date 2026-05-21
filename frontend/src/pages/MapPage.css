@@ -79,4 +79,41 @@
     from { opacity: 0; }
     to   { opacity: 1; }
   }
+
+  /* Context panels move to bottom strip on mobile */
+  .map-context-panels {
+    top: auto;
+    bottom: 56px;
+    right: 0;
+    left: 0;
+    max-height: 300px;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    align-items: flex-start;
+    padding: 0 8px 6px;
+    gap: 8px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .map-context-panels > .dp,
+  .map-context-panels > .zrp,
+  .map-context-panels > .ap,
+  .map-context-panels > .sisben-panel,
+  .map-context-panels > .suba-panel,
+  .map-context-panels > .alum-panel,
+  .map-context-panels > .veredas-panel {
+    min-width: 230px;
+    max-width: 230px;
+    max-height: 280px;
+    flex-shrink: 0;
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .map-context-panels {
+    bottom: 48px;
+    max-height: 260px;
+  }
 }

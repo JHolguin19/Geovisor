@@ -1,7 +1,7 @@
 import { useEffect, useCallback, useContext } from 'react';
 import MapContext from '../../../context/MapContext';
 import { UBA_IDS } from '../../../constants/ubas';
-import { QUERY_PRIORITY, ALUMBRADO_WFS, formatPredios } from '../popups/popupConfig';
+import { QUERY_PRIORITY, ALUMBRADO_WFS, formatPredios, esc } from '../popups/popupConfig';
 
 /**
  * Hook que maneja clicks en el mapa: detecta features con prioridad y muestra popup.
@@ -33,7 +33,7 @@ export function useMapClick(mapRef, overlayRef, popupContentRef) {
       const label = ALUMBRADO_WFS[layerId];
       if (!label || !activeLayers.has(layerId) || layerId === 'rutas_alumbrado_publico') return;
       const p = feature.getProperties();
-      contenido = `<strong>⚡ ${label}</strong><br><strong>ID:</strong> ${p.Name || p.name || p.NAME || '(sin identificador)'}`;
+      contenido = `<strong>⚡ ${esc(label)}</strong><br><strong>ID:</strong> ${esc(p.Name || p.name || p.NAME) || '(sin identificador)'}`;
     }, { hitTolerance: 10 });
 
     // 2. Detectar rutas de alumbrado (líneas, tolerancia mayor)
@@ -42,7 +42,7 @@ export function useMapClick(mapRef, overlayRef, popupContentRef) {
         if (contenido) return;
         if (layer?.get('name') !== 'rutas_alumbrado_publico' || !activeLayers.has('rutas_alumbrado_publico')) return;
         const p = feature.getProperties();
-        contenido = `<strong>⚡ Ruta Eléctrica</strong><br><strong>ID:</strong> ${p.Name || p.name || p.NAME || '(sin identificador)'}`;
+        contenido = `<strong>⚡ Ruta Eléctrica</strong><br><strong>ID:</strong> ${esc(p.Name || p.name || p.NAME) || '(sin identificador)'}`;
       }, { hitTolerance: 20 });
     }
 
@@ -66,7 +66,7 @@ export function useMapClick(mapRef, overlayRef, popupContentRef) {
         if (contenido) return;
         if (layer?.get('name') !== 'barrios_urbanos') return;
         const p = feature.getProperties();
-        contenido = `<strong>🏘️ Barrio:</strong> ${p.nombre || ''}`;
+        contenido = `<strong>🏘️ Barrio:</strong> ${esc(p.nombre) || ''}`;
       });
     }
 
@@ -78,7 +78,7 @@ export function useMapClick(mapRef, overlayRef, popupContentRef) {
         if (!UBA_IDS.has(layerId) || !activeLayers.has(layerId)) return;
         const p = feature.getProperties();
         const ubaNum = layerId === 'ubac' ? 'C' : layerId.replace('uba', '');
-        contenido = `<strong>🏘️ Barrio:</strong> ${p.nombre || ''}<br><strong>🏢 UBA:</strong> ${ubaNum}`;
+        contenido = `<strong>🏘️ Barrio:</strong> ${esc(p.nombre) || ''}<br><strong>🏢 UBA:</strong> ${ubaNum}`;
       });
     }
 

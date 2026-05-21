@@ -15,27 +15,39 @@ async function getAllowedTables() {
   return allowedTablesCache;
 }
 
+// Valida que un identificador SQL sea seguro (solo letras, números, _ y espacios)
+function isValidIdentifier(name) {
+  return /^[a-zA-Z_][a-zA-Z0-9_ ]*$/.test(name);
+}
+
 export async function getGeoJsonForTable(tableName, { bbox, q, searchFields, simplify, cols, limit: limitParam }) {
   const allowed = await getAllowedTables();
   if (!allowed.has(tableName)) throw new AppError('Tabla no permitida', 403);
 
   const geomCol = await detectGeomColumn(tableName);
   if (!geomCol) throw new AppError(`No se encontró columna de geometría en "${tableName}"`, 500);
+  if (!isValidIdentifier(geomCol)) throw new AppError('Columna de geometría inválida', 500);
 
   const simplifyVal = parseFloat(simplify) || 0;
   const geomExpr = simplifyVal > 0
     ? `ST_AsGeoJSON(ST_SimplifyPreserveTopology(ST_Transform("${geomCol}", 4326), ${simplifyVal}))::jsonb`
     : `ST_AsGeoJSON(ST_Transform("${geomCol}", 4326))::jsonb`;
 
-  const innerSelect = cols
-    ? `${cols.split(',').map(c => `"${c.trim()}"`).join(', ')}, "${geomCol}"`
-    : '*';
+  let innerSelect = '*';
+  if (cols) {
+    const colList = cols.split(',').map(c => c.trim()).filter(Boolean);
+    const invalid = colList.find(c => !isValidIdentifier(c));
+    if (invalid) throw new AppError(`Nombre de columna inválido: "${invalid}"`, 400);
+    innerSelect = `${colList.map(c => `"${c}"`).join(', ')}, "${geomCol}"`;
+  }
 
   let query;
   let params = [];
 
   if (q && searchFields) {
     const fields = searchFields.split(',').map(f => f.trim()).filter(Boolean);
+    const invalidField = fields.find(f => !isValidIdentifier(f));
+    if (invalidField) throw new AppError(`Campo de búsqueda inválido: "${invalidField}"`, 400);
     const limit = Math.min(parseInt(limitParam) || 50, 200);
     const conditions = fields.map((f, i) => `"${f}" ILIKE $${i + 1}`).join(' OR ');
     const searchParams = fields.map(() => `%${q}%`);

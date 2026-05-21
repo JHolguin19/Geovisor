@@ -162,3 +162,11 @@
   color: #1f2937;
   font-weight: 500;
 }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .veredas-panel { width: 230px; max-height: 260px; }
+}
+@media (max-width: 480px) {
+  .veredas-panel { width: 210px; }
+}

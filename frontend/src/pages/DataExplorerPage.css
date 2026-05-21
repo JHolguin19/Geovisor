@@ -555,4 +555,7 @@
   .dex-user-badge { display: none; }
   .dex-title      { font-size: 22px; }
   .dex-card-stats { display: none; }
+  /* Pipeline tab */
+  .dex-pipe-card-header { flex-direction: column; align-items: flex-start; gap: 6px; }
+  .dex-cols-header { flex-direction: column; align-items: flex-start; gap: 6px; }
 }

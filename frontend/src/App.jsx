@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useContext } from 'react';
+import { useContext, Component } from 'react';
 import AuthContext from './context/AuthContext';
 import MainLayout from './templates/MainLayout';
 import LoginPage from './pages/LoginPage';
@@ -23,6 +23,34 @@ import SchemaManagerPage from './pages/SchemaManagerPage';
 import GobiernoDelitosPage from './pages/GobiernoDelitosPage';
 import PdmEditorPage from './pages/PdmEditorPage';
 
+class ErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, info) {
+    console.error('[ErrorBoundary]', error, info.componentStack);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', height:'100vh', gap:16, fontFamily:'sans-serif', color:'#333' }}>
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#e53e3e" strokeWidth="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <h2 style={{ margin:0, fontSize:20 }}>Ocurrió un error inesperado</h2>
+          <p style={{ margin:0, color:'#666', fontSize:14 }}>{this.state.error?.message}</p>
+          <button onClick={() => window.location.href = '/dashboard'} style={{ padding:'8px 20px', background:'#1a365d', color:'#fff', border:'none', borderRadius:8, cursor:'pointer', fontSize:14 }}>
+            Volver al inicio
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 function PrivateRoute({ children, requiredRole }) {
   const { user, isAuthenticated, loading } = useContext(AuthContext);
 
@@ -39,6 +67,7 @@ function PrivateRoute({ children, requiredRole }) {
 
 function App() {
   return (
+    <ErrorBoundary>
     <Routes>
       {/* Ruta pública */}
       <Route path="/login" element={<LoginPage />} />
@@ -118,6 +147,7 @@ function App() {
       {/* Catch-all */}
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
+    </ErrorBoundary>
   );
 }
 

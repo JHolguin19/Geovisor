@@ -63,15 +63,14 @@ export default function PdmMetasTab({
                 <th>Descripción</th>
                 <th className="th-c">Pilar</th>
                 <th style={{ minWidth: 130 }}>Avance Físico</th>
-                <th className="th-c">Efic. 2025</th>
                 <th>Estado</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={7} className="pdm-empty-row">Cargando…</td></tr>
+                <tr><td colSpan={6} className="pdm-empty-row">Cargando…</td></tr>
               ) : metas.length === 0 ? (
-                <tr><td colSpan={7} className="pdm-empty-row">Sin resultados.</td></tr>
+                <tr><td colSpan={6} className="pdm-empty-row">Sin resultados.</td></tr>
               ) : metas.map(m => {
                 const { label, cls } = estadoMeta(m.avance_fisico);
                 const fisicoPct = Math.round((parseFloat(m.avance_fisico) || 0) * 100);
@@ -84,13 +83,6 @@ export default function PdmMetasTab({
                     <td>
                       <BarPct value={fisicoPct} height={7} />
                       <span className="pdm-bar-caption" style={{ color: colorPct(fisicoPct) }}>{fisicoPct}%</span>
-                    </td>
-                    <td className="th-c">
-                      {m.eficiencia_2025 !== null
-                        ? <span style={{ color: colorPct(m.eficiencia_2025 * 100), fontWeight: 700 }}>
-                            {Math.round(m.eficiencia_2025 * 100)}%
-                          </span>
-                        : <span className="np-tag">NP</span>}
                     </td>
                     <td><span className={`pdm-estado ${cls}`}>{label}</span></td>
                   </tr>

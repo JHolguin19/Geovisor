@@ -181,3 +181,11 @@
   font-size: 12px;
   color: #374151;
 }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .dp { width: 230px; max-height: 260px; }
+}
+@media (max-width: 480px) {
+  .dp { width: 210px; }
+}

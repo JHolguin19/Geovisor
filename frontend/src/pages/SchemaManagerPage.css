@@ -396,8 +396,14 @@
 @media (max-width: 1100px) {
   .sm-board { grid-template-columns: repeat(3, minmax(240px, 1fr)); }
 }
-@media (max-width: 700px) {
+@media (max-width: 768px) {
   .sm-scroll { padding: 1rem 1rem 3rem; }
-  /* Scroll horizontal en mobile — no colapsa a 1 col */
   .sm-board { grid-template-columns: repeat(3, minmax(220px, 1fr)); }
+  .sm-header { gap: 0.75rem; }
+  .sm-search-bar { flex-direction: column; align-items: stretch; gap: 0.5rem; }
+}
+@media (max-width: 480px) {
+  .sm-scroll { padding: 0.75rem 0.75rem 3rem; }
+  .sm-board { grid-template-columns: repeat(3, minmax(200px, 1fr)); }
+  .sm-card-actions { flex-direction: column; gap: 4px; }
 }

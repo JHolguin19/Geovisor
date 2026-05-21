@@ -14,6 +14,7 @@ import { Router } from 'express';
 import { authMiddleware } from '../middleware/authMiddleware.js';
 import { asyncHandler } from '../middleware/errorHandler.js';
 import pool from '../db/pool.js';
+import { logger } from '../utils/logger.js';
 
 const router = Router();
 router.use(authMiddleware);
@@ -109,7 +110,7 @@ router.get('/schemas', asyncHandler(async (req, res) => {
       ORDER BY created_at DESC LIMIT 1
     ) j ON TRUE
     WHERE u.etl_status != 'legacy' OR u.tabla_destino IS NOT NULL
-  `).catch(() => ({ rows: [] }));
+  `).catch(err => { logger.warn({ err }, 'tables/schemas: no se pudo cruzar con uploads'); return { rows: [] }; });
 
   // Construir mapa tabla→upload para enriquecer las tablas
   const uploadByTable = {};

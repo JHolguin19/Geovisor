@@ -419,4 +419,12 @@
   .step-label { display: none; }
   .step-connector { width: 24px; }
   .cols-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+  .pp-header { padding: 0 16px; height: 56px; }
+  .pp-logo { height: 26px; }
+}
+@media (max-width: 480px) {
+  .processing-scroll { padding: 0.5rem; }
+  .step-num { width: 26px; height: 26px; font-size: 11px; }
+  .pp-nav { flex-direction: column-reverse; gap: 8px; }
+  .pp-nav .pp-btn { width: 100%; justify-content: center; }
 }

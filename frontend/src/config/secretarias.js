@@ -85,7 +85,7 @@ export const SECRETARIAS = [
     code: 'SAL',
     color: '#B71C1C',
     description: 'Infraestructura de salud, IPS y cobertura de servicios médicos.',
-    layersKey: null,
+    layersKey: 'salud',
     hasMapa: true,
     orden: 8
   },

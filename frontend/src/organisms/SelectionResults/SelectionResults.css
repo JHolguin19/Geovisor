@@ -61,3 +61,16 @@
 .sel-list { list-style: none; }
 .sel-item { font-size: 11.5px; color: var(--text); padding: 1px 0; }
 .sel-item--more { color: var(--text-muted); font-style: italic; }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .sel-results {
+    left: 8px;
+    right: 8px;
+    bottom: 24px;
+    transform: none;
+    min-width: 0;
+    max-width: none;
+  }
+}
+@keyframes selSlideIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }

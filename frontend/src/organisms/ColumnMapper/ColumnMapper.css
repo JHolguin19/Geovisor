@@ -175,3 +175,13 @@
   display: block;
   max-width: 160px;
 }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .cm-td--sample, .cm-th:last-child { display: none; }
+  .cm-toolbar { flex-direction: column; align-items: flex-start; }
+}
+@media (max-width: 480px) {
+  .cm-th, .cm-td { padding: 0.45rem 0.55rem; }
+  .cm-input, .cm-select { min-width: 100px; }
+}

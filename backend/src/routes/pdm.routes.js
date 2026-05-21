@@ -1,8 +1,10 @@
 import { Router } from 'express';
 import { asyncHandler } from '../middleware/errorHandler.js';
+import { authMiddleware } from '../middleware/authMiddleware.js';
 import * as pdmCtrl from '../controllers/pdm.controller.js';
 
 const router = Router();
+router.use(authMiddleware);
 
 router.get('/overview',    asyncHandler(pdmCtrl.getOverview));
 router.get('/secretarias', asyncHandler(pdmCtrl.getSecretarias));

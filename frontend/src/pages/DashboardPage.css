@@ -269,6 +269,94 @@
   align-self: flex-start;
 }
 
+/* ── Pipeline Widget ── */
+.pipe-widget {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  background: var(--navy);
+  border-radius: 12px;
+  padding: 14px 20px;
+  margin-bottom: 36px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.12);
+  flex-wrap: wrap;
+}
+
+.pipe-widget-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(255,255,255,.9);
+  flex-shrink: 0;
+}
+
+.pipe-widget-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .4px;
+  text-transform: uppercase;
+}
+
+.pipe-widget-total {
+  font-size: 12px;
+  color: rgba(255,255,255,.45);
+  background: rgba(255,255,255,.08);
+  border-radius: 99px;
+  padding: 2px 10px;
+}
+
+.pipe-widget-stages {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex: 1;
+}
+
+.pipe-stage {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.pipe-stage-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.pipe-stage-label {
+  font-size: 12px;
+  color: rgba(255,255,255,.55);
+}
+
+.pipe-stage-count {
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.pipe-widget-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  background: rgba(255,255,255,.1);
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 8px;
+  color: rgba(255,255,255,.85);
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background .15s;
+  flex-shrink: 0;
+}
+.pipe-widget-btn:hover {
+  background: rgba(255,255,255,.18);
+  color: #fff;
+}
+
 /* ── Responsive ── */
 @media (max-width: 1024px) {
   .dash-header { padding: 0 20px; }
@@ -284,10 +372,14 @@
   .dash-main   { padding: 24px 16px; }
   .dash-title  { font-size: 32px; }
   .sec-grid, .sec-grid--sm { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .pipe-widget { gap: 14px; padding: 12px 16px; }
+  .pipe-widget-stages { gap: 14px; }
 }
 
 @media (max-width: 480px) {
   .dash-user-badge { display: none; }
   .sec-grid, .sec-grid--sm { grid-template-columns: 1fr; }
   .dash-title { font-size: 26px; }
+  .pipe-widget-stages { flex-wrap: wrap; gap: 10px; }
+  .pipe-widget-total { display: none; }
 }

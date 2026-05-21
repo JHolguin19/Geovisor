@@ -36,13 +36,6 @@ const LAYER_GROUPS = [
         ]
       },
       {
-        label: 'Zona Rural',
-        accent: '#2E7D32',
-        layers: [
-          { id: 'zonarural_avaluos', label: 'Predios Rurales (avalúos)', dot: '#4CAF50' },
-        ]
-      },
-      {
         label: 'Usos de Suelo',
         accent: '#D97706',
         layers: [

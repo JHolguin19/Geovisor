@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "start": "node src/server.js",
-    "dev": "nodemon src/server.js"
+    "dev": "nodemon src/server.js",
+    "lint": "npx eslint src --ext .js --report-unused-disable-directives --max-warnings 0"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

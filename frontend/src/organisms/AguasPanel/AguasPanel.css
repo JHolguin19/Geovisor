@@ -145,3 +145,11 @@
   border-radius: 50%;
   border: 2px solid #E1F5FE;
 }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .ap { min-width: 220px; max-width: 230px; }
+}
+@media (max-width: 480px) {
+  .ap { min-width: 200px; max-width: 210px; }
+}

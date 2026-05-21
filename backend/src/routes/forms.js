@@ -1,5 +1,6 @@
 import express from 'express';
 import { authMiddleware, roleMiddleware } from '../middleware/authMiddleware.js';
+import { logger } from '../utils/logger.js';
 
 const router = express.Router();
 
@@ -43,7 +44,7 @@ router.post('/submit', authMiddleware, (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error al enviar formulario:', error);
+    logger.error({ err: error }, 'Error al enviar formulario');
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 });

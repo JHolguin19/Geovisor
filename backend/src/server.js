@@ -64,7 +64,6 @@ app.use(cors({
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin)) return callback(null, true);
-    if (/\.vercel\.app$/.test(origin)) return callback(null, true);
     callback(new Error(`CORS bloqueado: ${origin}`));
   },
   credentials: true

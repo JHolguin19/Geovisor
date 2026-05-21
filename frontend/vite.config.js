@@ -5,7 +5,6 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
-    allowedHosts: ['dis-compute-jeremy-ceremony.trycloudflare.com'],
     proxy: {
       // Proxy para la API del backend
       '/api': {
