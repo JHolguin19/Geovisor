@@ -231,7 +231,7 @@ export default function PdmAnualPage() {
 
       {showInforme && <InformeModal year={year} onClose={() => setShowInforme(false)} />}
 
-      {modalId && <MetaModal id={modalId} onClose={() => setModalId(null)} />}
+      {modalId && <MetaModal id={modalId} year={year} onClose={() => setModalId(null)} />}
 
       {showUpload && (
         <PdmUploadModal

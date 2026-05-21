@@ -29,9 +29,10 @@ export default function PdmPage() {
   const [metas,       setMetas]       = useState([]);
   const [total,       setTotal]       = useState(0);
   const [tblLoading,  setTblLoading]  = useState(false);
-  const [secFiltro,   setSecFiltro]   = useState(searchParams.get('secretaria') || '');
-  const [pilarFiltro, setPilarFiltro] = useState('');
-  const [busqueda,    setBusqueda]    = useState('');
+  const [secFiltro,      setSecFiltro]      = useState(searchParams.get('secretaria') || '');
+  const [pilarFiltro,    setPilarFiltro]    = useState('');
+  const [semaforoFiltro, setSemaforoFiltro] = useState('');
+  const [busqueda,       setBusqueda]       = useState('');
   const [pagina,      setPagina]      = useState(1);
   const [modalId,     setModalId]     = useState(null);
 
@@ -49,14 +50,15 @@ export default function PdmPage() {
     setTblLoading(true);
     try {
       const params = { page: pagina, limit: LIMIT };
-      if (secFiltro)   params.secretaria = secFiltro;
-      if (pilarFiltro) params.pilar      = pilarFiltro;
-      if (busqueda)    params.busqueda   = busqueda;
+      if (secFiltro)      params.secretaria = secFiltro;
+      if (pilarFiltro)    params.pilar      = pilarFiltro;
+      if (semaforoFiltro) params.semaforo   = semaforoFiltro;
+      if (busqueda)       params.busqueda   = busqueda;
       const r = await pdmService.getMetas(params);
       setMetas(r.data);
       setTotal(r.total);
     } finally { setTblLoading(false); }
-  }, [tab, secFiltro, pilarFiltro, busqueda, pagina]);
+  }, [tab, secFiltro, pilarFiltro, semaforoFiltro, busqueda, pagina]);
 
   useEffect(() => { cargarMetas(); }, [cargarMetas]);
 
@@ -116,11 +118,12 @@ export default function PdmPage() {
           <PdmMetasTab
             metas={metas} total={total} loading={tblLoading}
             secretarias={secretarias} pilares={pilares}
-            secFiltro={secFiltro} pilarFiltro={pilarFiltro} busqueda={busqueda}
+            secFiltro={secFiltro} pilarFiltro={pilarFiltro} semaforoFiltro={semaforoFiltro} busqueda={busqueda}
             onSecFiltro={resetPagina(setSecFiltro)}
             onPilarFiltro={resetPagina(setPilarFiltro)}
+            onSemaforoFiltro={resetPagina(setSemaforoFiltro)}
             onBusqueda={resetPagina(setBusqueda)}
-            onLimpiar={() => { setSecFiltro(''); setPilarFiltro(''); setBusqueda(''); setPagina(1); }}
+            onLimpiar={() => { setSecFiltro(''); setPilarFiltro(''); setSemaforoFiltro(''); setBusqueda(''); setPagina(1); }}
             pagina={pagina} totalPaginas={Math.ceil(total / LIMIT)}
             onPaginaAnterior={() => setPagina(p => p - 1)}
             onPaginaSiguiente={() => setPagina(p => p + 1)}

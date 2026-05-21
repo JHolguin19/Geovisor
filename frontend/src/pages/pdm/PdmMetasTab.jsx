@@ -4,8 +4,8 @@ import { colorPct, estadoMeta } from './helpers';
 export default function PdmMetasTab({
   metas, total, loading,
   secretarias, pilares,
-  secFiltro, pilarFiltro, busqueda,
-  onSecFiltro, onPilarFiltro, onBusqueda, onLimpiar,
+  secFiltro, pilarFiltro, semaforoFiltro, busqueda,
+  onSecFiltro, onPilarFiltro, onSemaforoFiltro, onBusqueda, onLimpiar,
   pagina, totalPaginas,
   onPaginaAnterior, onPaginaSiguiente,
   onMetaClick
@@ -28,12 +28,22 @@ export default function PdmMetasTab({
             {pilares.map(p => <option key={p.num_pilar} value={p.num_pilar}>{p.num_pilar}. {p.nom_pilar}</option>)}
           </select>
         </div>
+        <div className="pdm-filter-group">
+          <label>Semáforo</label>
+          <select value={semaforoFiltro} onChange={e => onSemaforoFiltro(e.target.value)}>
+            <option value="">Todos</option>
+            <option value="verde">En meta (≥80%)</option>
+            <option value="amarillo">En proceso (50–79%)</option>
+            <option value="rojo">Rezagada (&lt;50%)</option>
+            <option value="sin_dato">Sin dato</option>
+          </select>
+        </div>
         <div className="pdm-filter-group pdm-filter-group--search">
           <label>Buscar</label>
           <input type="text" placeholder="Descripción, secretaría, macrometa..."
             value={busqueda} onChange={e => onBusqueda(e.target.value)} />
         </div>
-        {(secFiltro || pilarFiltro || busqueda) && (
+        {(secFiltro || pilarFiltro || semaforoFiltro || busqueda) && (
           <button className="pdm-clear-btn" onClick={onLimpiar}>× Limpiar</button>
         )}
       </section>

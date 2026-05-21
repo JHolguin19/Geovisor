@@ -807,6 +807,8 @@
 .pdm-modal-table tr.row-np td { color: var(--pdm-gray); font-style: italic; }
 
 .pdm-obs-block { margin-bottom: 12px; padding: 10px 12px; background: #f8f9fb; border-radius: 8px; border-left: 3px solid var(--pdm-border); }
+.pdm-obs-block--active { border-left-color: var(--pdm-blue); background: #eff6ff; }
+.pdm-obs-block--active strong { color: var(--pdm-blue); }
 .pdm-obs-block strong { font-size: 11px; color: var(--pdm-muted); display: block; margin-bottom: 6px; }
 .pdm-obs-row { display: flex; gap: 10px; margin-bottom: 4px; }
 .pdm-obs-row span { font-size: 11px; font-weight: 700; color: var(--pdm-muted); min-width: 95px; padding-top: 1px; }

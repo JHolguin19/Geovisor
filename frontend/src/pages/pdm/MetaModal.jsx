@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { pdmService } from '../../services/api';
 import { colorPct, pct01, estadoMeta } from './helpers';
 
-export default function MetaModal({ id, onClose }) {
+export default function MetaModal({ id, year, onClose }) {
   const [meta, setMeta]       = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -117,20 +117,29 @@ export default function MetaModal({ id, onClose }) {
             </table>
           </div>
 
-          {(meta.observaciones_2024 || meta.compromisos_2024 || meta.observaciones_2025 || meta.compromisos_2025) && (
-            <div className="pdm-modal-section">
-              <h3>Observaciones y compromisos</h3>
-              {['2024', '2025'].map(y => (
-                (meta[`observaciones_${y}`] || meta[`compromisos_${y}`]) ? (
-                  <div key={y} className="pdm-obs-block">
-                    <strong>{y}</strong>
-                    {meta[`observaciones_${y}`] && <div className="pdm-obs-row"><span>Observaciones:</span><p>{meta[`observaciones_${y}`]}</p></div>}
-                    {meta[`compromisos_${y}`]   && <div className="pdm-obs-row"><span>Compromisos:</span><p>{meta[`compromisos_${y}`]}</p></div>}
-                  </div>
-                ) : null
-              ))}
-            </div>
-          )}
+          {(() => {
+            const allYears = ['2024', '2025', '2026', '2027'];
+            const hasAnyObs = allYears.some(y => meta[`observaciones_${y}`] || meta[`compromisos_${y}`]);
+            if (!hasAnyObs) return null;
+            const selectedStr = year ? String(year) : null;
+            const sortedYears = selectedStr
+              ? [selectedStr, ...allYears.filter(y => y !== selectedStr)]
+              : allYears;
+            return (
+              <div className="pdm-modal-section">
+                <h3>Observaciones y compromisos</h3>
+                {sortedYears.map(y => (
+                  (meta[`observaciones_${y}`] || meta[`compromisos_${y}`]) ? (
+                    <div key={y} className={`pdm-obs-block${y === selectedStr ? ' pdm-obs-block--active' : ''}`}>
+                      <strong>{y}{y === selectedStr ? ' · año seleccionado' : ''}</strong>
+                      {meta[`observaciones_${y}`] && <div className="pdm-obs-row"><span>Observaciones:</span><p>{meta[`observaciones_${y}`]}</p></div>}
+                      {meta[`compromisos_${y}`]   && <div className="pdm-obs-row"><span>Compromisos:</span><p>{meta[`compromisos_${y}`]}</p></div>}
+                    </div>
+                  ) : null
+                ))}
+              </div>
+            );
+          })()}
         </>)}
       </div>
     </div>

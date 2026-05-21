@@ -33,7 +33,7 @@ export async function getById(req, res, next) {
 }
 
 export async function list(req, res, next) {
-  const { secretaria, pilar, busqueda, page, limit, orden, dir } = req.query;
-  const data = await pdmService.list({ secretaria, pilar, busqueda, page, limit, orden, dir });
+  const { secretaria, pilar, semaforo, busqueda, page, limit, orden, dir } = req.query;
+  const data = await pdmService.list({ secretaria, pilar, semaforo, busqueda, page, limit, orden, dir });
   res.json(data);
 }

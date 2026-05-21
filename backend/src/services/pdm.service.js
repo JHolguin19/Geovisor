@@ -226,7 +226,7 @@ export async function getById(id) {
   return rows[0] || null;
 }
 
-export async function list({ secretaria, pilar, busqueda, page = 1, limit = 50, orden = 'meta_num', dir = 'ASC' }) {
+export async function list({ secretaria, pilar, semaforo, busqueda, page = 1, limit = 50, orden = 'meta_num', dir = 'ASC' }) {
   const params = [];
   const filters = [];
 
@@ -236,6 +236,11 @@ export async function list({ secretaria, pilar, busqueda, page = 1, limit = 50, 
     params.push(`%${busqueda}%`);
     filters.push(`(descripcion_meta ILIKE $${params.length} OR secretaria ILIKE $${params.length} OR nom_pilar ILIKE $${params.length} OR macrometa ILIKE $${params.length})`);
   }
+
+  if (semaforo === 'verde')    filters.push(`avance_fisico >= 0.8`);
+  if (semaforo === 'amarillo') filters.push(`avance_fisico >= 0.5 AND avance_fisico < 0.8`);
+  if (semaforo === 'rojo')     filters.push(`avance_fisico < 0.5`);
+  if (semaforo === 'sin_dato') filters.push(`avance_fisico IS NULL`);
 
   const where = filters.length ? `WHERE ${filters.join(' AND ')}` : '';
   const offset = (parseInt(page) - 1) * parseInt(limit);
