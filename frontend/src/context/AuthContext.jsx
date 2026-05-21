@@ -1,4 +1,5 @@
 import { createContext, useState, useEffect, useCallback } from 'react';
+import axios from 'axios';
 import api from '../services/api';
 import { clearCache as clearGeoCache } from '../features/map/layers/geoJsonCache';
 
@@ -27,6 +28,32 @@ export function AuthProvider({ children }) {
     };
     verifyToken();
   }, [token]);
+
+  // Renovación proactiva del token cada 10 minutos mientras el usuario está autenticado.
+  // Evita que el token expire durante una sesión de edición larga sin necesitar
+  // que el interceptor reactivo lo rescate.
+  useEffect(() => {
+    if (!user) return;
+
+    const INTERVAL_MS = 10 * 60 * 1000; // 10 minutos
+
+    const refresh = async () => {
+      const storedRefreshToken = localStorage.getItem('refreshToken');
+      if (!storedRefreshToken) return;
+      try {
+        const { data } = await axios.post('/api/auth/refresh', { refreshToken: storedRefreshToken });
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('refreshToken', data.refreshToken);
+        setToken(data.token);
+      } catch {
+        // Fallo silencioso — el interceptor reactivo en api.js maneja el caso
+        // en que el token ya haya expirado cuando llegue la próxima petición.
+      }
+    };
+
+    const id = setInterval(refresh, INTERVAL_MS);
+    return () => clearInterval(id);
+  }, [user]);
 
   // Login
   const login = useCallback(async (username, password) => {
