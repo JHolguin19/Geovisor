@@ -132,20 +132,71 @@ export async function saveChanges(changes) {
           OR meta_pdm_2026 IS NOT NULL OR meta_pdm_2027 IS NOT NULL)
     `);
 
-    // Recalcular avance_fisico + cumplimiento (sin cap)
+    // Recalcular ponderado_avance_Y + avance_fisico + cumplimiento según tipo_ponderado.
+    // Acumulativo:    denominador = meta_cuatrienio
+    // No acumulativo: denominador = Σ(meta_pdm_Y) — cada año es independiente
+    const metaNums = [...new Set(changes.map(c => c.meta_num))].join(',');
     await client.query(`
       UPDATE pdm_metas
       SET
-        avance_fisico = (
-          COALESCE(meta_fisica_2024::numeric,0)+COALESCE(meta_fisica_2025::numeric,0)+
-          COALESCE(meta_fisica_2026::numeric,0)+COALESCE(meta_fisica_2027::numeric,0)
-        ) / NULLIF(meta_cuatrienio::numeric, 0),
-        cumplimiento_cuatrienio = (
-          COALESCE(meta_fisica_2024::numeric,0)+COALESCE(meta_fisica_2025::numeric,0)+
-          COALESCE(meta_fisica_2026::numeric,0)+COALESCE(meta_fisica_2027::numeric,0)
-        ) / NULLIF(meta_cuatrienio::numeric, 0) * 100
-      WHERE meta_num IN (${[...new Set(changes.map(c => c.meta_num))].join(',')})
-        AND meta_cuatrienio IS NOT NULL AND meta_cuatrienio::numeric != 0
+        ponderado_avance_2024 = CASE
+          WHEN tipo_ponderado = 'Acumulativo'
+            THEN COALESCE(meta_fisica_2024::numeric,0) / NULLIF(meta_cuatrienio::numeric,0)
+          ELSE
+            COALESCE(meta_fisica_2024::numeric,0) / NULLIF(
+              (COALESCE(meta_pdm_2024::numeric,0)+COALESCE(meta_pdm_2025::numeric,0)+
+               COALESCE(meta_pdm_2026::numeric,0)+COALESCE(meta_pdm_2027::numeric,0)),0)
+        END,
+        ponderado_avance_2025 = CASE
+          WHEN tipo_ponderado = 'Acumulativo'
+            THEN COALESCE(meta_fisica_2025::numeric,0) / NULLIF(meta_cuatrienio::numeric,0)
+          ELSE
+            COALESCE(meta_fisica_2025::numeric,0) / NULLIF(
+              (COALESCE(meta_pdm_2024::numeric,0)+COALESCE(meta_pdm_2025::numeric,0)+
+               COALESCE(meta_pdm_2026::numeric,0)+COALESCE(meta_pdm_2027::numeric,0)),0)
+        END,
+        ponderado_avance_2026 = CASE
+          WHEN tipo_ponderado = 'Acumulativo'
+            THEN COALESCE(meta_fisica_2026::numeric,0) / NULLIF(meta_cuatrienio::numeric,0)
+          ELSE
+            COALESCE(meta_fisica_2026::numeric,0) / NULLIF(
+              (COALESCE(meta_pdm_2024::numeric,0)+COALESCE(meta_pdm_2025::numeric,0)+
+               COALESCE(meta_pdm_2026::numeric,0)+COALESCE(meta_pdm_2027::numeric,0)),0)
+        END,
+        ponderado_avance_2027 = CASE
+          WHEN tipo_ponderado = 'Acumulativo'
+            THEN COALESCE(meta_fisica_2027::numeric,0) / NULLIF(meta_cuatrienio::numeric,0)
+          ELSE
+            COALESCE(meta_fisica_2027::numeric,0) / NULLIF(
+              (COALESCE(meta_pdm_2024::numeric,0)+COALESCE(meta_pdm_2025::numeric,0)+
+               COALESCE(meta_pdm_2026::numeric,0)+COALESCE(meta_pdm_2027::numeric,0)),0)
+        END,
+        avance_fisico = CASE
+          WHEN tipo_ponderado = 'Acumulativo' THEN
+            (COALESCE(meta_fisica_2024::numeric,0)+COALESCE(meta_fisica_2025::numeric,0)+
+             COALESCE(meta_fisica_2026::numeric,0)+COALESCE(meta_fisica_2027::numeric,0))
+            / NULLIF(meta_cuatrienio::numeric,0)
+          ELSE
+            (COALESCE(meta_fisica_2024::numeric,0)+COALESCE(meta_fisica_2025::numeric,0)+
+             COALESCE(meta_fisica_2026::numeric,0)+COALESCE(meta_fisica_2027::numeric,0))
+            / NULLIF(
+              (COALESCE(meta_pdm_2024::numeric,0)+COALESCE(meta_pdm_2025::numeric,0)+
+               COALESCE(meta_pdm_2026::numeric,0)+COALESCE(meta_pdm_2027::numeric,0)),0)
+        END,
+        cumplimiento_cuatrienio = CASE
+          WHEN tipo_ponderado = 'Acumulativo' THEN
+            (COALESCE(meta_fisica_2024::numeric,0)+COALESCE(meta_fisica_2025::numeric,0)+
+             COALESCE(meta_fisica_2026::numeric,0)+COALESCE(meta_fisica_2027::numeric,0))
+            / NULLIF(meta_cuatrienio::numeric,0) * 100
+          ELSE
+            (COALESCE(meta_fisica_2024::numeric,0)+COALESCE(meta_fisica_2025::numeric,0)+
+             COALESCE(meta_fisica_2026::numeric,0)+COALESCE(meta_fisica_2027::numeric,0))
+            / NULLIF(
+              (COALESCE(meta_pdm_2024::numeric,0)+COALESCE(meta_pdm_2025::numeric,0)+
+               COALESCE(meta_pdm_2026::numeric,0)+COALESCE(meta_pdm_2027::numeric,0)),0)
+            * 100
+        END
+      WHERE meta_num IN (${metaNums})
     `);
 
     await client.query('COMMIT');
