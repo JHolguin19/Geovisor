@@ -5,7 +5,7 @@ import { pool } from '../db/pool.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { logger } from '../utils/logger.js';
 
-const ACCESS_EXPIRES = '15m';
+const ACCESS_EXPIRES = '2h';
 const REFRESH_EXPIRES_MS = 7 * 24 * 60 * 60 * 1000; // 7 días
 
 function signAccessToken(user) {
