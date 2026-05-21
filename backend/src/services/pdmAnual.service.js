@@ -514,9 +514,40 @@ export async function uploadPdmExcel(filePath, year) {
       }
     }
 
-    // ── NO recalcular métricas derivadas ──
-    // Todos los cálculos (eficiencia, ponderado_avance, avance_fisico, cumplimiento)
-    // ya vienen hechos desde el Excel. Se insertan tal cual, sin caps ni ajustes.
+    // ── Recalcular métricas para metas No acumulativas ──
+    // Para metas No acumulativas, el denominador correcto es meta_cuatrienio * 4
+    // (la meta anual repetida en cada uno de los 4 años del cuatrienio).
+    // El Excel usa meta_cuatrienio como denominador (incorrecto), por lo que
+    // se recalcula aquí siempre tras cualquier upload que toque estas metas.
+    await client.query(`
+      UPDATE pdm_metas
+      SET
+        ponderado_avance_2024 = COALESCE(meta_fisica_2024::numeric, 0) / (meta_cuatrienio::numeric * 4),
+        ponderado_avance_2025 = COALESCE(meta_fisica_2025::numeric, 0) / (meta_cuatrienio::numeric * 4),
+        ponderado_avance_2026 = COALESCE(meta_fisica_2026::numeric, 0) / (meta_cuatrienio::numeric * 4),
+        ponderado_avance_2027 = COALESCE(meta_fisica_2027::numeric, 0) / (meta_cuatrienio::numeric * 4),
+        avance_fisico = (
+            COALESCE(meta_fisica_2024::numeric, 0) +
+            COALESCE(meta_fisica_2025::numeric, 0) +
+            COALESCE(meta_fisica_2026::numeric, 0) +
+            COALESCE(meta_fisica_2027::numeric, 0)
+          ) / (meta_cuatrienio::numeric * 4),
+        ponderado_cuatrienio = (
+            COALESCE(meta_fisica_2024::numeric, 0) +
+            COALESCE(meta_fisica_2025::numeric, 0) +
+            COALESCE(meta_fisica_2026::numeric, 0) +
+            COALESCE(meta_fisica_2027::numeric, 0)
+          ) / (meta_cuatrienio::numeric * 4),
+        cumplimiento_cuatrienio = (
+            COALESCE(meta_fisica_2024::numeric, 0) +
+            COALESCE(meta_fisica_2025::numeric, 0) +
+            COALESCE(meta_fisica_2026::numeric, 0) +
+            COALESCE(meta_fisica_2027::numeric, 0)
+          ) / (meta_cuatrienio::numeric * 4) * 100
+      WHERE tipo_ponderado = 'No acumulativo'
+        AND meta_cuatrienio IS NOT NULL
+        AND meta_cuatrienio::numeric > 0
+    `);
 
     await client.query('COMMIT');
   } catch (err) {
